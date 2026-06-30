@@ -160,7 +160,7 @@ function MenuPage() {
                 <button
                   key={c}
                   onClick={() =>
-                    navigate({ search: (prev) => ({ ...prev, cat: c }) })
+                    navigate({ search: (prev: z.infer<typeof menuSchema>) => ({ ...prev, cat: c }) })
                   }
                   className={`shrink-0 px-4 py-2 text-xs font-bold uppercase tracking-widest border transition-colors ${
                     active
@@ -179,7 +179,7 @@ function MenuPage() {
               onChange={(e) => {
                 setQuery(e.target.value);
                 navigate({
-                  search: (prev) => ({ ...prev, q: e.target.value }),
+                  search: (prev: z.infer<typeof menuSchema>) => ({ ...prev, q: e.target.value }),
                   replace: true,
                 });
               }}
