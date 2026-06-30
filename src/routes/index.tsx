@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import heroBar from "@/assets/hero-bar.jpg";
 import menuBurger from "@/assets/menu-burger.jpg";
 import menuCocktail from "@/assets/menu-cocktail.jpg";
@@ -34,24 +34,30 @@ const tickerItems = [
   "GAME DAY BRUNCH · SAT–SUN · 10AM",
 ];
 
-const menu = [
+const dailySpecials = [
   {
     img: menuBurger,
-    title: "The Mill Burger",
-    desc: "Wagyu blend, caramelized onion, truffle aioli, brioche.",
-    price: "$18",
-  },
-  {
-    img: menuCocktail,
-    title: "Desert Heat Old Fashioned",
-    desc: "Local bourbon, ancho chili, charred orange zest.",
-    price: "$14",
+    day: "MONDAY",
+    badge: "1/2 OFF",
+    title: "Burger Night",
+    desc: "Every Mill Burger and Tempe Smash — half price all night.",
+    price: "from $8",
   },
   {
     img: menuWings,
-    title: "Sticky Social Wings",
-    desc: "Gochujang glaze, pickled radish, toasted sesame.",
-    price: "$16",
+    day: "TUESDAY",
+    badge: "$1 EACH",
+    title: "Wing It",
+    desc: "Dollar wings, any flavor, with any pitcher of draft beer.",
+    price: "$1 / wing",
+  },
+  {
+    img: menuCocktail,
+    day: "WEDNESDAY",
+    badge: "2 FOR 1",
+    title: "Craft Cocktail Night",
+    desc: "Two-for-one on every house cocktail from 6PM to close.",
+    price: "from $7",
   },
 ];
 
@@ -83,12 +89,13 @@ function Home() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <a href="#" className="font-display text-2xl tracking-tighter uppercase italic">
+          <Link to="/" className="font-display text-2xl tracking-tighter uppercase italic">
             Mills<span className="text-accent">.</span>
-          </a>
+          </Link>
           <div className="hidden md:flex gap-8 text-xs font-semibold uppercase tracking-widest">
-            <a href="#menu" className="hover:text-accent transition-colors">Menu</a>
+            <Link to="/menu" className="hover:text-accent transition-colors">Menu</Link>
             <a href="#sports" className="hover:text-accent transition-colors">Sports</a>
+            <a href="#specials" className="hover:text-accent transition-colors">Specials</a>
             <a href="#events" className="hover:text-accent transition-colors">Events</a>
             <a href="#visit" className="hover:text-accent transition-colors">Visit</a>
           </div>
@@ -127,12 +134,12 @@ function Home() {
             Every seat is the best seat in the house.
           </p>
           <div className="flex flex-col md:flex-row gap-4 justify-center">
-            <a
-              href="#menu"
-              className="px-10 py-4 bg-accent text-black font-bold uppercase tracking-widest text-sm hover:scale-105 transition-transform"
+            <Link
+              to="/menu"
+              className="px-10 py-4 bg-accent text-black font-bold uppercase tracking-widest text-sm hover:scale-105 transition-transform inline-block"
             >
               Explore Menu
-            </a>
+            </Link>
             <a
               href="#sports"
               className="px-10 py-4 border border-foreground/20 bg-foreground/5 backdrop-blur-sm font-bold uppercase tracking-widest text-sm hover:bg-foreground hover:text-background transition-all"
@@ -177,44 +184,57 @@ function Home() {
         </div>
       </section>
 
-      {/* Menu */}
-      <section id="menu" className="py-24 px-6 border-t border-border">
+      {/* Daily Specials */}
+      <section id="specials" className="py-24 px-6 border-t border-border">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
             <div className="max-w-xl">
-              <span className="font-mono text-accent text-xs tracking-[0.3em] block mb-3">THE KITCHEN & BAR</span>
+              <span className="font-mono text-accent text-xs tracking-[0.3em] block mb-3">
+                THIS WEEK · ON ROTATION
+              </span>
               <h3 className="font-display text-5xl uppercase mb-4">
-                Not your average <span className="text-accent">pub grub</span>
+                Daily <span className="text-accent">Specials</span>
               </h3>
               <p className="text-muted-foreground text-pretty">
-                Craft cocktails, local Arizona drafts, and a kitchen that doesn't believe in frozen
-                appetizers. Elevated social food for the modern spectator.
+                A new reason to show up every night of the week. House specials, big
+                discounts, and the best bar food in Tempe.
               </p>
             </div>
-            <a href="#" className="font-mono text-xs border-b border-accent pb-1 tracking-widest">
+            <Link
+              to="/menu"
+              className="font-mono text-xs border-b border-accent pb-1 tracking-widest hover:text-accent transition-colors"
+            >
               VIEW FULL MENU →
-            </a>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {menu.map((m) => (
-              <article key={m.title} className="group">
-                <div className="aspect-[4/5] overflow-hidden mb-6 bg-surface">
+            {dailySpecials.map((s) => (
+              <article key={s.day} className="group relative">
+                <div className="aspect-[4/5] overflow-hidden mb-6 bg-surface relative">
                   <img
-                    src={m.img}
-                    alt={m.title}
+                    src={s.img}
+                    alt={s.title}
                     loading="lazy"
                     width={800}
                     height={1000}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
+                  <div className="absolute top-4 left-4 bg-accent text-black font-mono text-[10px] font-bold uppercase tracking-widest px-2 py-1">
+                    {s.day}
+                  </div>
+                  <div className="absolute bottom-4 right-4 bg-background/90 backdrop-blur-sm font-display text-xl uppercase px-3 py-1.5 text-accent">
+                    {s.badge}
+                  </div>
                 </div>
                 <div className="flex justify-between items-start gap-4">
                   <div>
-                    <h4 className="font-display text-2xl uppercase tracking-wide">{m.title}</h4>
-                    <p className="text-sm text-muted-foreground mt-1">{m.desc}</p>
+                    <h4 className="font-display text-2xl uppercase tracking-wide">{s.title}</h4>
+                    <p className="text-sm text-muted-foreground mt-1">{s.desc}</p>
                   </div>
-                  <span className="font-mono text-accent text-lg">{m.price}</span>
+                  <span className="font-mono text-accent text-sm shrink-0 whitespace-nowrap">
+                    {s.price}
+                  </span>
                 </div>
               </article>
             ))}
