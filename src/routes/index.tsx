@@ -1,8 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import heroBar from "@/assets/hero-bar.jpg";
 import menuBurger from "@/assets/menu-burger.jpg";
 import menuCocktail from "@/assets/menu-cocktail.jpg";
 import menuWings from "@/assets/menu-wings.jpg";
+import pulseHappyHour from "@/assets/pulse-happy-hour.jpg";
+import pulseTrivia from "@/assets/pulse-trivia.jpg";
+import pulseLiveMusic from "@/assets/pulse-live-music.jpg";
+import pulseBrunch from "@/assets/pulse-brunch.jpg";
+import millsLogo from "@/assets/mills-logo.png.asset.json";
+import { getUfcFights, type UfcFight } from "@/lib/ufc.functions";
+
+const ufcQueryOptions = queryOptions({
+  queryKey: ["ufc", "fights"],
+  queryFn: () => getUfcFights(),
+  staleTime: 60_000,
+});
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -11,17 +24,18 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Mills Modern Social in Tempe, AZ — elevated bar fare, craft cocktails, 40+ screens, and the loudest game day in Arizona.",
+          "Mills Modern Social in Tempe, AZ — elevated bar fare, craft cocktails, 40+ screens, live UFC fights, and the loudest game day in Arizona.",
       },
       { property: "og:title", content: "Mills Modern Social — Tempe's Modern Sports Bar" },
       {
         property: "og:description",
-        content: "Elevated bar fare, craft cocktails, and the loudest game day in Arizona.",
+        content: "Elevated bar fare, craft cocktails, live UFC nights, and the loudest game day in Arizona.",
       },
       { property: "og:image", content: heroBar },
       { name: "twitter:image", content: heroBar },
     ],
   }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(ufcQueryOptions),
   component: Home,
 });
 
@@ -30,7 +44,7 @@ const tickerItems = [
   "UPCOMING: ASU vs ARIZONA · SAT 7PM",
   "HAPPY HOUR · MON–WED · 4–7PM",
   "TRIVIA NIGHT · THU 8PM · $50 BAR TAB",
-  "LIVE: D-BACKS vs PADRES · 1ST 2-0",
+  "UFC FIGHT NIGHT · EVERY SATURDAY · NO COVER",
   "GAME DAY BRUNCH · SAT–SUN · 10AM",
 ];
 
@@ -62,10 +76,10 @@ const dailySpecials = [
 ];
 
 const schedule = [
-  { days: "MON–WED", title: "HAPPY HOUR", copy: "4PM–7PM. $2 off all drafts & signature cocktails.", accent: false },
-  { days: "THURSDAY", title: "TRIVIA NIGHT", copy: "8PM start. Win a $50 bar tab. Hosted by DJ Mac.", accent: true },
-  { days: "FRIDAY", title: "LIVE SESSIONS", copy: "Local artists 9PM–late. High-energy acoustic sets.", accent: false },
-  { days: "SAT–SUN", title: "GAME DAY BRUNCH", copy: "Open early for kickoff. Bottomless mimosas & sliders.", accent: true },
+  { days: "MON–WED", title: "HAPPY HOUR", copy: "4PM–7PM. $2 off all drafts & signature cocktails.", accent: false, img: pulseHappyHour },
+  { days: "THURSDAY", title: "TRIVIA NIGHT", copy: "8PM start. Win a $50 bar tab. Hosted by DJ Mac.", accent: true, img: pulseTrivia },
+  { days: "FRIDAY", title: "LIVE SESSIONS", copy: "Local artists 9PM–late. High-energy acoustic sets.", accent: false, img: pulseLiveMusic },
+  { days: "SAT–SUN", title: "GAME DAY BRUNCH", copy: "Open early for kickoff. Bottomless mimosas & sliders.", accent: true, img: pulseBrunch },
 ];
 
 const scoreboard = [
@@ -73,6 +87,147 @@ const scoreboard = [
   { league: "NBA · TONIGHT", a: "SUNS", aScore: "—", b: "LAKERS", bScore: "—", status: "TIP-OFF 7:30 PM MST", live: false },
   { league: "MLB · FINAL", a: "D-BACKS", aScore: "8", b: "DODGERS", bScore: "2", status: "FINAL", live: false },
 ];
+
+function formatFightDate(iso: string | null) {
+  if (!iso) return "TBD";
+  const d = new Date(iso.endsWith("Z") ? iso : iso + "Z");
+  if (Number.isNaN(d.getTime())) return "TBD";
+  return d
+    .toLocaleString("en-US", {
+      timeZone: "America/Phoenix",
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    })
+    .toUpperCase();
+}
+
+function FightCard({ fight, live }: { fight: UfcFight; live?: boolean }) {
+  const a = fight.fighterA;
+  const b = fight.fighterB;
+  return (
+    <article className="bg-background border border-border p-6 flex flex-col gap-4 group hover:border-accent/50 transition-colors">
+      <div className="flex justify-between items-start gap-2">
+        <div>
+          <div className="font-mono text-[10px] text-muted-foreground tracking-widest">
+            {fight.eventName}
+          </div>
+          <div className="font-mono text-[10px] text-accent tracking-widest mt-1">
+            {fight.weightClass || "UFC"} · {fight.cardSegment || "MAIN CARD"}
+          </div>
+        </div>
+        {live ? (
+          <span className="flex items-center gap-1.5 font-mono text-[10px] text-red-500 tracking-widest">
+            <span className="size-2 bg-red-500 rounded-full animate-pulse" /> LIVE
+          </span>
+        ) : (
+          <span className="font-mono text-[10px] text-muted-foreground tracking-widest whitespace-nowrap">
+            {formatFightDate(fight.dateTime)}
+          </span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 my-2">
+        <div className="text-right">
+          <div className={`font-display text-xl uppercase leading-tight ${a?.winner ? "text-accent" : ""}`}>
+            {a?.name || "TBD"}
+          </div>
+          {a && (
+            <div className="font-mono text-[10px] text-muted-foreground mt-1">
+              {a.wins ?? 0}-{a.losses ?? 0}-{a.draws ?? 0}
+              {a.country ? ` · ${a.country}` : ""}
+            </div>
+          )}
+        </div>
+        <div className="font-display text-accent text-lg">VS</div>
+        <div className="text-left">
+          <div className={`font-display text-xl uppercase leading-tight ${b?.winner ? "text-accent" : ""}`}>
+            {b?.name || "TBD"}
+          </div>
+          {b && (
+            <div className="font-mono text-[10px] text-muted-foreground mt-1">
+              {b.wins ?? 0}-{b.losses ?? 0}-{b.draws ?? 0}
+              {b.country ? ` · ${b.country}` : ""}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="font-mono text-[10px] text-muted-foreground tracking-widest border-t border-border pt-3">
+        {fight.resultType
+          ? `${fight.resultType.toUpperCase()} · R${fight.resultRound ?? "-"} ${fight.resultClock ?? ""}`
+          : `BEST OF ${fight.rounds ?? 3} ROUNDS`}
+      </div>
+    </article>
+  );
+}
+
+function UfcSection() {
+  const { data } = useSuspenseQuery(ufcQueryOptions);
+  const live = data.live ?? [];
+  const upcoming = data.upcoming ?? [];
+  const recent = data.recent ?? [];
+  const featured = [...live, ...upcoming, ...recent].slice(0, 6);
+
+  return (
+    <section id="ufc" className="py-24 px-6 border-t border-border bg-surface">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
+          <div className="max-w-2xl">
+            <span className="font-mono text-accent text-xs tracking-[0.3em] block mb-3">
+              OCTAGON HQ · POWERED BY SPORTSDATAIO
+            </span>
+            <h3 className="font-display text-5xl md:text-6xl uppercase mb-4">
+              UFC <span className="text-accent">fight nights</span>
+            </h3>
+            <p className="text-muted-foreground text-pretty">
+              Every card, every main event — live at Mills. Grab a booth, order a
+              round, and watch the octagon on the loudest screens in Tempe.
+            </p>
+          </div>
+          <div className="flex gap-6 font-mono text-[10px] tracking-widest">
+            <div>
+              <div className="text-muted-foreground">LIVE</div>
+              <div className="text-accent text-2xl font-display">{live.length}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">UPCOMING</div>
+              <div className="text-2xl font-display">{upcoming.length}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">RECENT</div>
+              <div className="text-2xl font-display">{recent.length}</div>
+            </div>
+          </div>
+        </div>
+
+        {!data.configured && (
+          <div className="border border-accent/40 bg-accent/5 p-6 font-mono text-xs text-muted-foreground">
+            UFC feed not configured yet. Add your SportsDataIO MMA API key to see
+            live fights here.
+          </div>
+        )}
+
+        {data.configured && featured.length === 0 && (
+          <div className="border border-border p-8 font-mono text-xs text-muted-foreground text-center">
+            No upcoming or live UFC fights on the SportsDataIO feed right now.
+            Check back closer to the next fight night.
+          </div>
+        )}
+
+        {featured.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {featured.map((f) => (
+              <FightCard key={f.fightId} fight={f} live={live.some((l) => l.fightId === f.fightId)} />
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
 
 function Home() {
   return (
@@ -89,12 +244,19 @@ function Home() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="font-display text-2xl tracking-tighter uppercase italic">
-            Mills<span className="text-accent">.</span>
+          <Link to="/" className="flex items-center" aria-label="Mills Modern Social — Home">
+            <img
+              src={millsLogo.url}
+              alt="Mill's Modern Social"
+              width={200}
+              height={44}
+              className="h-9 md:h-10 w-auto object-contain"
+            />
           </Link>
           <div className="hidden md:flex gap-8 text-xs font-semibold uppercase tracking-widest">
             <Link to="/menu" className="hover:text-accent transition-colors">Menu</Link>
             <a href="#sports" className="hover:text-accent transition-colors">Sports</a>
+            <a href="#ufc" className="hover:text-accent transition-colors">UFC</a>
             <a href="#specials" className="hover:text-accent transition-colors">Specials</a>
             <a href="#events" className="hover:text-accent transition-colors">Events</a>
             <a href="#visit" className="hover:text-accent transition-colors">Visit</a>
@@ -141,10 +303,10 @@ function Home() {
               Explore Menu
             </Link>
             <a
-              href="#sports"
+              href="#ufc"
               className="px-10 py-4 border border-foreground/20 bg-foreground/5 backdrop-blur-sm font-bold uppercase tracking-widest text-sm hover:bg-foreground hover:text-background transition-all"
             >
-              Tonight's Lineup
+              UFC Fight Card
             </a>
           </div>
         </div>
@@ -183,6 +345,9 @@ function Home() {
           </div>
         </div>
       </section>
+
+      {/* UFC */}
+      <UfcSection />
 
       {/* Daily Specials */}
       <section id="specials" className="py-24 px-6 border-t border-border">
@@ -251,18 +416,31 @@ function Home() {
               Weekly <span className="text-accent">pulse</span>
             </h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-px bg-border border border-border">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-border border border-border">
             {schedule.map((s) => (
-              <div key={s.title} className="bg-background p-8">
-                <span
-                  className={`font-mono text-xs mb-4 block tracking-widest ${
-                    s.accent ? "text-accent" : "text-muted-foreground"
-                  }`}
-                >
-                  {s.days}
-                </span>
-                <h5 className="font-display text-2xl uppercase mb-2">{s.title}</h5>
-                <p className="text-sm text-muted-foreground">{s.copy}</p>
+              <div key={s.title} className="bg-background flex flex-col group overflow-hidden">
+                <div className="aspect-[4/3] overflow-hidden bg-surface relative">
+                  <img
+                    src={s.img}
+                    alt={s.title}
+                    loading="lazy"
+                    width={800}
+                    height={600}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+                  <span
+                    className={`absolute top-4 left-4 font-mono text-[10px] tracking-widest px-2 py-1 ${
+                      s.accent ? "bg-accent text-black" : "bg-background/80 text-foreground"
+                    }`}
+                  >
+                    {s.days}
+                  </span>
+                </div>
+                <div className="p-6">
+                  <h5 className="font-display text-2xl uppercase mb-2">{s.title}</h5>
+                  <p className="text-sm text-muted-foreground">{s.copy}</p>
+                </div>
               </div>
             ))}
           </div>
