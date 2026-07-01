@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Trophy, Baseline as BaseballIcon, Zap } from "lucide-react";
+import { Trophy, Circle, Zap } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { UfcSection, ufcQueryOptions } from "@/components/ufc-section";
@@ -25,7 +25,7 @@ const pillars = [
     blurb: "Main-event screen with stadium audio, every UFC card and major boxing PPV — no cover, no seat charge.",
   },
   {
-    icon: BaseballIcon,
+    icon: Circle,
     title: "MLB",
     tag: "EVERY GAME, EVERY NIGHT",
     blurb: "D-backs first, then every out-of-market matchup on dedicated screens. Ask for your team, we'll put it on.",
