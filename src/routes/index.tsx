@@ -232,12 +232,17 @@ function UfcSection() {
   const recent = data.recent ?? [];
   const featured = [...live, ...upcoming, ...recent].slice(0, 6);
   const nextEvent = live[0] ?? upcoming[0] ?? null;
-  const updated = new Date(dataUpdatedAt).toLocaleTimeString("en-US", {
-    timeZone: "America/Phoenix",
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-  });
+  const [updated, setUpdated] = useState<string>("");
+  useEffect(() => {
+    setUpdated(
+      new Date(dataUpdatedAt).toLocaleTimeString("en-US", {
+        timeZone: "America/Phoenix",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+      }),
+    );
+  }, [dataUpdatedAt]);
 
   return (
     <section id="ufc" className="py-24 px-6 border-t border-border bg-surface">
