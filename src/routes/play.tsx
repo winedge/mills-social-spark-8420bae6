@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Target, Dices, Gamepad2, CircleDot, Trophy, Clock, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import playHero from "@/assets/play-hero.jpg.asset.json";
 import poolImg from "@/assets/play-pool.jpg.asset.json";
 import dartsImg from "@/assets/play-darts.jpg.asset.json";
 import boardImg from "@/assets/play-boardgames.jpg.asset.json";
