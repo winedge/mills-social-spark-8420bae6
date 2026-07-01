@@ -278,7 +278,7 @@ function UfcSection() {
 
         <div className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground tracking-widest mb-6">
           <span className={`size-1.5 rounded-full ${isFetching ? "bg-accent animate-pulse" : "bg-accent/50"}`} />
-          AUTO-REFRESH · EVERY 60s · LAST UPDATE {updated} MST
+          AUTO-REFRESH · EVERY 60s{updated ? ` · LAST UPDATE ${updated} MST` : ""}
         </div>
 
         {nextEvent && <NextEventCountdown event={nextEvent} />}
