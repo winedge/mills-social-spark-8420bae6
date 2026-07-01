@@ -76,12 +76,6 @@ const scoreboard = [
   { league: "MLB · FINAL", a: "D-BACKS", aScore: "8", b: "DODGERS", bScore: "2", status: "FINAL", live: false },
 ];
 
-const hours = [
-  { label: "Sunday", time: "11 AM – 10 PM", highlight: false },
-  { label: "Monday", time: "3 PM – 10 PM", highlight: false },
-  { label: "Tuesday – Wednesday", time: "11 AM – 10 PM", highlight: false },
-  { label: "Thursday, Friday + Saturday", time: "11 AM – 2 AM", highlight: true },
-];
 
 function OpenStatus() {
   const [open, setOpen] = React.useState<boolean | null>(null);
