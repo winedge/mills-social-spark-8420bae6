@@ -104,18 +104,18 @@ function formatFightDate(iso: string | null) {
     .toUpperCase();
 }
 
-function FightCard({ fight, live }: { fight: UfcFight; live?: boolean }) {
-  const a = fight.fighterA;
-  const b = fight.fighterB;
+function EventCard({ event, live }: { event: import("@/lib/ufc.functions").UfcEvent; live?: boolean }) {
+  const main = event.mainEvent;
+  const a = main?.fighterA;
+  const b = main?.fighterB;
+  const isFinal = event.status.toLowerCase() === "final";
   return (
     <article className="bg-background border border-border p-6 flex flex-col gap-4 group hover:border-accent/50 transition-colors">
       <div className="flex justify-between items-start gap-2">
-        <div>
-          <div className="font-mono text-[10px] text-muted-foreground tracking-widest">
-            {fight.eventName}
-          </div>
+        <div className="min-w-0">
+          <div className="font-display text-lg uppercase truncate">{event.name}</div>
           <div className="font-mono text-[10px] text-accent tracking-widest mt-1">
-            {fight.weightClass || "UFC"} · {fight.cardSegment || "MAIN CARD"}
+            {main?.weightClass || "UFC"} · MAIN EVENT
           </div>
         </div>
         {live ? (
@@ -124,7 +124,7 @@ function FightCard({ fight, live }: { fight: UfcFight; live?: boolean }) {
           </span>
         ) : (
           <span className="font-mono text-[10px] text-muted-foreground tracking-widest whitespace-nowrap">
-            {formatFightDate(fight.dateTime)}
+            {isFinal ? "FINAL" : formatFightDate(event.dateTime)}
           </span>
         )}
       </div>
@@ -134,10 +134,9 @@ function FightCard({ fight, live }: { fight: UfcFight; live?: boolean }) {
           <div className={`font-display text-xl uppercase leading-tight ${a?.winner ? "text-accent" : ""}`}>
             {a?.name || "TBD"}
           </div>
-          {a && (
+          {a && (a.wins !== null || a.losses !== null) && (
             <div className="font-mono text-[10px] text-muted-foreground mt-1">
               {a.wins ?? 0}-{a.losses ?? 0}-{a.draws ?? 0}
-              {a.country ? ` · ${a.country}` : ""}
             </div>
           )}
         </div>
@@ -146,19 +145,21 @@ function FightCard({ fight, live }: { fight: UfcFight; live?: boolean }) {
           <div className={`font-display text-xl uppercase leading-tight ${b?.winner ? "text-accent" : ""}`}>
             {b?.name || "TBD"}
           </div>
-          {b && (
+          {b && (b.wins !== null || b.losses !== null) && (
             <div className="font-mono text-[10px] text-muted-foreground mt-1">
               {b.wins ?? 0}-{b.losses ?? 0}-{b.draws ?? 0}
-              {b.country ? ` · ${b.country}` : ""}
             </div>
           )}
         </div>
       </div>
 
-      <div className="font-mono text-[10px] text-muted-foreground tracking-widest border-t border-border pt-3">
-        {fight.resultType
-          ? `${fight.resultType.toUpperCase()} · R${fight.resultRound ?? "-"} ${fight.resultClock ?? ""}`
-          : `BEST OF ${fight.rounds ?? 3} ROUNDS`}
+      <div className="font-mono text-[10px] text-muted-foreground tracking-widest border-t border-border pt-3 flex justify-between">
+        <span>
+          {main?.resultType
+            ? `${main.resultType.toUpperCase()} · R${main.resultRound ?? "-"}`
+            : `BEST OF ${main?.rounds ?? 5} ROUNDS`}
+        </span>
+        <span>{event.fights.length} FIGHTS</span>
       </div>
     </article>
   );
@@ -212,15 +213,19 @@ function UfcSection() {
 
         {data.configured && featured.length === 0 && (
           <div className="border border-border p-8 font-mono text-xs text-muted-foreground text-center">
-            No upcoming or live UFC fights on the SportsDataIO feed right now.
+            No upcoming or live UFC events on the SportsDataIO feed right now.
             Check back closer to the next fight night.
           </div>
         )}
 
         {featured.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {featured.map((f) => (
-              <FightCard key={f.fightId} fight={f} live={live.some((l) => l.fightId === f.fightId)} />
+            {featured.map((evt) => (
+              <EventCard
+                key={evt.eventId}
+                event={evt}
+                live={live.some((l) => l.eventId === evt.eventId)}
+              />
             ))}
           </div>
         )}
@@ -228,6 +233,7 @@ function UfcSection() {
     </section>
   );
 }
+
 
 function Home() {
   return (
