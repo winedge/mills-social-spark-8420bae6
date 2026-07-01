@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Users, PartyPopper, Building2, Music2, Mic2, Disc3, Calendar, MapPin } from "lucide-react";
+import { Users, PartyPopper, Building2, Mic2, Disc3, Calendar, MapPin } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Toaster } from "@/components/ui/sonner";
