@@ -75,6 +75,43 @@ const scoreboard = [
   { league: "MLB · FINAL", a: "D-BACKS", aScore: "8", b: "DODGERS", bScore: "2", status: "FINAL", live: false },
 ];
 
+const hours = [
+  { label: "Sunday", time: "11 AM – 10 PM", highlight: false },
+  { label: "Monday", time: "3 PM – 10 PM", highlight: false },
+  { label: "Tuesday – Wednesday", time: "11 AM – 10 PM", highlight: false },
+  { label: "Thursday, Friday + Saturday", time: "11 AM – 2 AM", highlight: true },
+];
+
+function OpenStatus() {
+  const now = new Date();
+  const day = now.getDay();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  const ranges: Record<number, [number, number] | null> = {
+    0: [11 * 60, 22 * 60], // Sunday 11am-10pm
+    1: [15 * 60, 22 * 60], // Monday 3pm-10pm
+    2: [11 * 60, 22 * 60], // Tuesday
+    3: [11 * 60, 22 * 60], // Wednesday
+    4: [11 * 60, 26 * 60], // Thursday 11am-2am (next day)
+    5: [11 * 60, 26 * 60], // Friday
+    6: [11 * 60, 26 * 60], // Saturday
+  };
+
+  const range = ranges[day];
+  let open = false;
+  if (range) {
+    const [start, end] = range;
+    open = currentMinutes >= start && currentMinutes < end;
+  }
+
+  return (
+    <span className="inline-flex items-center gap-2 font-mono text-[11px] tracking-widest uppercase">
+      <span className={`size-2 rounded-full ${open ? "bg-green-500 animate-pulse" : "bg-muted-foreground"}`} />
+      {open ? "Open Now" : "Closed Now"}
+    </span>
+  );
+}
+
 function Home() {
   return (
     <div className="bg-background text-foreground font-body">
