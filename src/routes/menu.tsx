@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useMemo, useState } from "react";
+import millsLogo from "@/assets/mills-logo.png.asset.json";
 
 const categories = [
   "All",
@@ -121,8 +122,8 @@ function MenuPage() {
       {/* Top bar */}
       <header className="border-b border-border sticky top-0 z-40 bg-background/90 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="font-display text-2xl tracking-tighter uppercase italic">
-            Mills<span className="text-accent">.</span>
+          <Link to="/" className="flex items-center" aria-label="Mills Modern Social — Home">
+            <img src={millsLogo.url} alt="Mill's Modern Social" width={200} height={44} className="h-9 md:h-10 w-auto object-contain" />
           </Link>
           <span className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground hidden md:block">
             FULL MENU · TEMPE, AZ
