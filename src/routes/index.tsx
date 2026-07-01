@@ -81,7 +81,7 @@ function Home() {
       <SiteHeader />
 
       {/* Hero */}
-      <section className="relative h-[70vh] min-h-[520px] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[60vh] min-h-[480px] flex items-center justify-center overflow-hidden">
         <video
           src={heroVideo.url}
           poster={heroBar}
@@ -96,18 +96,18 @@ function Home() {
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/50" />
         <h1
           aria-hidden
-          className="font-display text-[16vw] leading-[0.8] uppercase tracking-tighter opacity-[0.05] absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none whitespace-nowrap"
+          className="font-display text-[14vw] leading-[0.8] uppercase tracking-tighter opacity-[0.05] absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none whitespace-nowrap"
         >
           MILLS
         </h1>
         <div className="relative z-10 text-center px-6 animate-slide-up max-w-4xl">
-          <span className="block font-mono text-accent text-xs md:text-sm mb-4 tracking-[0.3em]">
+          <span className="block font-mono text-accent text-xs md:text-sm mb-3 tracking-[0.3em]">
             TEMPE, AZ · MODERN SPORTS SOCIAL
           </span>
-          <h2 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase leading-[1.0] tracking-tight mb-5 text-balance">
+          <h2 className="font-display text-4xl md:text-6xl lg:text-7xl uppercase leading-[1.05] tracking-tight mb-4 text-balance">
             Where Tempe comes to watch, eat & celebrate
           </h2>
-          <p className="text-muted-foreground max-w-lg mx-auto mb-7 text-pretty">
+          <p className="text-muted-foreground max-w-lg mx-auto mb-6 text-pretty">
             Ice-cold drinks. Scratch-made food. Every big game on the biggest screens.
           </p>
           <div className="flex flex-col md:flex-row gap-3 justify-center">
