@@ -83,25 +83,39 @@ const hours = [
 ];
 
 function OpenStatus() {
-  const now = new Date();
-  const day = now.getDay();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const [open, setOpen] = React.useState<boolean | null>(null);
 
-  const ranges: Record<number, [number, number] | null> = {
-    0: [11 * 60, 22 * 60], // Sunday 11am-10pm
-    1: [15 * 60, 22 * 60], // Monday 3pm-10pm
-    2: [11 * 60, 22 * 60], // Tuesday
-    3: [11 * 60, 22 * 60], // Wednesday
-    4: [11 * 60, 26 * 60], // Thursday 11am-2am (next day)
-    5: [11 * 60, 26 * 60], // Friday
-    6: [11 * 60, 26 * 60], // Saturday
-  };
+  React.useEffect(() => {
+    const now = new Date();
+    const day = now.getDay();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-  const range = ranges[day];
-  let open = false;
-  if (range) {
-    const [start, end] = range;
-    open = currentMinutes >= start && currentMinutes < end;
+    const ranges: Record<number, [number, number] | null> = {
+      0: [11 * 60, 22 * 60], // Sunday 11am-10pm
+      1: [15 * 60, 22 * 60], // Monday 3pm-10pm
+      2: [11 * 60, 22 * 60], // Tuesday
+      3: [11 * 60, 22 * 60], // Wednesday
+      4: [11 * 60, 26 * 60], // Thursday 11am-2am (next day)
+      5: [11 * 60, 26 * 60], // Friday
+      6: [11 * 60, 26 * 60], // Saturday
+    };
+
+    const range = ranges[day];
+    let isOpen = false;
+    if (range) {
+      const [start, end] = range;
+      isOpen = currentMinutes >= start && currentMinutes < end;
+    }
+    setOpen(isOpen);
+  }, []);
+
+  if (open === null) {
+    return (
+      <span className="inline-flex items-center gap-2 font-mono text-[11px] tracking-widest uppercase">
+        <span className="size-2 rounded-full bg-muted-foreground" />
+        Check Hours
+      </span>
+    );
   }
 
   return (
