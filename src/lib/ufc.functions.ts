@@ -131,10 +131,11 @@ async function fetchEventDetail(eventId: number, apiKey: string): Promise<RawEve
 
 function mapEvent(raw: RawEvent): UfcEvent {
   const fights = (raw.Fights ?? []).map(mapFight);
+  const byOrder = [...fights].sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
   const mainEvent =
     fights.find((f) => (f.cardSegment || "").toLowerCase() === "main event") ||
-    fights.find((f) => (f.cardSegment || "").toLowerCase() === "main card") ||
-    fights[fights.length - 1] ||
+    byOrder.find((f) => f.fighterA && f.fighterB) ||
+    byOrder[0] ||
     null;
   const status = raw.Status || "Scheduled";
   return {
@@ -148,6 +149,7 @@ function mapEvent(raw: RawEvent): UfcEvent {
     fights,
   };
 }
+
 
 export const getUfcFights = createServerFn({ method: "GET" }).handler(async () => {
   const apiKey = process.env.SPORTSDATAIO_API_KEY;

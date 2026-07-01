@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+
 import heroBar from "@/assets/hero-bar.jpg";
 import menuBurger from "@/assets/menu-burger.jpg";
 import menuCocktail from "@/assets/menu-cocktail.jpg";
@@ -15,7 +17,10 @@ const ufcQueryOptions = queryOptions({
   queryKey: ["ufc", "fights"],
   queryFn: () => getUfcFights(),
   staleTime: 60_000,
+  refetchInterval: 60_000,
+  refetchIntervalInBackground: false,
 });
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -165,12 +170,73 @@ function EventCard({ event, live }: { event: import("@/lib/ufc.functions").UfcEv
   );
 }
 
+function useCountdown(iso: string | null) {
+  const target = iso ? new Date(iso.endsWith("Z") ? iso : iso + "Z").getTime() : null;
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!target) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [target]);
+  if (!target) return null;
+  const diff = Math.max(0, target - now);
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  return { d, h, m, s, done: diff === 0 };
+}
+
+function NextEventCountdown({ event }: { event: import("@/lib/ufc.functions").UfcEvent }) {
+  const c = useCountdown(event.dateTime);
+  if (!c) return null;
+  const parts = [
+    { v: c.d, l: "DAYS" },
+    { v: c.h, l: "HRS" },
+    { v: c.m, l: "MIN" },
+    { v: c.s, l: "SEC" },
+  ];
+  return (
+    <div className="border border-accent/30 bg-accent/5 p-6 mb-10">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <div className="font-mono text-[10px] text-accent tracking-widest mb-1">
+            NEXT FIGHT NIGHT · COUNTDOWN
+          </div>
+          <div className="font-display text-2xl md:text-3xl uppercase leading-tight">
+            {event.name}
+          </div>
+        </div>
+        <div className="flex gap-4">
+          {parts.map((p) => (
+            <div key={p.l} className="text-center min-w-[52px]">
+              <div className="font-display text-3xl md:text-4xl text-accent tabular-nums">
+                {String(p.v).padStart(2, "0")}
+              </div>
+              <div className="font-mono text-[9px] text-muted-foreground tracking-widest">
+                {p.l}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function UfcSection() {
-  const { data } = useSuspenseQuery(ufcQueryOptions);
+  const { data, dataUpdatedAt, isFetching } = useSuspenseQuery(ufcQueryOptions);
   const live = data.live ?? [];
   const upcoming = data.upcoming ?? [];
   const recent = data.recent ?? [];
   const featured = [...live, ...upcoming, ...recent].slice(0, 6);
+  const nextEvent = live[0] ?? upcoming[0] ?? null;
+  const updated = new Date(dataUpdatedAt).toLocaleTimeString("en-US", {
+    timeZone: "America/Phoenix",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 
   return (
     <section id="ufc" className="py-24 px-6 border-t border-border bg-surface">
@@ -203,6 +269,15 @@ function UfcSection() {
             </div>
           </div>
         </div>
+
+        <div className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground tracking-widest mb-6">
+          <span className={`size-1.5 rounded-full ${isFetching ? "bg-accent animate-pulse" : "bg-accent/50"}`} />
+          AUTO-REFRESH · EVERY 60s · LAST UPDATE {updated} MST
+        </div>
+
+        {nextEvent && <NextEventCountdown event={nextEvent} />}
+
+
 
         {!data.configured && (
           <div className="border border-accent/40 bg-accent/5 p-6 font-mono text-xs text-muted-foreground">
