@@ -379,13 +379,13 @@ function Home() {
           <div className="flex flex-col md:flex-row gap-4 justify-center">
             <Link
               to="/menu"
-              className="px-10 py-4 bg-accent text-black font-bold uppercase tracking-widest text-sm hover:scale-105 transition-transform inline-block"
+              className="px-10 py-4 bg-accent text-primary-foreground font-bold uppercase tracking-widest text-sm hover:scale-105 transition-transform inline-block"
             >
               Explore Menu
             </Link>
             <a
               href="#ufc"
-              className="px-10 py-4 border border-foreground/20 bg-foreground/5 backdrop-blur-sm font-bold uppercase tracking-widest text-sm hover:bg-foreground hover:text-background transition-all"
+              className="px-10 py-4 border border-foreground/20 bg-surface/80 backdrop-blur-sm font-bold uppercase tracking-widest text-sm hover:bg-primary hover:text-primary-foreground transition-all"
             >
               UFC Fight Card
             </a>
