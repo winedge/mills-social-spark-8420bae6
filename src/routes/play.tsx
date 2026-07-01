@@ -45,53 +45,78 @@ function PlayPage() {
 
 /* ---------- HERO ---------- */
 function PlayHero() {
+  const zones = [
+    { href: "#pool", label: "Pool", icon: CircleDot },
+    { href: "#darts", label: "Darts", icon: Target },
+    { href: "#board", label: "Board Games", icon: Dices },
+    { href: "#arcade", label: "Arcade", icon: Gamepad2 },
+  ];
+
   return (
-    <section className="relative py-20 md:py-28 px-6 border-b border-border overflow-hidden">
-      {/* Playful floating shapes */}
-      <div className="absolute inset-0 pointer-events-none opacity-40">
-        <div className="absolute top-10 left-[8%] size-24 rounded-full bg-accent/30 blur-2xl" />
-        <div className="absolute bottom-10 right-[12%] size-32 bg-fuchsia-500/20 blur-3xl" />
-        <div className="absolute top-1/2 left-1/3 size-16 bg-yellow-400/20 blur-2xl" />
-      </div>
+    <section className="relative min-h-[75vh] md:min-h-[80vh] flex items-end border-b border-border overflow-hidden">
+      {/* Background image */}
+      <img
+        src={playHero.url}
+        alt="Mills Modern Social game floor with pool tables, dart boards, and arcade cabinets"
+        width={1920}
+        height={1080}
+        className="absolute inset-0 w-full h-full object-cover"
+        priority={true}
+      />
 
-      <div className="max-w-7xl mx-auto relative">
-        <div className="inline-flex items-center gap-2 border border-accent/40 bg-accent/5 px-3 py-1.5 mb-6">
-          <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="font-mono text-[10px] text-accent tracking-widest">GAME FLOOR OPEN NOW</span>
-        </div>
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40" />
+      <div className="absolute inset-0 bg-black/20" />
 
-        <h1 className="font-display text-6xl md:text-[10rem] uppercase leading-[0.85] mb-6 text-balance">
-          Push <span className="text-accent">start.</span>
-          <br />
-          Skip <span className="italic font-body font-light lowercase tracking-tight">the small talk.</span>
-        </h1>
-        <p className="text-muted-foreground max-w-2xl text-pretty text-lg mb-10">
-          Four game zones under one roof. Rack a game of nine ball, throw for the bull, dice
-          with strangers, or pump quarters into a neon cabinet. Food and drinks come to you.
-        </p>
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-16 md:py-24">
+        <div className="max-w-3xl">
+          <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/40 px-3 py-1.5 mb-5">
+            <span className="size-1.5 rounded-full bg-accent animate-pulse" />
+            <span className="font-mono text-[10px] text-accent tracking-widest">GAME FLOOR OPEN NOW</span>
+          </div>
 
-        {/* Zone jump nav */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl">
-          {[
-            { href: "#pool", label: "Pool", icon: CircleDot },
-            { href: "#darts", label: "Darts", icon: Target },
-            { href: "#board", label: "Board Games", icon: Dices },
-            { href: "#arcade", label: "Arcade", icon: Gamepad2 },
-          ].map((z) => {
-            const I = z.icon;
-            return (
-              <a
-                key={z.href}
-                href={z.href}
-                className="group border border-border bg-surface/40 px-4 py-3 flex items-center gap-2 hover:border-accent hover:bg-accent/10 transition-all"
-              >
-                <I className="size-4 text-accent shrink-0" />
-                <span className="font-mono text-xs uppercase tracking-widest group-hover:text-accent">
-                  {z.label}
-                </span>
-              </a>
-            );
-          })}
+          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase leading-[0.9] mb-5 text-balance">
+            Game on <span className="text-accent">at Mills</span>
+          </h1>
+          <p className="text-foreground/70 max-w-xl text-pretty text-base md:text-lg mb-8">
+            Four game zones under one roof. Rack a game of nine ball, throw for the bull,
+            dice with strangers, or pump quarters into a neon cabinet — all with food and
+            drinks delivered to you.
+          </p>
+
+          <div className="flex flex-wrap items-center gap-4 mb-10">
+            <Link
+              to="/party"
+              className="inline-flex items-center justify-center px-8 py-3.5 bg-accent text-primary-foreground font-bold uppercase tracking-widest text-xs hover:scale-105 transition-transform"
+            >
+              Book the Game Floor
+            </Link>
+            <a
+              href="#pool"
+              className="inline-flex items-center justify-center px-8 py-3.5 border border-border bg-background/60 hover:border-accent hover:text-accent font-mono uppercase tracking-widest text-xs transition-colors"
+            >
+              Explore Zones
+            </a>
+          </div>
+
+          {/* Zone jump chips */}
+          <div className="flex flex-wrap gap-2">
+            {zones.map((z) => {
+              const I = z.icon;
+              return (
+                <a
+                  key={z.href}
+                  href={z.href}
+                  className="group inline-flex items-center gap-2 px-3 py-2 bg-surface/70 border border-border hover:border-accent hover:bg-accent/10 transition-colors"
+                >
+                  <I className="size-3.5 text-accent" />
+                  <span className="font-mono text-[10px] uppercase tracking-widest group-hover:text-accent">
+                    {z.label}
+                  </span>
+                </a>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>
