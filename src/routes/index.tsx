@@ -76,12 +76,6 @@ const scoreboard = [
   { league: "MLB · FINAL", a: "D-BACKS", aScore: "8", b: "DODGERS", bScore: "2", status: "FINAL", live: false },
 ];
 
-const hours = [
-  { label: "Sunday", time: "11 AM – 10 PM", highlight: false },
-  { label: "Monday", time: "3 PM – 10 PM", highlight: false },
-  { label: "Tuesday – Wednesday", time: "11 AM – 10 PM", highlight: false },
-  { label: "Thursday, Friday + Saturday", time: "11 AM – 2 AM", highlight: true },
-];
 
 function OpenStatus() {
   const [open, setOpen] = React.useState<boolean | null>(null);
@@ -181,50 +175,83 @@ function Home() {
 
       {/* Location & Hours */}
       <section id="hours" className="px-6 -mt-12 relative z-20">
-        <div className="max-w-5xl mx-auto">
-          <div className="bg-surface border border-border rounded-sm p-8 md:p-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
-              {/* Location */}
-              <div>
-                <p className="text-sm text-muted-foreground mb-3">Location</p>
-                <h3 className="font-display text-2xl md:text-3xl uppercase leading-tight mb-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row items-stretch border-2 border-border bg-surface shadow-[20px_20px_0px_0px_rgba(56,189,248,0.08)] overflow-hidden">
+            {/* Location */}
+            <div className="flex-1 p-8 md:p-10 border-b-2 md:border-b-0 md:border-r-2 border-border flex flex-col justify-between relative overflow-hidden">
+              <div className="relative z-10">
+                <h2 className="font-display text-6xl md:text-7xl font-black uppercase tracking-tighter text-accent leading-none mb-4">
+                  Find Us
+                </h2>
+                <p className="text-foreground text-xl font-semibold mb-1">
                   On the corner of Mill Ave & Broadway Rd
-                </h3>
-                <p className="text-muted-foreground mb-6">Tempe, Arizona</p>
+                </p>
+                <p className="text-muted-foreground font-medium tracking-wide">Tempe, Arizona</p>
+              </div>
+
+              <div className="mt-10 flex flex-col gap-4 relative z-10">
                 <a
                   href="https://maps.google.com/?q=Mill+Ave+and+Broadway+Rd+Tempe+AZ"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-accent hover:underline"
+                  className="inline-flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors group"
                 >
-                  Get directions →
+                  <span className="h-px w-8 bg-border group-hover:bg-accent transition-colors" />
+                  <span className="font-mono text-xs uppercase tracking-widest font-bold">Get Directions</span>
                 </a>
               </div>
 
-              {/* Hours */}
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <p className="text-sm text-muted-foreground">Opening hours</p>
-                  <OpenStatus />
+              {/* Background decorative mark */}
+              <div className="absolute -bottom-4 -right-4 opacity-[0.04] pointer-events-none select-none">
+                <span className="font-display text-[12rem] font-black uppercase leading-none">MMS</span>
+              </div>
+            </div>
+
+            {/* Hours */}
+            <div className="flex-[2] p-8 md:p-10 bg-surface-secondary/30 flex flex-col justify-center">
+              <div className="flex items-center gap-3 mb-8">
+                <OpenStatus />
+              </div>
+
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-8 gap-x-6">
+                <div className="space-y-1">
+                  <p className="font-display text-lg uppercase font-bold tracking-wider text-muted-foreground">Monday</p>
+                  <p className="text-foreground font-bold text-lg tabular-nums">3PM – 10PM</p>
                 </div>
-                <div className="space-y-3">
-                  {hours.map((h) => (
-                    <div
-                      key={h.label}
-                      className="flex justify-between items-center gap-4 py-2 border-b border-border/50"
-                    >
-                      <span className="text-base text-foreground">{h.label}</span>
-                      <span className="text-base font-medium text-foreground tabular-nums">
-                        {h.time}
-                      </span>
-                    </div>
-                  ))}
+                <div className="space-y-1">
+                  <p className="font-display text-lg uppercase font-bold tracking-wider text-muted-foreground">Tuesday – Wednesday</p>
+                  <p className="text-foreground font-bold text-lg tabular-nums">11AM – 10PM</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="font-display text-lg uppercase font-bold tracking-wider text-accent">Thursday, Friday + Saturday</p>
+                  <p className="text-foreground font-bold text-lg tabular-nums text-accent">11AM – 2AM</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="font-display text-lg uppercase font-bold tracking-wider text-muted-foreground">Sunday</p>
+                  <p className="text-foreground font-bold text-lg tabular-nums">11AM – 10PM</p>
+                </div>
+              </div>
+
+              <div className="mt-10 pt-8 border-t border-border/50 flex flex-wrap gap-x-12 gap-y-4">
+                <div>
+                  <p className="font-mono text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Game Day</p>
+                  <p className="text-muted-foreground text-sm font-semibold">Every screen, every league</p>
+                </div>
+                <div className="ml-auto">
+                  <Link
+                    to="/party"
+                    className="inline-block px-6 py-3 bg-accent text-primary-foreground font-black uppercase text-sm tracking-tighter transition-all hover:brightness-110 active:translate-y-0.5"
+                  >
+                    Book a Table
+                  </Link>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </section>
+
+
 
       {/* Scoreboard */}
       <section id="sports" className="py-24 px-6 border-t border-border">
