@@ -172,13 +172,14 @@ function EventCard({ event, live }: { event: import("@/lib/ufc.functions").UfcEv
 
 function useCountdown(iso: string | null) {
   const target = iso ? new Date(iso.endsWith("Z") ? iso : iso + "Z").getTime() : null;
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
     if (!target) return;
+    setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [target]);
-  if (!target) return null;
+  if (!target || now === null) return null;
   const diff = Math.max(0, target - now);
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
