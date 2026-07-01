@@ -9,7 +9,7 @@ import pulseTrivia from "@/assets/pulse-trivia.jpg";
 import pulseLiveMusic from "@/assets/pulse-live-music.jpg";
 import pulseBrunch from "@/assets/pulse-brunch.jpg";
 import millsLogo from "@/assets/mills-logo.png.asset.json";
-import { getUfcFights, type UfcFight } from "@/lib/ufc.functions";
+import { getUfcFights } from "@/lib/ufc.functions";
 
 const ufcQueryOptions = queryOptions({
   queryKey: ["ufc", "fights"],
