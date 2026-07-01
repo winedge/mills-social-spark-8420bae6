@@ -105,25 +105,23 @@ function Home() {
             TEMPE, AZ · MODERN SPORTS SOCIAL
           </span>
           <h2 className="font-display text-6xl md:text-8xl lg:text-9xl uppercase leading-[0.9] mb-8 text-balance">
-            The new standard <br />
-            of <span className="text-accent">game night</span>
+            Where Tempe comes to watch, eat & celebrate
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto mb-10 text-pretty">
-            40+ screens. Stadium-grade audio. A chef-driven kitchen and a craft bar.
-            Every seat is the best seat in the house.
+            Ice-cold drinks. Scratch-made food. Every big game on the biggest screens.
           </p>
           <div className="flex flex-col md:flex-row gap-4 justify-center">
             <Link
-              to="/menu"
+              to="/party"
               className="px-10 py-4 bg-accent text-primary-foreground font-bold uppercase tracking-widest text-sm hover:scale-105 transition-transform inline-block"
             >
-              Explore Menu
+              Reserve a Table
             </Link>
             <Link
-              to="/sports"
+              to="/menu"
               className="px-10 py-4 border border-foreground/20 bg-surface/80 backdrop-blur-sm font-bold uppercase tracking-widest text-sm hover:bg-primary hover:text-primary-foreground transition-all"
             >
-              Tonight's Games
+              View Menu
             </Link>
           </div>
         </div>
