@@ -315,7 +315,7 @@ function Home() {
     <div className="bg-background text-foreground font-body">
       {/* Nav + ticker */}
       <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
-        <div className="overflow-hidden whitespace-nowrap py-2 bg-accent text-black font-mono text-[10px] font-bold uppercase tracking-widest">
+        <div className="overflow-hidden whitespace-nowrap py-2 bg-accent text-primary-foreground font-mono text-[10px] font-bold uppercase tracking-widest">
           <div className="inline-block animate-marquee">
             {[...tickerItems, ...tickerItems].map((t, i) => (
               <span key={i} className="mx-6">
@@ -342,7 +342,7 @@ function Home() {
             <a href="#events" className="hover:text-accent transition-colors">Events</a>
             <a href="#visit" className="hover:text-accent transition-colors">Visit</a>
           </div>
-          <button className="bg-foreground text-background px-5 py-2 text-xs font-bold uppercase hover:bg-accent transition-colors">
+          <button className="bg-primary text-primary-foreground px-5 py-2 text-xs font-bold uppercase hover:bg-accent hover:text-primary-foreground transition-colors">
             Book Table
           </button>
         </div>
@@ -355,9 +355,9 @@ function Home() {
           alt="Mills Modern Social bar interior in Tempe, Arizona"
           width={1920}
           height={1080}
-          className="absolute inset-0 w-full h-full object-cover opacity-55"
+          className="absolute inset-0 w-full h-full object-cover opacity-75"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-background/80" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/40" />
         <h1
           aria-hidden
           className="font-display text-[18vw] leading-[0.8] uppercase tracking-tighter opacity-[0.06] absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none whitespace-nowrap"
@@ -379,13 +379,13 @@ function Home() {
           <div className="flex flex-col md:flex-row gap-4 justify-center">
             <Link
               to="/menu"
-              className="px-10 py-4 bg-accent text-black font-bold uppercase tracking-widest text-sm hover:scale-105 transition-transform inline-block"
+              className="px-10 py-4 bg-accent text-primary-foreground font-bold uppercase tracking-widest text-sm hover:scale-105 transition-transform inline-block"
             >
               Explore Menu
             </Link>
             <a
               href="#ufc"
-              className="px-10 py-4 border border-foreground/20 bg-foreground/5 backdrop-blur-sm font-bold uppercase tracking-widest text-sm hover:bg-foreground hover:text-background transition-all"
+              className="px-10 py-4 border border-foreground/20 bg-surface/80 backdrop-blur-sm font-bold uppercase tracking-widest text-sm hover:bg-primary hover:text-primary-foreground transition-all"
             >
               UFC Fight Card
             </a>
@@ -466,7 +466,7 @@ function Home() {
                     height={1000}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute top-4 left-4 bg-accent text-black font-mono text-[10px] font-bold uppercase tracking-widest px-2 py-1">
+                  <div className="absolute top-4 left-4 bg-accent text-primary-foreground font-mono text-[10px] font-bold uppercase tracking-widest px-2 py-1">
                     {s.day}
                   </div>
                   <div className="absolute bottom-4 right-4 bg-background/90 backdrop-blur-sm font-display text-xl uppercase px-3 py-1.5 text-accent">
@@ -509,10 +509,10 @@ function Home() {
                     height={600}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent" />
                   <span
                     className={`absolute top-4 left-4 font-mono text-[10px] tracking-widest px-2 py-1 ${
-                      s.accent ? "bg-accent text-black" : "bg-background/80 text-foreground"
+                      s.accent ? "bg-accent text-primary-foreground" : "bg-background/80 text-foreground"
                     }`}
                   >
                     {s.days}
