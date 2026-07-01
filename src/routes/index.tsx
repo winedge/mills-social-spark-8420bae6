@@ -466,7 +466,7 @@ function Home() {
                     height={1000}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute top-4 left-4 bg-accent text-black font-mono text-[10px] font-bold uppercase tracking-widest px-2 py-1">
+                  <div className="absolute top-4 left-4 bg-accent text-primary-foreground font-mono text-[10px] font-bold uppercase tracking-widest px-2 py-1">
                     {s.day}
                   </div>
                   <div className="absolute bottom-4 right-4 bg-background/90 backdrop-blur-sm font-display text-xl uppercase px-3 py-1.5 text-accent">
