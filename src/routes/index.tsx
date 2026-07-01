@@ -81,7 +81,7 @@ function Home() {
       <SiteHeader />
 
       {/* Hero */}
-      <section className="relative h-[50vh] min-h-[420px] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[75vh] min-h-[560px] flex items-center justify-center overflow-hidden">
         <video
           src={heroVideo.url}
           poster={heroBar}
@@ -96,18 +96,18 @@ function Home() {
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/50" />
         <h1
           aria-hidden
-          className="font-display text-[10vw] leading-[0.8] uppercase tracking-tighter opacity-[0.05] absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none whitespace-nowrap"
+          className="font-display text-[12vw] leading-[0.8] uppercase tracking-tighter opacity-[0.05] absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none whitespace-nowrap"
         >
           MILLS
         </h1>
-        <div className="relative z-10 text-center px-6 animate-slide-up max-w-4xl">
-          <span className="block font-mono text-accent text-xs md:text-sm mb-2 tracking-[0.3em]">
+        <div className="relative z-10 text-center px-6 animate-slide-up max-w-5xl">
+          <span className="block font-mono text-accent text-xs md:text-sm mb-3 tracking-[0.3em]">
             TEMPE, AZ · MODERN SPORTS SOCIAL
           </span>
-          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl uppercase leading-[1.1] tracking-tight mb-3 text-balance">
+          <h2 className="font-display text-4xl md:text-5xl lg:text-6xl uppercase leading-[1.05] tracking-tight mb-4 text-balance">
             Where Tempe comes to watch, eat & celebrate
           </h2>
-          <p className="text-muted-foreground max-w-md mx-auto mb-5 text-pretty">
+          <p className="text-muted-foreground max-w-lg mx-auto mb-6 text-base md:text-lg text-pretty">
             Ice-cold drinks. Scratch-made food. Every big game on the biggest screens.
           </p>
           <div className="flex flex-col md:flex-row gap-3 justify-center">
