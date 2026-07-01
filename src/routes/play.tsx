@@ -403,107 +403,99 @@ function BoardSection() {
   );
 }
 
-/* ---------- ARCADE — full neon synthwave, pixel scan lines ---------- */
+/* ---------- ARCADE — simple cabinet slideshow ---------- */
 function ArcadeSection() {
-  const cabinets = [
-    { name: "Golden Tee", hi: "482,910", color: "text-fuchsia-300" },
-    { name: "Big Buck Hunter", hi: "1,204,500", color: "text-cyan-300" },
-    { name: "NBA Jam", hi: "128 pts", color: "text-yellow-300" },
-    { name: "Street Fighter II", hi: "9-STRIKE", color: "text-pink-300" },
-    { name: "Pac-Man", hi: "999,990", color: "text-yellow-400" },
-    { name: "Skee-Ball", hi: "540", color: "text-fuchsia-400" },
+  const slides = [
+    { img: arcade1.url, name: "Pac-Man", tag: "Classic Maze" },
+    { img: arcade2.url, name: "Golden Tee", tag: "Trackball Golf" },
+    { img: arcade3.url, name: "Big Buck Hunter", tag: "Light Gun" },
+    { img: arcade4.url, name: "Skee-Ball", tag: "Ticket Redemption" },
   ];
+  const [i, setI] = useState(0);
+  const n = slides.length;
+  const go = (dir: number) => setI((p) => (p + dir + n) % n);
+
+  useEffect(() => {
+    const id = setInterval(() => setI((p) => (p + 1) % n), 5000);
+    return () => clearInterval(id);
+  }, [n]);
+
   return (
     <section
       id="arcade"
-      className="relative py-24 md:py-32 px-6 border-b border-border overflow-hidden bg-[#0a0118]"
+      className="relative py-24 md:py-32 px-6 border-b border-border overflow-hidden bg-surface"
     >
-      {/* Grid floor synthwave */}
-      <div
-        className="absolute bottom-0 inset-x-0 h-1/2 opacity-40 pointer-events-none"
-        style={{
-          backgroundImage:
-            "linear-gradient(transparent 96%, #d946ef 96%), linear-gradient(90deg, transparent 96%, #06b6d4 96%)",
-          backgroundSize: "80px 80px",
-          transform: "perspective(400px) rotateX(60deg)",
-          transformOrigin: "bottom",
-        }}
-      />
-      {/* Sun */}
-      <div
-        className="absolute top-20 right-10 size-64 rounded-full pointer-events-none opacity-70"
-        style={{ background: "radial-gradient(circle, #f0abfc 0%, #d946ef 40%, transparent 70%)" }}
-      />
-      {/* Scanlines overlay */}
-      <div
-        className="absolute inset-0 opacity-20 pointer-events-none mix-blend-overlay"
-        style={{
-          backgroundImage: "repeating-linear-gradient(0deg, rgba(255,255,255,0.15) 0 1px, transparent 1px 3px)",
-        }}
-      />
-
-      <div className="max-w-7xl mx-auto relative">
-        <div className="text-center mb-12">
-          <span className="font-mono text-[10px] tracking-[0.3em] text-cyan-300 block mb-4">
+      <div className="max-w-6xl mx-auto relative">
+        <div className="text-center mb-10">
+          <span className="font-mono text-[10px] tracking-[0.3em] text-accent block mb-4">
             ZONE 04 · INSERT COIN
           </span>
-          <h2
-            className="font-display text-6xl md:text-9xl uppercase leading-none mb-4"
-            style={{
-              background: "linear-gradient(180deg, #fef08a 0%, #f0abfc 45%, #d946ef 55%, #7e22ce 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              textShadow: "0 0 40px rgba(217,70,239,0.4)",
-            }}
-          >
-            Arcade
+          <h2 className="font-display text-6xl md:text-8xl uppercase leading-none mb-4">
+            The <span className="text-accent">Arcade</span>
           </h2>
-          <p className="text-cyan-100/80 text-lg text-pretty max-w-xl mx-auto font-mono uppercase tracking-widest text-xs">
-            &gt; Press start to play. High scores live forever.
+          <p className="text-muted-foreground text-lg text-pretty max-w-xl mx-auto">
+            A rotating lineup of classic cabinets. Bring quarters — or don't, they're on us
+            during happy hour.
           </p>
         </div>
 
-        {/* Big arcade photo */}
-        <div className="relative mb-10 border-4 border-fuchsia-500/60 shadow-[0_0_60px_rgba(217,70,239,0.5)]">
-          <img
-            src={arcadeImg.url}
-            alt="Neon-lit arcade cabinets"
-            loading="lazy"
-            width={1280}
-            height={960}
-            className="w-full h-auto block"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0118] via-transparent to-transparent" />
-          {/* Corner CRT badge */}
-          <div className="absolute top-3 left-3 font-mono text-[10px] text-cyan-300 tracking-widest bg-black/60 px-2 py-1 border border-cyan-400/40">
-            ● REC · CH 03
-          </div>
-          <div className="absolute bottom-3 right-3 font-mono text-[10px] text-fuchsia-300 tracking-widest bg-black/60 px-2 py-1 border border-fuchsia-400/40 animate-pulse">
-            PRESS START
-          </div>
-        </div>
+        {/* Slideshow */}
+        <div className="relative">
+          <div className="relative aspect-[4/3] md:aspect-[16/9] overflow-hidden border border-border bg-background">
+            {slides.map((s, idx) => (
+              <img
+                key={s.name}
+                src={s.img}
+                alt={`${s.name} arcade cabinet`}
+                loading="lazy"
+                width={1280}
+                height={960}
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+                  idx === i ? "opacity-100" : "opacity-0"
+                }`}
+              />
+            ))}
 
-        {/* Cabinet high-score board */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {cabinets.map((c) => (
-            <div
-              key={c.name}
-              className="relative border-2 border-fuchsia-500/40 bg-black/60 backdrop-blur-sm p-4 hover:border-cyan-400 transition-colors group"
-            >
-              <div className="absolute -top-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent" />
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="font-mono text-[10px] tracking-widest text-cyan-300">CABINET</span>
-                <Zap className="size-3 text-fuchsia-400" />
+            {/* Caption */}
+            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-6 md:p-8">
+              <div className="font-mono text-[10px] tracking-widest text-white/70 mb-1">
+                {String(i + 1).padStart(2, "0")} / {String(n).padStart(2, "0")} · {slides[i].tag}
               </div>
-              <div className="font-display text-2xl uppercase text-white mb-3 group-hover:text-fuchsia-300 transition-colors">
-                {c.name}
-              </div>
-              <div className="flex items-baseline justify-between border-t border-fuchsia-500/20 pt-2">
-                <span className="font-mono text-[10px] tracking-widest text-fuchsia-300/70">HI-SCORE</span>
-                <span className={`font-mono text-lg tabular-nums ${c.color}`}>{c.hi}</span>
+              <div className="font-display text-3xl md:text-5xl uppercase text-white">
+                {slides[i].name}
               </div>
             </div>
-          ))}
+
+            {/* Arrows */}
+            <button
+              onClick={() => go(-1)}
+              aria-label="Previous cabinet"
+              className="absolute left-3 top-1/2 -translate-y-1/2 size-11 grid place-items-center bg-background/80 hover:bg-accent hover:text-primary-foreground border border-border transition-colors"
+            >
+              <ChevronLeft className="size-5" />
+            </button>
+            <button
+              onClick={() => go(1)}
+              aria-label="Next cabinet"
+              className="absolute right-3 top-1/2 -translate-y-1/2 size-11 grid place-items-center bg-background/80 hover:bg-accent hover:text-primary-foreground border border-border transition-colors"
+            >
+              <ChevronRight className="size-5" />
+            </button>
+          </div>
+
+          {/* Dots */}
+          <div className="flex justify-center gap-2 mt-6">
+            {slides.map((s, idx) => (
+              <button
+                key={s.name}
+                onClick={() => setI(idx)}
+                aria-label={`Show ${s.name}`}
+                className={`h-1.5 transition-all ${
+                  idx === i ? "w-10 bg-accent" : "w-6 bg-border hover:bg-muted-foreground"
+                }`}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
