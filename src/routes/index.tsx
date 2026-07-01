@@ -509,10 +509,10 @@ function Home() {
                     height={600}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent" />
                   <span
                     className={`absolute top-4 left-4 font-mono text-[10px] tracking-widest px-2 py-1 ${
-                      s.accent ? "bg-accent text-black" : "bg-background/80 text-foreground"
+                      s.accent ? "bg-accent text-primary-foreground" : "bg-background/80 text-foreground"
                     }`}
                   >
                     {s.days}
