@@ -81,7 +81,7 @@ function Home() {
       <SiteHeader />
 
       {/* Hero */}
-      <section className="relative h-[92vh] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[80vh] min-h-[600px] flex items-center justify-center overflow-hidden">
         <video
           src={heroVideo.url}
           poster={heroBar}
@@ -91,35 +91,35 @@ function Home() {
           playsInline
           preload="auto"
           aria-hidden
-          className="absolute inset-0 w-full h-full object-cover opacity-75"
+          className="absolute inset-0 w-full h-full object-cover opacity-70"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/50" />
         <h1
           aria-hidden
-          className="font-display text-[18vw] leading-[0.8] uppercase tracking-tighter opacity-[0.06] absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none whitespace-nowrap"
+          className="font-display text-[16vw] leading-[0.8] uppercase tracking-tighter opacity-[0.05] absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none whitespace-nowrap"
         >
           MILLS
         </h1>
         <div className="relative z-10 text-center px-6 animate-slide-up max-w-4xl">
-          <span className="block font-mono text-accent text-xs md:text-sm mb-6 tracking-[0.3em]">
+          <span className="block font-mono text-accent text-xs md:text-sm mb-5 tracking-[0.3em]">
             TEMPE, AZ · MODERN SPORTS SOCIAL
           </span>
-          <h2 className="font-display text-6xl md:text-8xl lg:text-9xl uppercase leading-[0.9] mb-8 text-balance">
+          <h2 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase leading-[1.0] tracking-tight mb-6 text-balance">
             Where Tempe comes to watch, eat & celebrate
           </h2>
-          <p className="text-muted-foreground max-w-xl mx-auto mb-10 text-pretty">
+          <p className="text-muted-foreground max-w-lg mx-auto mb-8 text-pretty">
             Ice-cold drinks. Scratch-made food. Every big game on the biggest screens.
           </p>
           <div className="flex flex-col md:flex-row gap-4 justify-center">
             <Link
               to="/party"
-              className="px-10 py-4 bg-accent text-primary-foreground font-bold uppercase tracking-widest text-sm hover:scale-105 transition-transform inline-block"
+              className="px-9 py-3.5 bg-accent text-primary-foreground font-bold uppercase tracking-widest text-sm hover:scale-105 transition-transform inline-block"
             >
               Reserve a Table
             </Link>
             <Link
               to="/menu"
-              className="px-10 py-4 border border-foreground/20 bg-surface/80 backdrop-blur-sm font-bold uppercase tracking-widest text-sm hover:bg-primary hover:text-primary-foreground transition-all"
+              className="px-9 py-3.5 border border-foreground/20 bg-surface/80 backdrop-blur-sm font-bold uppercase tracking-widest text-sm hover:bg-primary hover:text-primary-foreground transition-all"
             >
               View Menu
             </Link>
