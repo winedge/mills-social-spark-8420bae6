@@ -104,7 +104,7 @@ function Home() {
           <span className="block font-mono text-accent text-xs md:text-sm mb-3 tracking-[0.3em]">
             TEMPE, AZ · MODERN SPORTS SOCIAL
           </span>
-          <h2 className="font-display text-4xl md:text-5xl lg:text-6xl uppercase leading-[1.05] tracking-tight mb-4 text-balance">
+          <h2 className="font-display text-5xl md:text-6xl lg:text-7xl uppercase leading-[1.05] tracking-tight mb-4 text-balance">
             Where Tempe comes to watch, eat & celebrate
           </h2>
           <p className="text-muted-foreground max-w-lg mx-auto mb-6 text-base md:text-lg text-pretty">
