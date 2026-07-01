@@ -165,7 +165,7 @@ function MenuPage() {
                   }
                   className={`shrink-0 px-4 py-2 text-xs font-bold uppercase tracking-widest border transition-colors ${
                     active
-                      ? "bg-accent text-black border-accent"
+                      ? "bg-accent text-primary-foreground border-accent"
                       : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/40"
                   }`}
                 >
