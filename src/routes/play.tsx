@@ -122,7 +122,7 @@ function PlayHero() {
   );
 }
 
-/* ---------- POOL — green felt, chalk, ball numbers ---------- */
+/* ---------- POOL — tournament blue felt, black rails, chalk ---------- */
 function PoolSection() {
   const balls = [
     { n: 1, color: "bg-yellow-400", text: "text-black" },
@@ -136,10 +136,10 @@ function PoolSection() {
       className="relative py-24 md:py-32 px-6 border-b border-border overflow-hidden"
       style={{
         background:
-          "radial-gradient(ellipse at 30% 40%, #14532d 0%, #052e1a 45%, #020a06 100%)",
+          "radial-gradient(ellipse at 30% 40%, #0e7490 0%, #083344 45%, #020c14 100%)",
       }}
     >
-      {/* Chalk texture */}
+      {/* Felt texture */}
       <div
         className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none"
         style={{
@@ -148,14 +148,14 @@ function PoolSection() {
           backgroundSize: "40px 40px, 60px 60px",
         }}
       />
-      {/* Wood rail top and bottom */}
-      <div className="absolute top-0 inset-x-0 h-3 bg-gradient-to-b from-amber-900 to-amber-950" />
-      <div className="absolute bottom-0 inset-x-0 h-3 bg-gradient-to-t from-amber-900 to-amber-950" />
+      {/* Black rail top and bottom */}
+      <div className="absolute top-0 inset-x-0 h-3 bg-gradient-to-b from-[#0a0a0a] to-[#1a1a1a]" />
+      <div className="absolute bottom-0 inset-x-0 h-3 bg-gradient-to-t from-[#0a0a0a] to-[#1a1a1a]" />
 
       <div className="max-w-7xl mx-auto relative grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <div>
           <div className="flex items-center gap-3 mb-6">
-            <span className="font-mono text-[10px] tracking-[0.3em] text-emerald-300/70">
+            <span className="font-mono text-[10px] tracking-[0.3em] text-cyan-300/70">
               ZONE 01 · THE FELT
             </span>
             <div className="flex gap-1.5">
@@ -175,11 +175,11 @@ function PoolSection() {
             </div>
           </div>
 
-          <h2 className="font-display text-6xl md:text-8xl uppercase text-emerald-50 mb-6 leading-[0.9]">
-            Rack <span className="text-yellow-300">'em</span> up
+          <h2 className="font-display text-6xl md:text-8xl uppercase text-cyan-50 mb-6 leading-[0.9]">
+            Rack <span className="text-cyan-300">'em</span> up
           </h2>
-          <p className="text-emerald-100/70 text-lg mb-8 text-pretty max-w-lg">
-            Six tournament-grade 8-foot slates. Fresh felt, level rails, and cues that don't
+          <p className="text-cyan-100/70 text-lg mb-8 text-pretty max-w-lg">
+            Six tournament-grade 8-foot Diamond slates. Fresh blue felt, level rails, and cues that don't
             warp. Walk in solo and get on the winners' table, or reserve ahead for the crew.
           </p>
 
@@ -193,12 +193,12 @@ function PoolSection() {
             ].map((f) => (
               <div
                 key={f.k}
-                className="border border-emerald-400/20 bg-emerald-950/40 backdrop-blur-sm px-4 py-3 flex items-baseline justify-between"
+                className="border border-cyan-400/20 bg-cyan-950/40 backdrop-blur-sm px-4 py-3 flex items-baseline justify-between"
               >
-                <span className="font-mono text-[10px] text-emerald-300/60 uppercase tracking-widest">
+                <span className="font-mono text-[10px] text-cyan-300/60 uppercase tracking-widest">
                   {f.k}
                 </span>
-                <span className="font-display text-lg text-yellow-300">{f.v}</span>
+                <span className="font-display text-lg text-cyan-300">{f.v}</span>
               </div>
             ))}
           </div>
@@ -206,23 +206,23 @@ function PoolSection() {
 
         {/* Image framed like a pool table */}
         <div className="relative">
-          <div className="relative border-[10px] border-amber-900 shadow-2xl rounded-sm overflow-hidden">
+          <div className="relative border-[10px] border-[#1a1a1a] shadow-2xl rounded-sm overflow-hidden">
             <img
               src={poolImg.url}
-              alt="Freshly racked pool table"
+              alt="Diamond pool tables with tournament blue felt"
               loading="lazy"
               width={1280}
               height={960}
               className="w-full h-auto block"
             />
             {/* Corner pockets */}
-            <div className="absolute -top-3 -left-3 size-6 bg-black rounded-full border-2 border-amber-950" />
-            <div className="absolute -top-3 -right-3 size-6 bg-black rounded-full border-2 border-amber-950" />
-            <div className="absolute -bottom-3 -left-3 size-6 bg-black rounded-full border-2 border-amber-950" />
-            <div className="absolute -bottom-3 -right-3 size-6 bg-black rounded-full border-2 border-amber-950" />
+            <div className="absolute -top-3 -left-3 size-6 bg-black rounded-full border-2 border-[#0a0a0a]" />
+            <div className="absolute -top-3 -right-3 size-6 bg-black rounded-full border-2 border-[#0a0a0a]" />
+            <div className="absolute -bottom-3 -left-3 size-6 bg-black rounded-full border-2 border-[#0a0a0a]" />
+            <div className="absolute -bottom-3 -right-3 size-6 bg-black rounded-full border-2 border-[#0a0a0a]" />
           </div>
           {/* Floating chalk cube */}
-          <div className="absolute -top-6 -right-6 size-14 bg-blue-500 rotate-12 shadow-xl grid place-items-center text-white font-mono text-[9px] uppercase tracking-widest hidden md:grid">
+          <div className="absolute -top-6 -right-6 size-14 bg-cyan-400 rotate-12 shadow-xl grid place-items-center text-black font-mono text-[9px] uppercase tracking-widest hidden md:grid">
             Chalk
           </div>
         </div>
