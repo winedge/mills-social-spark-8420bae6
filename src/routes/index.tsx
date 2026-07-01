@@ -342,7 +342,7 @@ function Home() {
             <a href="#events" className="hover:text-accent transition-colors">Events</a>
             <a href="#visit" className="hover:text-accent transition-colors">Visit</a>
           </div>
-          <button className="bg-foreground text-background px-5 py-2 text-xs font-bold uppercase hover:bg-accent transition-colors">
+          <button className="bg-primary text-primary-foreground px-5 py-2 text-xs font-bold uppercase hover:bg-accent hover:text-primary-foreground transition-colors">
             Book Table
           </button>
         </div>
