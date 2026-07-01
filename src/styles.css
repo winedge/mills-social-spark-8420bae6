@@ -5,16 +5,17 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-background: #0C0C0D;
-  --color-foreground: #F4F4F5;
-  --color-muted: #A1A1AA;
-  --color-muted-foreground: #A1A1AA;
-  --color-surface: #16161A;
-  --color-accent: #FFD600;
-  --color-accent-dim: #FFD60022;
-  --color-border: #FFFFFF1A;
-  --color-primary: #FFD600;
-  --color-primary-foreground: #0C0C0D;
+  --color-background: #fafbfc;
+  --color-foreground: #0f172a;
+  --color-muted: #64748b;
+  --color-muted-foreground: #64748b;
+  --color-surface: #ffffff;
+  --color-surface-secondary: #f1f5f9;
+  --color-accent: #c2410c;
+  --color-accent-dim: #c2410c1a;
+  --color-border: #e2e8f0;
+  --color-primary: #0f172a;
+  --color-primary-foreground: #ffffff;
 
   --font-display: "Anton", sans-serif;
   --font-body: "Inter", sans-serif;
