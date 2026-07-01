@@ -17,7 +17,10 @@ const ufcQueryOptions = queryOptions({
   queryKey: ["ufc", "fights"],
   queryFn: () => getUfcFights(),
   staleTime: 60_000,
+  refetchInterval: 60_000,
+  refetchIntervalInBackground: false,
 });
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
