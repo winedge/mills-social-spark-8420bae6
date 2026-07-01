@@ -20,7 +20,7 @@ export const Route = createFileRoute("/play")({
       { name: "description", content: "The game floor at Mills Modern Social in Tempe: multiple pool tables, dart lanes, a curated board game library, and a full arcade section." },
       { property: "og:title", content: "Play the House — Mills Modern Social" },
       { property: "og:description", content: "Pool, darts, board games, and arcade cabinets — every night." },
-      { property: "og:image", content: arcadeImg.url },
+      { property: "og:image", content: playHero.url },
     ],
   }),
   component: PlayPage,
