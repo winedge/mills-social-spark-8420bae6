@@ -355,9 +355,9 @@ function Home() {
           alt="Mills Modern Social bar interior in Tempe, Arizona"
           width={1920}
           height={1080}
-          className="absolute inset-0 w-full h-full object-cover opacity-55"
+          className="absolute inset-0 w-full h-full object-cover opacity-75"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-background/80" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/40" />
         <h1
           aria-hidden
           className="font-display text-[18vw] leading-[0.8] uppercase tracking-tighter opacity-[0.06] absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none whitespace-nowrap"
