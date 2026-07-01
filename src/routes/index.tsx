@@ -127,6 +127,74 @@ function Home() {
         </div>
       </section>
 
+      {/* Location & Hours — Venue Ticket */}
+      <section className="px-6 -mt-12 relative z-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-surface border border-border overflow-hidden shadow-2xl">
+            <div className="grid grid-cols-1 lg:grid-cols-12">
+              {/* Left: Location */}
+              <div className="lg:col-span-5 p-8 md:p-10 relative flex flex-col justify-between min-h-[260px]">
+                <div className="absolute inset-0 opacity-[0.04] pointer-events-none bg-[radial-gradient(circle_at_1px_1px,currentColor_1px,transparent_0)] bg-[length:24px_24px]" />
+                <div className="relative z-10">
+                  <span className="font-mono text-accent text-xs tracking-[0.3em] block mb-3">FIND US</span>
+                  <h3 className="font-display text-3xl md:text-4xl uppercase leading-tight mb-4">
+                    On the corner of Mill Ave & Broadway Rd
+                  </h3>
+                  <p className="text-muted-foreground text-lg">Tempe, Arizona</p>
+                </div>
+                <div className="relative z-10 mt-8 flex items-center gap-4">
+                  <a
+                    href="https://maps.google.com/?q=Mill+Ave+and+Broadway+Rd+Tempe+AZ"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 font-mono text-xs tracking-widest border-b border-accent pb-1 hover:text-accent transition-colors"
+                  >
+                    <span className="size-2 rounded-full bg-accent animate-pulse" />
+                    GET DIRECTIONS →
+                  </a>
+                </div>
+              </div>
+
+              {/* Dashed divider */}
+              <div className="hidden lg:flex lg:col-span-1 relative items-center justify-center">
+                <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 border-l border-dashed border-border" />
+                <div className="relative z-10 bg-surface border border-border rounded-full size-10 flex items-center justify-center">
+                  <span className="text-accent">★</span>
+                </div>
+              </div>
+
+              {/* Right: Hours */}
+              <div className="lg:col-span-6 p-8 md:p-10 bg-background/50">
+                <div className="flex items-center justify-between mb-6">
+                  <span className="font-mono text-accent text-xs tracking-[0.3em]">HOURS</span>
+                  <OpenStatus />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {hours.map((h) => (
+                    <div
+                      key={h.label}
+                      className="group p-4 border border-border bg-surface hover:border-accent/50 transition-colors"
+                    >
+                      <div className="flex justify-between items-start gap-3">
+                        <span className="font-mono text-[11px] tracking-widest text-muted-foreground uppercase">
+                          {h.label}
+                        </span>
+                        {h.highlight && (
+                          <span className="shrink-0 font-mono text-[9px] bg-accent text-primary-foreground px-1.5 py-0.5 uppercase tracking-wider">
+                            Late
+                          </span>
+                        )}
+                      </div>
+                      <p className="font-display text-xl md:text-2xl uppercase mt-2 tracking-wide">{h.time}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Scoreboard */}
       <section id="sports" className="py-24 px-6 border-t border-border">
         <div className="max-w-7xl mx-auto">
