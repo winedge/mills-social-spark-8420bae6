@@ -81,7 +81,7 @@ function Home() {
       <SiteHeader />
 
       {/* Hero */}
-      <section className="relative h-[80vh] min-h-[600px] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[70vh] min-h-[520px] flex items-center justify-center overflow-hidden">
         <video
           src={heroVideo.url}
           poster={heroBar}
@@ -101,25 +101,25 @@ function Home() {
           MILLS
         </h1>
         <div className="relative z-10 text-center px-6 animate-slide-up max-w-4xl">
-          <span className="block font-mono text-accent text-xs md:text-sm mb-5 tracking-[0.3em]">
+          <span className="block font-mono text-accent text-xs md:text-sm mb-4 tracking-[0.3em]">
             TEMPE, AZ · MODERN SPORTS SOCIAL
           </span>
-          <h2 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase leading-[1.0] tracking-tight mb-6 text-balance">
+          <h2 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase leading-[1.0] tracking-tight mb-5 text-balance">
             Where Tempe comes to watch, eat & celebrate
           </h2>
-          <p className="text-muted-foreground max-w-lg mx-auto mb-8 text-pretty">
+          <p className="text-muted-foreground max-w-lg mx-auto mb-7 text-pretty">
             Ice-cold drinks. Scratch-made food. Every big game on the biggest screens.
           </p>
-          <div className="flex flex-col md:flex-row gap-4 justify-center">
+          <div className="flex flex-col md:flex-row gap-3 justify-center">
             <Link
               to="/party"
-              className="px-9 py-3.5 bg-accent text-primary-foreground font-bold uppercase tracking-widest text-sm hover:scale-105 transition-transform inline-block"
+              className="px-8 py-3 bg-accent text-primary-foreground font-bold uppercase tracking-widest text-sm hover:scale-105 transition-transform inline-block"
             >
               Reserve a Table
             </Link>
             <Link
               to="/menu"
-              className="px-9 py-3.5 border border-foreground/20 bg-surface/80 backdrop-blur-sm font-bold uppercase tracking-widest text-sm hover:bg-primary hover:text-primary-foreground transition-all"
+              className="px-8 py-3 border border-foreground/20 bg-surface/80 backdrop-blur-sm font-bold uppercase tracking-widest text-sm hover:bg-primary hover:text-primary-foreground transition-all"
             >
               View Menu
             </Link>
