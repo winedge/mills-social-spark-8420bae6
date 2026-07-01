@@ -357,11 +357,15 @@ function Home() {
 
       {/* Hero */}
       <section className="relative h-[92vh] flex items-center justify-center overflow-hidden">
-        <img
-          src={heroBar}
-          alt="Mills Modern Social bar interior in Tempe, Arizona"
-          width={1920}
-          height={1080}
+        <video
+          src={heroVideo.url}
+          poster={heroBar}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          aria-hidden
           className="absolute inset-0 w-full h-full object-cover opacity-75"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/40" />
