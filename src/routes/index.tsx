@@ -172,13 +172,14 @@ function EventCard({ event, live }: { event: import("@/lib/ufc.functions").UfcEv
 
 function useCountdown(iso: string | null) {
   const target = iso ? new Date(iso.endsWith("Z") ? iso : iso + "Z").getTime() : null;
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
     if (!target) return;
+    setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [target]);
-  if (!target) return null;
+  if (!target || now === null) return null;
   const diff = Math.max(0, target - now);
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
@@ -231,12 +232,17 @@ function UfcSection() {
   const recent = data.recent ?? [];
   const featured = [...live, ...upcoming, ...recent].slice(0, 6);
   const nextEvent = live[0] ?? upcoming[0] ?? null;
-  const updated = new Date(dataUpdatedAt).toLocaleTimeString("en-US", {
-    timeZone: "America/Phoenix",
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-  });
+  const [updated, setUpdated] = useState<string>("");
+  useEffect(() => {
+    setUpdated(
+      new Date(dataUpdatedAt).toLocaleTimeString("en-US", {
+        timeZone: "America/Phoenix",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+      }),
+    );
+  }, [dataUpdatedAt]);
 
   return (
     <section id="ufc" className="py-24 px-6 border-t border-border bg-surface">
@@ -272,7 +278,7 @@ function UfcSection() {
 
         <div className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground tracking-widest mb-6">
           <span className={`size-1.5 rounded-full ${isFetching ? "bg-accent animate-pulse" : "bg-accent/50"}`} />
-          AUTO-REFRESH · EVERY 60s · LAST UPDATE {updated} MST
+          AUTO-REFRESH · EVERY 60s{updated ? ` · LAST UPDATE ${updated} MST` : ""}
         </div>
 
         {nextEvent && <NextEventCountdown event={nextEvent} />}
