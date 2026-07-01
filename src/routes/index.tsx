@@ -179,67 +179,44 @@ function Home() {
         </div>
       </section>
 
-      {/* Location & Hours — Game Schedule */}
+      {/* Location & Hours */}
       <section id="hours" className="px-6 -mt-12 relative z-20">
-        <div className="max-w-6xl mx-auto">
-          <div className="bg-surface border border-border overflow-hidden shadow-2xl">
-            {/* Top bar: title + live status */}
-            <div className="border-b border-border bg-background/50 px-6 py-4 md:px-8 md:py-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <span className="text-accent">◆</span>
-                <h3 className="font-display text-2xl md:text-3xl uppercase tracking-tight">Hours & Location</h3>
-              </div>
-              <OpenStatus />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-12">
-              {/* Left: Location */}
-              <div className="lg:col-span-4 p-6 md:p-8 border-b lg:border-b-0 lg:border-r border-border flex flex-col justify-between">
-                <div>
-                  <span className="font-mono text-accent text-xs tracking-[0.3em] block mb-2">WHERE TO FIND US</span>
-                  <p className="font-display text-2xl md:text-3xl uppercase leading-tight">
-                    On the corner of Mill Ave & Broadway Rd
-                  </p>
-                  <p className="text-muted-foreground mt-2 text-lg">Tempe, Arizona</p>
-                </div>
+        <div className="max-w-5xl mx-auto">
+          <div className="bg-surface border border-border rounded-sm p-8 md:p-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+              {/* Location */}
+              <div>
+                <p className="text-sm text-muted-foreground mb-3">Location</p>
+                <h3 className="font-display text-2xl md:text-3xl uppercase leading-tight mb-4">
+                  On the corner of Mill Ave & Broadway Rd
+                </h3>
+                <p className="text-muted-foreground mb-6">Tempe, Arizona</p>
                 <a
                   href="https://maps.google.com/?q=Mill+Ave+and+Broadway+Rd+Tempe+AZ"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-6 inline-flex items-center gap-2 font-mono text-xs tracking-widest uppercase text-accent hover:underline"
+                  className="text-sm text-accent hover:underline"
                 >
-                  Get Directions →
+                  Get directions →
                 </a>
               </div>
 
-              {/* Right: Hours schedule */}
-              <div className="lg:col-span-8 p-6 md:p-8">
-                <div className="space-y-2">
-                  {hours.map((h, idx) => (
+              {/* Hours */}
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <p className="text-sm text-muted-foreground">Opening hours</p>
+                  <OpenStatus />
+                </div>
+                <div className="space-y-3">
+                  {hours.map((h) => (
                     <div
                       key={h.label}
-                      className={`group flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-4 md:px-5 md:py-5 border border-border transition-colors ${
-                        h.highlight
-                          ? "bg-accent/10 border-accent/40"
-                          : "bg-background/50 hover:border-accent/30"
-                      }`}
+                      className="flex justify-between items-center gap-4 py-2 border-b border-border/50"
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="font-mono text-xs text-accent/70 w-6">{String(idx + 1).padStart(2, "0")}</span>
-                        <span className="font-display text-lg md:text-xl uppercase tracking-wide">
-                          {h.label}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3 sm:gap-4">
-                        {h.highlight && (
-                          <span className="font-mono text-[10px] bg-accent text-primary-foreground px-2 py-1 uppercase tracking-wider">
-                            Late Night
-                          </span>
-                        )}
-                        <span className="font-mono text-base md:text-lg tracking-wide text-foreground">
-                          {h.time}
-                        </span>
-                      </div>
+                      <span className="text-base text-foreground">{h.label}</span>
+                      <span className="text-base font-medium text-foreground tabular-nums">
+                        {h.time}
+                      </span>
                     </div>
                   ))}
                 </div>
