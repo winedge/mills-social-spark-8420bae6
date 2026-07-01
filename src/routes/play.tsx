@@ -1,11 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Target, Dices, Gamepad2, CircleDot, Trophy, Zap, Clock, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Target, Dices, Gamepad2, CircleDot, Trophy, Clock, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import poolImg from "@/assets/play-pool.jpg.asset.json";
 import dartsImg from "@/assets/play-darts.jpg.asset.json";
 import boardImg from "@/assets/play-boardgames.jpg.asset.json";
 import arcadeImg from "@/assets/play-arcade.jpg.asset.json";
+import arcade1 from "@/assets/arcade-1.jpg.asset.json";
+import arcade2 from "@/assets/arcade-2.jpg.asset.json";
+import arcade3 from "@/assets/arcade-3.jpg.asset.json";
+import arcade4 from "@/assets/arcade-4.jpg.asset.json";
 
 export const Route = createFileRoute("/play")({
   head: () => ({
