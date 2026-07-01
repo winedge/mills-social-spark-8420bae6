@@ -315,7 +315,7 @@ function Home() {
     <div className="bg-background text-foreground font-body">
       {/* Nav + ticker */}
       <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
-        <div className="overflow-hidden whitespace-nowrap py-2 bg-accent text-black font-mono text-[10px] font-bold uppercase tracking-widest">
+        <div className="overflow-hidden whitespace-nowrap py-2 bg-accent text-primary-foreground font-mono text-[10px] font-bold uppercase tracking-widest">
           <div className="inline-block animate-marquee">
             {[...tickerItems, ...tickerItems].map((t, i) => (
               <span key={i} className="mx-6">
