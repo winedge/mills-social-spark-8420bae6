@@ -1,3 +1,4 @@
+import React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import heroBar from "@/assets/hero-bar.jpg";
