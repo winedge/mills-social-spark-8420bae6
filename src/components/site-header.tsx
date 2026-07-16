@@ -35,8 +35,8 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
         </div>
       )}
       <div className="w-full px-8 h-20 grid grid-cols-[1fr_auto_1fr] items-center gap-8">
-        <div className="hidden md:flex justify-between items-center gap-6 text-xs font-semibold uppercase tracking-widest">
-          {navLinks.map((l) => (
+        <div className="hidden md:flex justify-between items-center text-xs font-semibold uppercase tracking-widest">
+          {navLinks.slice(0, 3).map((l) => (
             <Link
               key={l.to}
               to={l.to}
@@ -57,15 +57,28 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
             className="h-12 md:h-14 w-auto object-contain"
           />
         </Link>
-        <div className="flex items-center gap-2 justify-end">
+        <div className="hidden md:flex justify-between items-center text-xs font-semibold uppercase tracking-widest">
+          {navLinks.slice(3).map((l) => (
+            <Link
+              key={l.to}
+              to={l.to}
+              activeProps={{ className: "text-accent" }}
+              activeOptions={{ exact: true }}
+              className="hover:text-accent transition-colors"
+            >
+              {l.label}
+            </Link>
+          ))}
           <Link
             to="/party"
-            className="hidden sm:inline-block bg-primary text-primary-foreground px-5 py-2 text-xs font-bold uppercase hover:bg-accent transition-colors"
+            className="bg-primary text-primary-foreground px-5 py-2 text-xs font-bold uppercase hover:bg-accent transition-colors"
           >
             Book Table
           </Link>
+        </div>
+        <div className="md:hidden flex justify-end col-start-3">
           <button
-            className="md:hidden p-2 -mr-2"
+            className="p-2 -mr-2"
             onClick={() => setOpen((v) => !v)}
             aria-label="Menu"
           >
