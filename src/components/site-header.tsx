@@ -34,21 +34,8 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
           </div>
         </div>
       )}
-      <div className="w-full px-8 h-20 grid grid-cols-[1fr_auto_1fr] items-center gap-8">
-        <div className="hidden md:flex justify-between items-center text-xs font-semibold uppercase tracking-widest">
-          {navLinks.slice(0, 3).map((l) => (
-            <Link
-              key={l.to}
-              to={l.to}
-              activeProps={{ className: "text-accent" }}
-              activeOptions={{ exact: true }}
-              className="hover:text-accent transition-colors"
-            >
-              {l.label}
-            </Link>
-          ))}
-        </div>
-        <Link to="/" className="flex items-center justify-center min-w-0" aria-label="Mills Modern Social — Home">
+      <div className="w-full px-8 h-20 flex items-center justify-between gap-8">
+        <Link to="/" className="flex items-center min-w-0 shrink-0" aria-label="Mills Modern Social — Home">
           <img
             src={millsLogo.url}
             alt="Mill's Modern Social"
@@ -57,8 +44,8 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
             className="h-12 md:h-14 w-auto object-contain"
           />
         </Link>
-        <div className="hidden md:flex justify-between items-center text-xs font-semibold uppercase tracking-widest">
-          {navLinks.slice(3).map((l) => (
+        <div className="hidden md:flex flex-1 items-center gap-8 text-xs font-semibold uppercase tracking-widest ml-8">
+          {navLinks.map((l) => (
             <Link
               key={l.to}
               to={l.to}
@@ -69,14 +56,14 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
               {l.label}
             </Link>
           ))}
-          <Link
-            to="/party"
-            className="bg-primary text-primary-foreground px-5 py-2 text-xs font-bold uppercase hover:bg-accent transition-colors"
-          >
-            Book Table
-          </Link>
         </div>
-        <div className="md:hidden flex justify-end col-start-3">
+        <Link
+          to="/party"
+          className="hidden md:inline-flex bg-primary text-primary-foreground px-5 py-2 text-xs font-bold uppercase hover:bg-accent transition-colors shrink-0"
+        >
+          Book Table
+        </Link>
+        <div className="md:hidden flex justify-end">
           <button
             className="p-2 -mr-2"
             onClick={() => setOpen((v) => !v)}
@@ -86,6 +73,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
           </button>
         </div>
       </div>
+
       {open && (
         <div className="md:hidden border-t border-border bg-background">
           <div className="px-6 py-4 flex flex-col gap-1">
