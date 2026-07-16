@@ -34,8 +34,8 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
           </div>
         </div>
       )}
-      <div className="max-w-5xl mx-auto px-6 h-20 grid grid-cols-[1fr_auto_1fr] items-center gap-6">
-        <div className="hidden md:flex justify-end gap-6 text-xs font-semibold uppercase tracking-widest">
+      <div className="w-full px-8 h-20 grid grid-cols-[1fr_auto_1fr] items-center gap-8">
+        <div className="hidden md:flex justify-between items-center gap-6 text-xs font-semibold uppercase tracking-widest">
           {navLinks.map((l) => (
             <Link
               key={l.to}
