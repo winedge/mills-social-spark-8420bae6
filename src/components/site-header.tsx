@@ -63,7 +63,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
               to="/party"
               className="bg-primary text-primary-foreground px-5 py-2 text-xs font-bold uppercase hover:bg-accent transition-colors"
             >
-              Book Table
+              Reserve A Table
             </Link>
           </div>
 
