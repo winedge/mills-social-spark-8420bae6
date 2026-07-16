@@ -82,12 +82,29 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
 
       {/* Mobile full-screen menu */}
       <div
-        className={`md:hidden fixed inset-0 z-[100] bg-background transition-opacity duration-300 ${
-          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        className={`md:hidden fixed inset-0 z-[100] transition-[opacity,backdrop-filter] duration-500 ease-out ${
+          open
+            ? "opacity-100 pointer-events-auto backdrop-blur-xl bg-background/95"
+            : "opacity-0 pointer-events-none backdrop-blur-0 bg-background/0"
         }`}
         aria-hidden={!open}
       >
-        <div className="h-20 px-4 flex items-center justify-between border-b border-border">
+        {/* Radial accent glow */}
+        <div
+          className={`pointer-events-none absolute inset-0 transition-opacity duration-700 ${
+            open ? "opacity-100" : "opacity-0"
+          }`}
+          style={{
+            background:
+              "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(56,189,248,0.15), transparent 60%)",
+          }}
+        />
+
+        <div
+          className={`relative h-20 px-4 flex items-center justify-between border-b border-border transition-all duration-500 ${
+            open ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"
+          }`}
+        >
           <span className="font-mono text-[11px] tracking-[0.3em] text-muted-foreground uppercase">
             Menu
           </span>
@@ -100,7 +117,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
           </button>
         </div>
 
-        <div className="flex flex-col h-[calc(100%-5rem)] overflow-y-auto">
+        <div className="relative flex flex-col h-[calc(100%-5rem)] overflow-y-auto">
           <nav className="flex-1 px-6 py-4 flex flex-col">
             {navLinks.map((l, i) => (
               <Link
@@ -109,7 +126,14 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
                 onClick={() => setOpen(false)}
                 activeProps={{ className: "text-accent" }}
                 activeOptions={{ exact: true }}
-                className="group flex items-baseline justify-between py-5 border-b border-border/60 hover:text-accent transition-colors"
+                style={{
+                  transitionDelay: open ? `${120 + i * 60}ms` : "0ms",
+                }}
+                className={`group flex items-baseline justify-between py-5 border-b border-border/60 hover:text-accent transition-all duration-500 ease-out ${
+                  open
+                    ? "opacity-100 translate-x-0"
+                    : "opacity-0 -translate-x-6"
+                }`}
               >
                 <span className="font-display text-4xl uppercase tracking-tight">
                   {l.label}
@@ -121,11 +145,16 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
             ))}
           </nav>
 
-          <div className="p-6 space-y-4">
+          <div
+            className={`p-6 space-y-4 transition-all duration-500 ease-out ${
+              open ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            }`}
+            style={{ transitionDelay: open ? `${120 + navLinks.length * 60}ms` : "0ms" }}
+          >
             <Link
               to="/party"
               onClick={() => setOpen(false)}
-              className="block bg-[#4FC3F7] text-black px-5 py-4 text-sm font-bold uppercase text-center tracking-widest hover:brightness-110 transition"
+              className="block bg-[#4FC3F7] text-black px-5 py-4 text-sm font-bold uppercase text-center tracking-widest hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition"
             >
               Book a Table
             </Link>
