@@ -1,150 +1,207 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import type { ReactElement } from "react";
+import { useRouterState } from "@tanstack/react-router";
+import { Trophy, CircleDot, Utensils, PartyPopper, Phone, type LucideIcon } from "lucide-react";
 
+const GOLD = "#E7B84B";
+const GOLD_SOFT = "rgba(231,184,75,0.55)";
+const GOLD_DIM = "rgba(231,184,75,0.25)";
 
-const GOLD = "#E9B949";
-const GOLD_SOFT = "rgba(233,185,73,0.55)";
-
-function FootballIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 12c0-4 4-8 8-8s8 4 8 8-4 8-8 8-8-4-8-8Z" transform="rotate(-30 12 12)" />
-      <path d="M9 12h6M12 10v4M10 11v2M14 11v2" transform="rotate(-30 12 12)" />
-    </svg>
-  );
-}
-
-function PlateForkIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="8" />
-      <circle cx="12" cy="12" r="5" />
-      <path d="M12 4v4" />
-    </svg>
-  );
-}
-
-function UtensilsIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 3v10" />
-      <path d="M9 3v5a3 3 0 0 0 6 0V3" />
-      <path d="M12 13v8" />
-    </svg>
-  );
-}
-
-function DrumsIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 8h14l-1 10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 8Z" />
-      <ellipse cx="12" cy="8" rx="7" ry="2" />
-      <path d="M8 10v9M12 10v10M16 10v9" />
-    </svg>
-  );
-}
-
-function PhoneIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 4c0 8 7 15 15 15l1.5-3.5-4-2-2 2c-2.5-1.5-4.5-3.5-6-6l2-2-2-4L5 4Z" />
-    </svg>
-  );
-}
-
-const items: Array<{
+type Item = {
   to: string;
   label: string;
-  Icon: (props: { className?: string }) => ReactElement;
-  badge?: string;
-}> = [
-  { to: "/sports", label: "Sports", Icon: FootballIcon, badge: "HOT" },
-  { to: "/play", label: "Play", Icon: PlateForkIcon },
-  { to: "/menu", label: "Food Menu", Icon: UtensilsIcon },
-  { to: "/party", label: "Party", Icon: DrumsIcon },
-  { to: "/#contact", label: "Contact", Icon: PhoneIcon },
+  Icon: LucideIcon;
+  center?: boolean;
+};
+
+const items: Item[] = [
+  { to: "/sports", label: "Sports", Icon: Trophy },
+  { to: "/play", label: "Play", Icon: CircleDot },
+  { to: "/menu", label: "Food Menu", Icon: Utensils, center: true },
+  { to: "/events", label: "Party", Icon: PartyPopper },
+  { to: "/contact", label: "Contact", Icon: Phone },
 ];
 
+function isActivePath(pathname: string, to: string) {
+  const path = to.split("#")[0] || "/";
+  if (path === "/") return pathname === "/";
+  return pathname === path || pathname.startsWith(path + "/");
+}
 
 export function MobileBottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
-    <div className="md:hidden fixed bottom-3 inset-x-3 z-[70] pointer-events-none">
-      <div
-        className="pointer-events-auto relative rounded-[28px] px-2 py-2"
+    <nav
+      aria-label="Primary"
+      className="md:hidden fixed inset-x-0 bottom-0 z-[70] pointer-events-none"
+      style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}
+    >
+      <div className="mx-auto w-[95%] max-w-md pointer-events-auto relative">
+        {/* Floating center CTA */}
+        <CenterButton
+          item={items[2]}
+          active={isActivePath(pathname, items[2].to)}
+        />
+
+        {/* Bar */}
+        <div
+          className="relative h-[72px] rounded-[36px] overflow-hidden"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(21,21,21,0.92) 0%, rgba(10,10,10,0.94) 100%)",
+            border: `1px solid ${GOLD_DIM}`,
+            boxShadow: `0 20px 40px -18px rgba(0,0,0,0.9), 0 0 0 1px rgba(231,184,75,0.08), inset 0 1px 0 rgba(255,255,255,0.04)`,
+            backdropFilter: "blur(18px) saturate(140%)",
+            WebkitBackdropFilter: "blur(18px) saturate(140%)",
+          }}
+        >
+          {/* subtle gold top hairline */}
+          <span
+            className="pointer-events-none absolute inset-x-10 top-0 h-px"
+            style={{
+              background: `linear-gradient(90deg, transparent, ${GOLD_SOFT}, transparent)`,
+            }}
+          />
+
+          {/* curved indentation under center button */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 -translate-x-1/2 -top-[1px]"
+            style={{
+              width: 92,
+              height: 46,
+              background: "#0A0A0A",
+              borderBottomLeftRadius: "50%",
+              borderBottomRightRadius: "50%",
+              boxShadow: `inset 0 -1px 0 ${GOLD_DIM}`,
+            }}
+          />
+          <span
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 -translate-x-1/2 -top-[2px]"
+            style={{
+              width: 96,
+              height: 48,
+              borderBottomLeftRadius: "50%",
+              borderBottomRightRadius: "50%",
+              border: `1px solid ${GOLD_DIM}`,
+              borderTop: "none",
+            }}
+          />
+
+          <ul className="relative grid grid-cols-5 h-full">
+            {items.map((it, idx) => {
+              if (idx === 2) return <li key="spacer" aria-hidden />;
+              const active = isActivePath(pathname, it.to);
+              return (
+                <li key={it.to} className="flex items-center justify-center">
+                  <NavItem item={it} active={active} />
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </div>
+
+      {/* breathing keyframes */}
+      <style>{`
+        @keyframes msn-breathe {
+          0%, 100% { box-shadow: 0 0 0 1px ${GOLD}, 0 0 24px ${GOLD_DIM}, 0 14px 28px -10px rgba(0,0,0,0.9); }
+          50% { box-shadow: 0 0 0 1px ${GOLD}, 0 0 34px ${GOLD_SOFT}, 0 14px 28px -10px rgba(0,0,0,0.9); }
+        }
+        @keyframes msn-underline {
+          from { transform: translateX(-50%) scaleX(0); }
+          to { transform: translateX(-50%) scaleX(1); }
+        }
+      `}</style>
+    </nav>
+  );
+}
+
+function NavItem({ item, active }: { item: Item; active: boolean }) {
+  const { Icon, label, to } = item;
+  return (
+    <a
+      href={to}
+      aria-label={label}
+      aria-current={active ? "page" : undefined}
+      className="group relative flex flex-col items-center justify-center gap-1 px-1 py-2 transition-all duration-[250ms] hover:-translate-y-[2px]"
+      style={{ color: active ? GOLD : "#FFFFFF" }}
+    >
+      <Icon
+        className="size-[22px] transition-all duration-[250ms] group-hover:scale-[1.03]"
+        strokeWidth={1.6}
         style={{
-          background:
-            "linear-gradient(180deg, #0a0a0a 0%, #050505 100%)",
-          border: `1px solid ${GOLD}`,
-          boxShadow: `0 0 0 1px rgba(233,185,73,0.15), 0 0 24px ${GOLD_SOFT}, 0 12px 30px -10px rgba(0,0,0,0.9), inset 0 0 22px rgba(233,185,73,0.08)`,
+          filter: active ? `drop-shadow(0 0 6px ${GOLD_SOFT})` : "none",
+        }}
+      />
+      <span
+        className="text-[10px] font-semibold uppercase"
+        style={{
+          letterSpacing: "2px",
+          fontFamily: "'Oswald', 'Bebas Neue', 'Anton', sans-serif",
         }}
       >
-        {/* corner accents */}
-        <span className="pointer-events-none absolute -top-[3px] left-6 h-[6px] w-16 rounded-full" style={{ background: GOLD, filter: "blur(2px)", opacity: 0.7 }} />
-        <span className="pointer-events-none absolute -bottom-[3px] right-6 h-[6px] w-16 rounded-full" style={{ background: GOLD, filter: "blur(2px)", opacity: 0.7 }} />
+        {label}
+      </span>
+      <span
+        aria-hidden
+        className="absolute bottom-1 left-1/2 h-[2px] rounded-full origin-center transition-transform duration-[250ms]"
+        style={{
+          width: 22,
+          background: GOLD,
+          transform: `translateX(-50%) scaleX(${active ? 1 : 0})`,
+          boxShadow: active ? `0 0 8px ${GOLD_SOFT}` : "none",
+        }}
+      />
+      {!active && (
+        <span
+          aria-hidden
+          className="absolute bottom-1 left-1/2 h-[2px] w-[22px] rounded-full origin-center scale-x-0 transition-transform duration-[250ms] group-hover:scale-x-100"
+          style={{
+            background: GOLD,
+            transform: "translateX(-50%) scaleX(0)",
+          }}
+        />
+      )}
+    </a>
+  );
+}
 
-        <ul className="grid grid-cols-5 items-end">
-          {items.map(({ to, label, Icon, badge }) => {
-            const path = to.split("#")[0] || "/";
-            const isActive =
-              path === "/"
-                ? pathname === "/"
-                : pathname === path || pathname.startsWith(path + "/");
-
-            return (
-              <li key={to} className="flex justify-center">
-                <Link
-                  to={to}
-                  className="group relative flex flex-col items-center gap-1.5 px-1 pt-1"
-                  aria-label={label}
-                >
-                  <span className="relative">
-                    {badge && !isActive && (
-                      <span
-                        className="absolute -top-1 -left-2 z-10 rounded-sm px-1 text-[7px] font-black leading-[10px] tracking-wider"
-                        style={{ background: GOLD, color: "#0a0a0a" }}
-                      >
-                        {badge}
-                      </span>
-                    )}
-                    <span
-                      className={`grid place-items-center rounded-full transition-all ${
-                        isActive ? "size-12 -translate-y-4" : "size-10"
-                      }`}
-                      style={
-                        isActive
-                          ? {
-                              background: `radial-gradient(circle at 30% 30%, #f5cf6a 0%, ${GOLD} 55%, #a97f1e 100%)`,
-                              boxShadow: `0 0 0 3px #0a0a0a, 0 0 0 4px ${GOLD}, 0 0 18px ${GOLD_SOFT}`,
-                              color: "#0a0a0a",
-                            }
-                          : {
-                              border: `1px solid ${GOLD}`,
-                              color: GOLD,
-                              background: "rgba(255,255,255,0.02)",
-                            }
-                      }
-                    >
-                      <Icon className="size-5" />
-                    </span>
-                  </span>
-                  <span
-                    className="font-mono text-[9px] font-bold tracking-[0.18em] uppercase"
-                    style={{ color: isActive ? GOLD : "#f5f5f5" }}
-                  >
-                    {label}
-                  </span>
-                  <span
-                    className="h-[2px] w-6 rounded-full"
-                    style={{ background: isActive ? GOLD : "transparent" }}
-                  />
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+function CenterButton({ item, active }: { item: Item; active: boolean }) {
+  const { Icon, label, to } = item;
+  return (
+    <div className="absolute left-1/2 -translate-x-1/2 -top-[34px] flex flex-col items-center pointer-events-none">
+      <a
+        href={to}
+        aria-label={label}
+        aria-current={active ? "page" : undefined}
+        className="pointer-events-auto relative grid place-items-center rounded-full transition-transform duration-[250ms] hover:scale-[1.03]"
+        style={{
+          width: 70,
+          height: 70,
+          background:
+            "radial-gradient(circle at 30% 25%, #1d1d1d 0%, #0A0A0A 70%)",
+          border: `1.5px solid ${GOLD}`,
+          animation: "msn-breathe 2.8s ease-in-out infinite",
+        }}
+      >
+        <Icon
+          className="size-7"
+          strokeWidth={1.6}
+          style={{ color: GOLD, filter: `drop-shadow(0 0 6px ${GOLD_SOFT})` }}
+        />
+      </a>
+      <span
+        className="pointer-events-auto mt-1.5 text-[10px] font-bold uppercase"
+        style={{
+          color: GOLD,
+          letterSpacing: "2px",
+          fontFamily: "'Oswald', 'Bebas Neue', 'Anton', sans-serif",
+          textShadow: `0 0 8px ${GOLD_DIM}`,
+        }}
+      >
+        {label}
+      </span>
     </div>
   );
 }
