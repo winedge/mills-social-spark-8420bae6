@@ -1,9 +1,9 @@
 import { useRouterState } from "@tanstack/react-router";
 import { Trophy, CircleDot, Utensils, PartyPopper, Phone, type LucideIcon } from "lucide-react";
 
-const GOLD = "#E7B84B";
-const GOLD_SOFT = "rgba(231,184,75,0.55)";
-const GOLD_DIM = "rgba(231,184,75,0.25)";
+const ACCENT = "#38bdf8";
+const ACCENT_SOFT = "rgba(56,189,248,0.55)";
+const ACCENT_DIM = "rgba(56,189,248,0.25)";
 
 type Item = {
   to: string;
