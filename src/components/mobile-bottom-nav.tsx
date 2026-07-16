@@ -36,12 +36,6 @@ export function MobileBottomNav() {
       style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}
     >
       <div className="mx-auto w-[95%] max-w-md pointer-events-auto relative">
-        {/* Floating center CTA */}
-        <CenterButton
-          item={items[2]}
-          active={isActivePath(pathname, items[2].to)}
-        />
-
         {/* Bar */}
         <div
           className="relative h-[72px] rounded-[36px] overflow-hidden"
@@ -62,83 +56,57 @@ export function MobileBottomNav() {
             }}
           />
 
-          {/* curved indentation under center button */}
-          <span
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 -translate-x-1/2 -top-[1px]"
-            style={{
-              width: 92,
-              height: 46,
-              background: "#0A0A0A",
-              borderBottomLeftRadius: "50%",
-              borderBottomRightRadius: "50%",
-              boxShadow: `inset 0 -1px 0 ${ACCENT_DIM}`,
-            }}
-          />
-          <span
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 -translate-x-1/2 -top-[2px]"
-            style={{
-              width: 96,
-              height: 48,
-              borderBottomLeftRadius: "50%",
-              borderBottomRightRadius: "50%",
-              border: `1px solid ${ACCENT_DIM}`,
-              borderTop: "none",
-            }}
-          />
-
           <ul className="relative grid grid-cols-5 h-full">
-            {items.map((it, idx) => {
-              if (idx === 2) return <li key="spacer" aria-hidden />;
+            {items.map((it) => {
               const active = isActivePath(pathname, it.to);
               return (
                 <li key={it.to} className="flex items-center justify-center">
-                  <NavItem item={it} active={active} />
+                  <NavItem item={it} active={active} emphasized={!!it.center} />
                 </li>
               );
             })}
           </ul>
         </div>
       </div>
-
-      {/* breathing keyframes */}
-      <style>{`
-        @keyframes msn-breathe {
-          0%, 100% { box-shadow: 0 0 0 1px ${ACCENT}, 0 0 24px ${ACCENT_DIM}, 0 14px 28px -10px rgba(0,0,0,0.9); }
-          50% { box-shadow: 0 0 0 1px ${ACCENT}, 0 0 34px ${ACCENT_SOFT}, 0 14px 28px -10px rgba(0,0,0,0.9); }
-        }
-        @keyframes msn-underline {
-          from { transform: translateX(-50%) scaleX(0); }
-          to { transform: translateX(-50%) scaleX(1); }
-        }
-      `}</style>
     </nav>
   );
 }
 
-function NavItem({ item, active }: { item: Item; active: boolean }) {
+function NavItem({
+  item,
+  active,
+  emphasized = false,
+}: {
+  item: Item;
+  active: boolean;
+  emphasized?: boolean;
+}) {
   const { Icon, label, to } = item;
+  const color = emphasized || active ? ACCENT : "#FFFFFF";
   return (
     <a
       href={to}
       aria-label={label}
       aria-current={active ? "page" : undefined}
       className="group relative flex flex-col items-center justify-center gap-1 px-1 py-2 transition-all duration-[250ms] hover:-translate-y-[2px]"
-      style={{ color: active ? ACCENT : "#FFFFFF" }}
+      style={{ color }}
     >
       <Icon
-        className="size-[18px] transition-all duration-[250ms] group-hover:scale-[1.03]"
-        strokeWidth={1.6}
+        className={`${emphasized ? "size-[22px]" : "size-[18px]"} transition-all duration-[250ms] group-hover:scale-[1.03]`}
+        strokeWidth={emphasized ? 1.8 : 1.6}
         style={{
-          filter: active ? `drop-shadow(0 0 6px ${ACCENT_SOFT})` : "none",
+          filter:
+            emphasized || active
+              ? `drop-shadow(0 0 6px ${ACCENT_SOFT})`
+              : "none",
         }}
       />
       <span
-        className="text-[10px] font-semibold uppercase"
+        className={`${emphasized ? "text-[10px]" : "text-[10px]"} font-semibold uppercase leading-none whitespace-nowrap`}
         style={{
-          letterSpacing: "2px",
+          letterSpacing: emphasized ? "2.5px" : "2px",
           fontFamily: "'Oswald', 'Bebas Neue', 'Anton', sans-serif",
+          textShadow: emphasized ? `0 0 8px ${ACCENT_DIM}` : "none",
         }}
       >
         {label}
@@ -167,35 +135,3 @@ function NavItem({ item, active }: { item: Item; active: boolean }) {
   );
 }
 
-function CenterButton({ item, active }: { item: Item; active: boolean }) {
-  const { Icon, label, to } = item;
-  return (
-    <a
-      href={to}
-      aria-label={label}
-      aria-current={active ? "page" : undefined}
-      className="pointer-events-auto absolute left-1/2 -translate-x-1/2 -top-[2px] z-10 flex flex-col items-center justify-start"
-      style={{ width: 92, height: 72 }}
-    >
-      <Icon
-        className="mt-[6px] size-[26px] transition-transform duration-[250ms] hover:scale-[1.05]"
-        strokeWidth={1.6}
-        style={{
-          color: ACCENT,
-          filter: `drop-shadow(0 0 8px ${ACCENT_SOFT})`,
-        }}
-      />
-      <span
-        className="mt-[4px] text-[9px] font-bold uppercase leading-none whitespace-nowrap"
-        style={{
-          color: ACCENT,
-          letterSpacing: "2.5px",
-          fontFamily: "'Oswald', 'Bebas Neue', 'Anton', sans-serif",
-          textShadow: `0 0 8px ${ACCENT_DIM}`,
-        }}
-      >
-        {label}
-      </span>
-    </a>
-  );
-}
