@@ -95,10 +95,12 @@ const items: Item[] = [
 ];
 
 function MenuPage() {
-  const { cat, q } = Route.useSearch();
+  const { cat, q, cal } = Route.useSearch();
   const navigate = Route.useNavigate();
   const [query, setQuery] = useState(q);
   const [sheetOpen, setSheetOpen] = useState(false);
+
+  const activeCal = calorieRanges.find((r) => r.id === cal) ?? calorieRanges[0];
 
   const counts = useMemo(() => {
     const m = new Map<Category, number>();
@@ -114,9 +116,10 @@ function MenuPage() {
         !query ||
         i.name.toLowerCase().includes(query.toLowerCase()) ||
         i.desc.toLowerCase().includes(query.toLowerCase());
-      return inCat && inQ;
+      const inCal = i.cal >= activeCal.min && i.cal <= activeCal.max;
+      return inCat && inQ && inCal;
     });
-  }, [cat, query]);
+  }, [cat, query, activeCal]);
 
   const grouped = useMemo(() => {
     const g = new Map<string, Item[]>();
@@ -129,7 +132,10 @@ function MenuPage() {
 
   function setCat(c: Category) {
     navigate({ search: (prev: z.infer<typeof menuSchema>) => ({ ...prev, cat: c }) });
-    setSheetOpen(false);
+  }
+
+  function setCal(id: CalId) {
+    navigate({ search: (prev: z.infer<typeof menuSchema>) => ({ ...prev, cal: id }) });
   }
 
   return (
