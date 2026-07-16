@@ -170,15 +170,15 @@ function NavItem({ item, active }: { item: Item; active: boolean }) {
 function CenterButton({ item, active }: { item: Item; active: boolean }) {
   const { Icon, label, to } = item;
   return (
-    <div className="absolute left-1/2 -translate-x-1/2 -top-[34px] z-10 flex flex-col items-center pointer-events-none">
+    <div className="absolute left-1/2 -translate-x-1/2 -top-[46px] z-10 flex flex-col items-center pointer-events-none">
       <a
         href={to}
         aria-label={label}
         aria-current={active ? "page" : undefined}
         className="pointer-events-auto relative grid place-items-center rounded-full transition-transform duration-[250ms] hover:scale-[1.03]"
         style={{
-          width: 70,
-          height: 70,
+          width: 64,
+          height: 64,
           background:
             "radial-gradient(circle at 30% 25%, #1d1d1d 0%, #0A0A0A 70%)",
           border: `1.5px solid ${ACCENT}`,
@@ -186,16 +186,16 @@ function CenterButton({ item, active }: { item: Item; active: boolean }) {
         }}
       >
         <Icon
-          className="size-7"
+          className="size-6"
           strokeWidth={1.6}
           style={{ color: ACCENT, filter: `drop-shadow(0 0 6px ${ACCENT_SOFT})` }}
         />
       </a>
       <span
-        className="pointer-events-auto mt-1.5 text-[10px] font-bold uppercase"
+        className="pointer-events-auto mt-2 text-[9px] font-bold uppercase leading-none whitespace-nowrap"
         style={{
           color: ACCENT,
-          letterSpacing: "2px",
+          letterSpacing: "2.5px",
           fontFamily: "'Oswald', 'Bebas Neue', 'Anton', sans-serif",
           textShadow: `0 0 8px ${ACCENT_DIM}`,
         }}
