@@ -44,6 +44,44 @@
   animation: slide-up 0.8s var(--ease-out-expo) both;
 }
 
+@keyframes sheet-in {
+  0% { opacity: 0; transform: translateY(100%) scale(0.98); }
+  60% { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes sheet-out {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(100%) scale(0.98); }
+}
+@keyframes overlay-in {
+  0% { opacity: 0; backdrop-filter: blur(0px); }
+  100% { opacity: 1; backdrop-filter: blur(8px); }
+}
+@keyframes overlay-out {
+  0% { opacity: 1; backdrop-filter: blur(8px); }
+  100% { opacity: 0; backdrop-filter: blur(0px); }
+}
+@keyframes chip-in {
+  0% { opacity: 0; transform: translateY(12px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@utility sheet-anim-in {
+  animation: sheet-in 0.5s var(--ease-out-expo) both;
+}
+@utility sheet-anim-out {
+  animation: sheet-out 0.3s cubic-bezier(0.7, 0, 0.84, 0) both;
+}
+@utility overlay-anim-in {
+  animation: overlay-in 0.4s var(--ease-out-expo) both;
+}
+@utility overlay-anim-out {
+  animation: overlay-out 0.25s ease-out both;
+}
+@utility animate-chip-in {
+  animation: chip-in 0.45s var(--ease-out-expo) both;
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
