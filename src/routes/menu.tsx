@@ -200,7 +200,7 @@ function MenuPage() {
             </SheetTrigger>
             <SheetContent
               side="bottom"
-              className="!bottom-[6.25rem] !z-[90] rounded-t-2xl border-t border-accent/20 bg-background/95 backdrop-blur-xl data-[state=open]:sheet-anim-in data-[state=closed]:sheet-anim-out [&_[data-radix-dialog-overlay]]:hidden max-h-[calc(85vh-6.25rem)] overflow-y-auto pb-0 md:!bottom-0 md:max-h-[85vh]"
+              className="!bottom-[8.25rem] !z-[90] rounded-t-2xl border-t border-accent/20 bg-background/95 backdrop-blur-xl data-[state=open]:sheet-anim-in data-[state=closed]:sheet-anim-out [&_[data-radix-dialog-overlay]]:hidden max-h-[calc(82vh-8.25rem)] overflow-y-auto pb-0 md:!bottom-0 md:max-h-[85vh]"
             >
               <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-foreground/20" />
               <SheetHeader>
