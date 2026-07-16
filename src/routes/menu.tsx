@@ -200,7 +200,7 @@ function MenuPage() {
             </SheetTrigger>
             <SheetContent
               side="bottom"
-              className="!z-[90] rounded-t-2xl border-t border-accent/20 bg-background/95 backdrop-blur-xl data-[state=open]:sheet-anim-in data-[state=closed]:sheet-anim-out [&_[data-radix-dialog-overlay]]:hidden max-h-[85vh] overflow-y-auto pb-0"
+              className="!bottom-[6.25rem] !z-[90] rounded-t-2xl border-t border-accent/20 bg-background/95 backdrop-blur-xl data-[state=open]:sheet-anim-in data-[state=closed]:sheet-anim-out [&_[data-radix-dialog-overlay]]:hidden max-h-[calc(85vh-6.25rem)] overflow-y-auto pb-0 md:!bottom-0 md:max-h-[85vh]"
             >
               <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-foreground/20" />
               <SheetHeader>
@@ -256,7 +256,7 @@ function MenuPage() {
                 </div>
               </div>
 
-              <div className="sticky bottom-0 -mx-6 mt-6 px-6 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-background/95 border-t border-border/70 shadow-[0_-18px_28px_-22px] shadow-accent/40 backdrop-blur-xl">
+              <div className="sticky bottom-0 -mx-6 mt-6 px-6 pt-4 pb-4 bg-background/95 border-t border-border/70 shadow-[0_-18px_28px_-22px] shadow-accent/40 backdrop-blur-xl">
                 <button
                   onClick={() => setSheetOpen(false)}
                   className="w-full h-12 bg-accent text-primary-foreground text-xs font-bold uppercase tracking-widest hover:brightness-110 active:scale-[0.98] transition"
