@@ -1,4 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import type { ReactElement } from "react";
+
 
 const GOLD = "#E9B949";
 const GOLD_SOFT = "rgba(233,185,73,0.55)";
@@ -53,7 +55,7 @@ function PhoneIcon({ className }: { className?: string }) {
 const items: Array<{
   to: string;
   label: string;
-  Icon: (props: { className?: string }) => JSX.Element;
+  Icon: (props: { className?: string }) => ReactElement;
   badge?: string;
 }> = [
   { to: "/sports", label: "Sports", Icon: FootballIcon, badge: "HOT" },
