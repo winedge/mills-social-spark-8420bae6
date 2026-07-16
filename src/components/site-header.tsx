@@ -36,7 +36,16 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
           </div>
         )}
         <div className="w-full px-4 md:px-8 h-20 md:h-28 flex md:grid md:grid-cols-[1fr_auto_1fr] items-center justify-between gap-4 md:gap-8">
-          <div className="hidden md:flex items-center gap-8 text-sm font-semibold uppercase tracking-widest">
+          <Link to="/" className="flex items-center min-w-0 md:justify-self-start" aria-label="Mills Modern Social — Home">
+            <img
+              src={millsLogo.url}
+              alt="Mill's Modern Social"
+              width={260}
+              height={60}
+              className="h-11 md:h-[72px] w-auto object-contain"
+            />
+          </Link>
+          <div className="hidden md:flex items-center gap-8 text-sm font-semibold uppercase tracking-widest md:justify-self-center">
             {navLinks.map((l) => (
               <Link
                 key={l.to}
@@ -49,16 +58,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
               </Link>
             ))}
           </div>
-          <Link to="/" className="flex items-center md:justify-center min-w-0" aria-label="Mills Modern Social — Home">
-            <img
-              src={millsLogo.url}
-              alt="Mill's Modern Social"
-              width={260}
-              height={60}
-              className="h-11 md:h-[72px] w-auto object-contain"
-            />
-          </Link>
-          <div className="hidden md:flex justify-end">
+          <div className="hidden md:flex md:justify-self-end">
             <Link
               to="/party"
               className="bg-primary text-primary-foreground px-5 py-2 text-xs font-bold uppercase hover:bg-accent transition-colors"
@@ -66,6 +66,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
               Book Table
             </Link>
           </div>
+
 
           {!open && (
             <button
