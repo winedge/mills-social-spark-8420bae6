@@ -26,9 +26,21 @@ const categories = [
 
 type Category = (typeof categories)[number];
 
+const calorieRanges = [
+  { id: "all", label: "All Calories", min: 0, max: Infinity },
+  { id: "light", label: "Under 300", min: 0, max: 299 },
+  { id: "mid", label: "300 – 600", min: 300, max: 600 },
+  { id: "hearty", label: "600 – 900", min: 600, max: 900 },
+  { id: "indulgent", label: "900+", min: 900, max: Infinity },
+] as const;
+
+type CalId = (typeof calorieRanges)[number]["id"];
+const calIds = calorieRanges.map((c) => c.id) as [CalId, ...CalId[]];
+
 const menuSchema = z.object({
   cat: fallback(z.enum(categories), "All").default("All"),
   q: fallback(z.string(), "").default(""),
+  cal: fallback(z.enum(calIds), "all").default("all"),
 });
 
 export const Route = createFileRoute("/menu")({
@@ -83,10 +95,12 @@ const items: Item[] = [
 ];
 
 function MenuPage() {
-  const { cat, q } = Route.useSearch();
+  const { cat, q, cal } = Route.useSearch();
   const navigate = Route.useNavigate();
   const [query, setQuery] = useState(q);
   const [sheetOpen, setSheetOpen] = useState(false);
+
+  const activeCal = calorieRanges.find((r) => r.id === cal) ?? calorieRanges[0];
 
   const counts = useMemo(() => {
     const m = new Map<Category, number>();
@@ -102,9 +116,10 @@ function MenuPage() {
         !query ||
         i.name.toLowerCase().includes(query.toLowerCase()) ||
         i.desc.toLowerCase().includes(query.toLowerCase());
-      return inCat && inQ;
+      const inCal = i.cal >= activeCal.min && i.cal <= activeCal.max;
+      return inCat && inQ && inCal;
     });
-  }, [cat, query]);
+  }, [cat, query, activeCal]);
 
   const grouped = useMemo(() => {
     const g = new Map<string, Item[]>();
@@ -117,7 +132,10 @@ function MenuPage() {
 
   function setCat(c: Category) {
     navigate({ search: (prev: z.infer<typeof menuSchema>) => ({ ...prev, cat: c }) });
-    setSheetOpen(false);
+  }
+
+  function setCal(id: CalId) {
+    navigate({ search: (prev: z.infer<typeof menuSchema>) => ({ ...prev, cal: id }) });
   }
 
   return (
@@ -182,41 +200,75 @@ function MenuPage() {
             </SheetTrigger>
             <SheetContent
               side="bottom"
-              className="rounded-t-2xl border-t border-accent/20 bg-background/95 backdrop-blur-xl data-[state=open]:sheet-anim-in data-[state=closed]:sheet-anim-out [&_[data-radix-dialog-overlay]]:hidden"
+              className="rounded-t-2xl border-t border-accent/20 bg-background/95 backdrop-blur-xl data-[state=open]:sheet-anim-in data-[state=closed]:sheet-anim-out [&_[data-radix-dialog-overlay]]:hidden max-h-[85vh] overflow-y-auto"
             >
               <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-foreground/20" />
               <SheetHeader>
-                <SheetTitle className="font-display text-2xl uppercase text-left">Filter by section</SheetTitle>
+                <SheetTitle className="font-display text-2xl uppercase text-left">Filters</SheetTitle>
               </SheetHeader>
-              <div className="grid grid-cols-2 gap-2 mt-4 pb-4">
-                {categories.map((c, idx) => {
-                  const active = cat === c;
-                  return (
-                    <button
-                      key={c}
-                      onClick={() => setCat(c)}
-                      style={{ animationDelay: `${idx * 40}ms` }}
-                      className={`animate-chip-in min-h-12 px-4 text-xs font-bold uppercase tracking-widest border flex items-center justify-between gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] ${
-                        active
-                          ? "bg-accent text-primary-foreground border-accent shadow-[0_0_20px_-4px] shadow-accent/60"
-                          : "border-border text-foreground hover:border-accent/50"
-                      }`}
-                    >
-                      <span>{c}</span>
-                      <span className={`font-mono text-[10px] ${active ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                        {counts.get(c) ?? 0}
-                      </span>
-                    </button>
-                  );
-                })}
+
+              <div className="mt-5">
+                <div className="font-mono text-[10px] text-muted-foreground tracking-widest mb-2">SECTION</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {categories.map((c, idx) => {
+                    const active = cat === c;
+                    return (
+                      <button
+                        key={c}
+                        onClick={() => setCat(c)}
+                        style={{ animationDelay: `${idx * 40}ms` }}
+                        className={`animate-chip-in min-h-12 px-4 text-xs font-bold uppercase tracking-widest border flex items-center justify-between gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                          active
+                            ? "bg-accent text-primary-foreground border-accent shadow-[0_0_20px_-4px] shadow-accent/60"
+                            : "border-border text-foreground hover:border-accent/50"
+                        }`}
+                      >
+                        <span>{c}</span>
+                        <span className={`font-mono text-[10px] ${active ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                          {counts.get(c) ?? 0}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
+
+              <div className="mt-6">
+                <div className="font-mono text-[10px] text-muted-foreground tracking-widest mb-2">CALORIES</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {calorieRanges.map((r, idx) => {
+                    const active = cal === r.id;
+                    return (
+                      <button
+                        key={r.id}
+                        onClick={() => setCal(r.id)}
+                        style={{ animationDelay: `${(idx + categories.length) * 40}ms` }}
+                        className={`animate-chip-in min-h-12 px-4 text-xs font-bold uppercase tracking-widest border transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                          active
+                            ? "bg-accent text-primary-foreground border-accent shadow-[0_0_20px_-4px] shadow-accent/60"
+                            : "border-border text-foreground hover:border-accent/50"
+                        }`}
+                      >
+                        {r.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <button
+                onClick={() => setSheetOpen(false)}
+                className="mt-6 mb-2 w-full h-12 bg-accent text-primary-foreground text-xs font-bold uppercase tracking-widest hover:brightness-110 active:scale-[0.98] transition"
+              >
+                Show {filtered.length} {filtered.length === 1 ? "item" : "items"}
+              </button>
             </SheetContent>
           </Sheet>
         </div>
 
         {/* Desktop chip row */}
         <div className="hidden md:block border-t border-border">
-          <div className="max-w-7xl mx-auto px-6 py-3 flex gap-2 overflow-x-auto">
+          <div className="max-w-7xl mx-auto px-6 py-3 flex gap-2 overflow-x-auto items-center">
             {categories.map((c) => {
               const active = cat === c;
               return (
@@ -233,6 +285,23 @@ function MenuPage() {
                   <span className={`ml-2 font-mono text-[10px] ${active ? "text-primary-foreground/70" : "text-muted-foreground/60"}`}>
                     {counts.get(c) ?? 0}
                   </span>
+                </button>
+              );
+            })}
+            <div className="mx-2 h-6 w-px bg-border shrink-0" />
+            {calorieRanges.map((r) => {
+              const active = cal === r.id;
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => setCal(r.id)}
+                  className={`shrink-0 px-4 h-10 text-xs font-bold uppercase tracking-widest border transition-colors ${
+                    active
+                      ? "bg-accent text-primary-foreground border-accent"
+                      : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/40"
+                  }`}
+                >
+                  {r.label}
                 </button>
               );
             })}
