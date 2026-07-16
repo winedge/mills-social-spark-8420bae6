@@ -34,17 +34,8 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
           </div>
         </div>
       )}
-      <div className="w-full px-8 h-20 flex items-center justify-between gap-8">
-        <Link to="/" className="flex items-center min-w-0 shrink-0" aria-label="Mills Modern Social — Home">
-          <img
-            src={millsLogo.url}
-            alt="Mill's Modern Social"
-            width={260}
-            height={60}
-            className="h-12 md:h-14 w-auto object-contain"
-          />
-        </Link>
-        <div className="hidden md:flex flex-1 items-center gap-8 text-xs font-semibold uppercase tracking-widest ml-8">
+      <div className="w-full px-8 h-20 grid grid-cols-[1fr_auto_1fr] items-center gap-8">
+        <div className="hidden md:flex items-center gap-8 text-xs font-semibold uppercase tracking-widest">
           {navLinks.map((l) => (
             <Link
               key={l.to}
@@ -57,12 +48,24 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
             </Link>
           ))}
         </div>
-        <Link
-          to="/party"
-          className="hidden md:inline-flex bg-primary text-primary-foreground px-5 py-2 text-xs font-bold uppercase hover:bg-accent transition-colors shrink-0"
-        >
-          Book Table
+        <Link to="/" className="flex items-center justify-center min-w-0" aria-label="Mills Modern Social — Home">
+          <img
+            src={millsLogo.url}
+            alt="Mill's Modern Social"
+            width={260}
+            height={60}
+            className="h-12 md:h-14 w-auto object-contain"
+          />
         </Link>
+        <div className="hidden md:flex justify-end">
+          <Link
+            to="/party"
+            className="bg-primary text-primary-foreground px-5 py-2 text-xs font-bold uppercase hover:bg-accent transition-colors"
+          >
+            Book Table
+          </Link>
+        </div>
+
         <div className="md:hidden flex justify-end">
           <button
             className="p-2 -mr-2"
