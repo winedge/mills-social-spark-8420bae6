@@ -34,7 +34,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
           </div>
         </div>
       )}
-      <div className="w-full px-8 h-28 grid grid-cols-[1fr_auto_1fr] items-center gap-8">
+      <div className="w-full px-6 md:px-8 h-24 md:h-28 grid grid-cols-[1fr_auto_1fr] items-center gap-4 md:gap-8">
         <div className="hidden md:flex items-center gap-8 text-xs font-semibold uppercase tracking-widest">
           {navLinks.map((l) => (
             <Link
@@ -54,7 +54,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
             alt="Mill's Modern Social"
             width={260}
             height={60}
-            className="h-14 md:h-[72px] w-auto object-contain"
+            className="h-20 md:h-[72px] w-auto object-contain"
           />
         </Link>
         <div className="hidden md:flex justify-end">
@@ -68,40 +68,80 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
 
         <div className="md:hidden flex justify-end">
           <button
-            className="p-2 -mr-2"
+            className="relative z-[60] size-11 grid place-items-center border border-border bg-surface hover:border-accent hover:text-accent transition-colors"
             onClick={() => setOpen((v) => !v)}
             aria-label="Menu"
+            aria-expanded={open}
           >
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
         </div>
       </div>
 
-      {open && (
-        <div className="md:hidden border-t border-border bg-background">
-          <div className="px-6 py-4 flex flex-col gap-1">
-            {navLinks.map((l) => (
+      {/* Mobile drawer */}
+      <div
+        className={`md:hidden fixed inset-0 z-40 transition-opacity duration-300 ${
+          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        aria-hidden={!open}
+      >
+        <div
+          className="absolute inset-0 bg-background/70 backdrop-blur-sm"
+          onClick={() => setOpen(false)}
+        />
+        <aside
+          className={`absolute top-0 right-0 h-full w-[82%] max-w-sm bg-background border-l border-border shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
+            open ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
+          <div className="h-24 px-6 flex items-center justify-between border-b border-border">
+            <span className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground uppercase">
+              Menu
+            </span>
+            <button
+              className="size-10 grid place-items-center border border-border hover:border-accent hover:text-accent transition-colors"
+              onClick={() => setOpen(false)}
+              aria-label="Close menu"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+
+          <nav className="flex-1 overflow-y-auto px-6 py-6 flex flex-col">
+            {navLinks.map((l, i) => (
               <Link
                 key={l.to}
                 to={l.to}
                 onClick={() => setOpen(false)}
                 activeProps={{ className: "text-accent" }}
                 activeOptions={{ exact: true }}
-                className="py-3 text-sm font-semibold uppercase tracking-widest border-b border-border/50 hover:text-accent"
+                className="group flex items-baseline justify-between py-4 border-b border-border/60 hover:text-accent transition-colors"
               >
-                {l.label}
+                <span className="font-display text-3xl uppercase tracking-tight">
+                  {l.label}
+                </span>
+                <span className="font-mono text-[10px] text-muted-foreground group-hover:text-accent tracking-widest">
+                  0{i + 1}
+                </span>
               </Link>
             ))}
+          </nav>
+
+          <div className="p-6 border-t border-border space-y-3">
             <Link
               to="/party"
               onClick={() => setOpen(false)}
-              className="mt-3 bg-accent text-primary-foreground px-5 py-3 text-xs font-bold uppercase text-center"
+              className="block bg-accent text-primary-foreground px-5 py-4 text-xs font-bold uppercase text-center tracking-widest hover:brightness-110 transition"
             >
-              Book Table
+              Book a Table
             </Link>
+            <p className="font-mono text-[10px] text-muted-foreground text-center uppercase tracking-widest">
+              Mill Ave & Broadway · Tempe, AZ
+            </p>
           </div>
-        </div>
-      )}
+        </aside>
+      </div>
+
     </nav>
   );
 }
