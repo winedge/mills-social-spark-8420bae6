@@ -34,7 +34,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
           </div>
         </div>
       )}
-      <div className="w-full px-6 md:px-8 h-24 md:h-28 grid grid-cols-[1fr_auto_1fr] items-center gap-4 md:gap-8">
+      <div className="w-full px-4 md:px-8 h-20 md:h-28 flex md:grid md:grid-cols-[1fr_auto_1fr] items-center justify-between gap-4 md:gap-8">
         <div className="hidden md:flex items-center gap-8 text-xs font-semibold uppercase tracking-widest">
           {navLinks.map((l) => (
             <Link
@@ -48,13 +48,13 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
             </Link>
           ))}
         </div>
-        <Link to="/" className="flex items-center justify-center min-w-0" aria-label="Mills Modern Social — Home">
+        <Link to="/" className="flex items-center md:justify-center min-w-0" aria-label="Mills Modern Social — Home">
           <img
             src={millsLogo.url}
             alt="Mill's Modern Social"
             width={260}
             height={60}
-            className="h-20 md:h-[72px] w-auto object-contain"
+            className="h-14 md:h-[72px] w-auto object-contain"
           />
         </Link>
         <div className="hidden md:flex justify-end">
@@ -66,7 +66,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
           </Link>
         </div>
 
-        <div className="md:hidden flex justify-end">
+        <div className="md:hidden">
           <button
             className="relative z-[70] size-11 grid place-items-center border border-border bg-surface hover:border-accent hover:text-accent transition-colors"
             onClick={() => setOpen((v) => !v)}
@@ -77,6 +77,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
           </button>
         </div>
       </div>
+
 
       {/* Mobile drawer */}
       <div
