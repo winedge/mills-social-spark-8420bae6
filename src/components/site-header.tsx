@@ -24,67 +24,67 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
-      {showTicker && (
-        <div className="overflow-hidden whitespace-nowrap py-2 bg-accent text-primary-foreground font-mono text-[10px] font-bold uppercase tracking-widest">
-          <div className="inline-block animate-marquee">
-            {[...tickerItems, ...tickerItems].map((t, i) => (
-              <span key={i} className="mx-6">{t}</span>
+    <>
+      <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
+        {showTicker && (
+          <div className="overflow-hidden whitespace-nowrap py-2 bg-accent text-primary-foreground font-mono text-[10px] font-bold uppercase tracking-widest">
+            <div className="inline-block animate-marquee">
+              {[...tickerItems, ...tickerItems].map((t, i) => (
+                <span key={i} className="mx-6">{t}</span>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="w-full px-4 md:px-8 h-20 md:h-28 flex md:grid md:grid-cols-[1fr_auto_1fr] items-center justify-between gap-4 md:gap-8">
+          <div className="hidden md:flex items-center gap-8 text-xs font-semibold uppercase tracking-widest">
+            {navLinks.map((l) => (
+              <Link
+                key={l.to}
+                to={l.to}
+                activeProps={{ className: "text-accent" }}
+                activeOptions={{ exact: true }}
+                className="hover:text-accent transition-colors"
+              >
+                {l.label}
+              </Link>
             ))}
           </div>
-        </div>
-      )}
-      <div className="w-full px-4 md:px-8 h-20 md:h-28 flex md:grid md:grid-cols-[1fr_auto_1fr] items-center justify-between gap-4 md:gap-8">
-        <div className="hidden md:flex items-center gap-8 text-xs font-semibold uppercase tracking-widest">
-          {navLinks.map((l) => (
-            <Link
-              key={l.to}
-              to={l.to}
-              activeProps={{ className: "text-accent" }}
-              activeOptions={{ exact: true }}
-              className="hover:text-accent transition-colors"
-            >
-              {l.label}
-            </Link>
-          ))}
-        </div>
-        <Link to="/" className="flex items-center md:justify-center min-w-0" aria-label="Mills Modern Social — Home">
-          <img
-            src={millsLogo.url}
-            alt="Mill's Modern Social"
-            width={260}
-            height={60}
-            className="h-11 md:h-[72px] w-auto object-contain"
-          />
-        </Link>
-        <div className="hidden md:flex justify-end">
-          <Link
-            to="/party"
-            className="bg-primary text-primary-foreground px-5 py-2 text-xs font-bold uppercase hover:bg-accent transition-colors"
-          >
-            Book Table
+          <Link to="/" className="flex items-center md:justify-center min-w-0" aria-label="Mills Modern Social — Home">
+            <img
+              src={millsLogo.url}
+              alt="Mill's Modern Social"
+              width={260}
+              height={60}
+              className="h-11 md:h-[72px] w-auto object-contain"
+            />
           </Link>
-        </div>
+          <div className="hidden md:flex justify-end">
+            <Link
+              to="/party"
+              className="bg-primary text-primary-foreground px-5 py-2 text-xs font-bold uppercase hover:bg-accent transition-colors"
+            >
+              Book Table
+            </Link>
+          </div>
 
-        <div className="md:hidden">
-          <button
-            className="relative z-[70] size-11 grid place-items-center border border-border bg-surface hover:border-accent hover:text-accent transition-colors"
-            onClick={() => setOpen((v) => !v)}
-            aria-label="Menu"
-            aria-expanded={open}
-          >
-            {open ? <X className="size-5" /> : <Menu className="size-5" />}
-          </button>
+          <div className="md:hidden">
+            <button
+              className="size-11 grid place-items-center border border-border bg-surface hover:border-accent hover:text-accent transition-colors"
+              onClick={() => setOpen((v) => !v)}
+              aria-label="Menu"
+              aria-expanded={open}
+            >
+              {open ? <X className="size-5" /> : <Menu className="size-5" />}
+            </button>
+          </div>
         </div>
-      </div>
-
+      </nav>
 
       {/* Mobile drawer */}
       <div
-        className={`md:hidden fixed inset-0 z-[60] transition-opacity duration-300 ${
+        className={`md:hidden fixed inset-0 z-[80] transition-opacity duration-300 ${
           open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
-
         aria-hidden={!open}
       >
         <div
@@ -143,7 +143,6 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
           </div>
         </aside>
       </div>
-
-    </nav>
+    </>
   );
 }
