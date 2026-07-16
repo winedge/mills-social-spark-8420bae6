@@ -67,49 +67,41 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
             </Link>
           </div>
 
-          <div className="md:hidden">
+          {!open && (
             <button
-              className="size-11 grid place-items-center border border-border bg-surface hover:border-accent hover:text-accent transition-colors"
-              onClick={() => setOpen((v) => !v)}
-              aria-label="Menu"
+              className="md:hidden size-11 grid place-items-center border border-border bg-surface hover:border-accent hover:text-accent transition-colors"
+              onClick={() => setOpen(true)}
+              aria-label="Open menu"
               aria-expanded={open}
             >
-              {open ? <X className="size-5" /> : <Menu className="size-5" />}
+              <Menu className="size-5" />
             </button>
-          </div>
+          )}
         </div>
       </nav>
 
-      {/* Mobile drawer */}
+      {/* Mobile full-screen menu */}
       <div
-        className={`md:hidden fixed inset-0 z-[80] transition-opacity duration-300 ${
+        className={`md:hidden fixed inset-0 z-[100] bg-background transition-opacity duration-300 ${
           open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
         aria-hidden={!open}
       >
-        <div
-          className="absolute inset-0 bg-background/70 backdrop-blur-sm"
-          onClick={() => setOpen(false)}
-        />
-        <aside
-          className={`absolute top-0 right-0 h-full w-[82%] max-w-sm bg-background border-l border-border shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
-            open ? "translate-x-0" : "translate-x-full"
-          }`}
-        >
-          <div className="h-24 px-6 flex items-center justify-between border-b border-border">
-            <span className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground uppercase">
-              Menu
-            </span>
-            <button
-              className="size-10 grid place-items-center border border-border hover:border-accent hover:text-accent transition-colors"
-              onClick={() => setOpen(false)}
-              aria-label="Close menu"
-            >
-              <X className="size-4" />
-            </button>
-          </div>
+        <div className="h-20 px-4 flex items-center justify-between border-b border-border">
+          <span className="font-mono text-[11px] tracking-[0.3em] text-muted-foreground uppercase">
+            Menu
+          </span>
+          <button
+            className="size-11 grid place-items-center border border-border bg-surface hover:border-accent hover:text-accent transition-colors"
+            onClick={() => setOpen(false)}
+            aria-label="Close menu"
+          >
+            <X className="size-5" />
+          </button>
+        </div>
 
-          <nav className="flex-1 overflow-y-auto px-6 py-6 flex flex-col">
+        <div className="flex flex-col h-[calc(100%-5rem)] overflow-y-auto">
+          <nav className="flex-1 px-6 py-4 flex flex-col">
             {navLinks.map((l, i) => (
               <Link
                 key={l.to}
@@ -117,9 +109,9 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
                 onClick={() => setOpen(false)}
                 activeProps={{ className: "text-accent" }}
                 activeOptions={{ exact: true }}
-                className="group flex items-baseline justify-between py-4 border-b border-border/60 hover:text-accent transition-colors"
+                className="group flex items-baseline justify-between py-5 border-b border-border/60 hover:text-accent transition-colors"
               >
-                <span className="font-display text-3xl uppercase tracking-tight">
+                <span className="font-display text-4xl uppercase tracking-tight">
                   {l.label}
                 </span>
                 <span className="font-mono text-[10px] text-muted-foreground group-hover:text-accent tracking-widest">
@@ -129,20 +121,21 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
             ))}
           </nav>
 
-          <div className="p-6 border-t border-border space-y-3">
+          <div className="p-6 space-y-4">
             <Link
               to="/party"
               onClick={() => setOpen(false)}
-              className="block bg-accent text-primary-foreground px-5 py-4 text-xs font-bold uppercase text-center tracking-widest hover:brightness-110 transition"
+              className="block bg-[#4FC3F7] text-black px-5 py-4 text-sm font-bold uppercase text-center tracking-widest hover:brightness-110 transition"
             >
               Book a Table
             </Link>
             <p className="font-mono text-[10px] text-muted-foreground text-center uppercase tracking-widest">
-              Mill Ave & Broadway · Tempe, AZ
+              Mill Ave &amp; Broadway · Tempe, AZ
             </p>
           </div>
-        </aside>
+        </div>
       </div>
     </>
   );
 }
+
