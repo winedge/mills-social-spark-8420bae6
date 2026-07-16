@@ -200,41 +200,75 @@ function MenuPage() {
             </SheetTrigger>
             <SheetContent
               side="bottom"
-              className="rounded-t-2xl border-t border-accent/20 bg-background/95 backdrop-blur-xl data-[state=open]:sheet-anim-in data-[state=closed]:sheet-anim-out [&_[data-radix-dialog-overlay]]:hidden"
+              className="rounded-t-2xl border-t border-accent/20 bg-background/95 backdrop-blur-xl data-[state=open]:sheet-anim-in data-[state=closed]:sheet-anim-out [&_[data-radix-dialog-overlay]]:hidden max-h-[85vh] overflow-y-auto"
             >
               <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-foreground/20" />
               <SheetHeader>
-                <SheetTitle className="font-display text-2xl uppercase text-left">Filter by section</SheetTitle>
+                <SheetTitle className="font-display text-2xl uppercase text-left">Filters</SheetTitle>
               </SheetHeader>
-              <div className="grid grid-cols-2 gap-2 mt-4 pb-4">
-                {categories.map((c, idx) => {
-                  const active = cat === c;
-                  return (
-                    <button
-                      key={c}
-                      onClick={() => setCat(c)}
-                      style={{ animationDelay: `${idx * 40}ms` }}
-                      className={`animate-chip-in min-h-12 px-4 text-xs font-bold uppercase tracking-widest border flex items-center justify-between gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] ${
-                        active
-                          ? "bg-accent text-primary-foreground border-accent shadow-[0_0_20px_-4px] shadow-accent/60"
-                          : "border-border text-foreground hover:border-accent/50"
-                      }`}
-                    >
-                      <span>{c}</span>
-                      <span className={`font-mono text-[10px] ${active ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                        {counts.get(c) ?? 0}
-                      </span>
-                    </button>
-                  );
-                })}
+
+              <div className="mt-5">
+                <div className="font-mono text-[10px] text-muted-foreground tracking-widest mb-2">SECTION</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {categories.map((c, idx) => {
+                    const active = cat === c;
+                    return (
+                      <button
+                        key={c}
+                        onClick={() => setCat(c)}
+                        style={{ animationDelay: `${idx * 40}ms` }}
+                        className={`animate-chip-in min-h-12 px-4 text-xs font-bold uppercase tracking-widest border flex items-center justify-between gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                          active
+                            ? "bg-accent text-primary-foreground border-accent shadow-[0_0_20px_-4px] shadow-accent/60"
+                            : "border-border text-foreground hover:border-accent/50"
+                        }`}
+                      >
+                        <span>{c}</span>
+                        <span className={`font-mono text-[10px] ${active ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                          {counts.get(c) ?? 0}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
+
+              <div className="mt-6">
+                <div className="font-mono text-[10px] text-muted-foreground tracking-widest mb-2">CALORIES</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {calorieRanges.map((r, idx) => {
+                    const active = cal === r.id;
+                    return (
+                      <button
+                        key={r.id}
+                        onClick={() => setCal(r.id)}
+                        style={{ animationDelay: `${(idx + categories.length) * 40}ms` }}
+                        className={`animate-chip-in min-h-12 px-4 text-xs font-bold uppercase tracking-widest border transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                          active
+                            ? "bg-accent text-primary-foreground border-accent shadow-[0_0_20px_-4px] shadow-accent/60"
+                            : "border-border text-foreground hover:border-accent/50"
+                        }`}
+                      >
+                        {r.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <button
+                onClick={() => setSheetOpen(false)}
+                className="mt-6 mb-2 w-full h-12 bg-accent text-primary-foreground text-xs font-bold uppercase tracking-widest hover:brightness-110 active:scale-[0.98] transition"
+              >
+                Show {filtered.length} {filtered.length === 1 ? "item" : "items"}
+              </button>
             </SheetContent>
           </Sheet>
         </div>
 
         {/* Desktop chip row */}
         <div className="hidden md:block border-t border-border">
-          <div className="max-w-7xl mx-auto px-6 py-3 flex gap-2 overflow-x-auto">
+          <div className="max-w-7xl mx-auto px-6 py-3 flex gap-2 overflow-x-auto items-center">
             {categories.map((c) => {
               const active = cat === c;
               return (
@@ -251,6 +285,23 @@ function MenuPage() {
                   <span className={`ml-2 font-mono text-[10px] ${active ? "text-primary-foreground/70" : "text-muted-foreground/60"}`}>
                     {counts.get(c) ?? 0}
                   </span>
+                </button>
+              );
+            })}
+            <div className="mx-2 h-6 w-px bg-border shrink-0" />
+            {calorieRanges.map((r) => {
+              const active = cal === r.id;
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => setCal(r.id)}
+                  className={`shrink-0 px-4 h-10 text-xs font-bold uppercase tracking-widest border transition-colors ${
+                    active
+                      ? "bg-accent text-primary-foreground border-accent"
+                      : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/40"
+                  }`}
+                >
+                  {r.label}
                 </button>
               );
             })}
