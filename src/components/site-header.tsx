@@ -34,7 +34,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
           </div>
         </div>
       )}
-      <div className="w-full px-8 h-20 grid grid-cols-[1fr_auto_1fr] items-center gap-8">
+      <div className="w-full px-8 h-28 grid grid-cols-[1fr_auto_1fr] items-center gap-8">
         <div className="hidden md:flex items-center gap-8 text-xs font-semibold uppercase tracking-widest">
           {navLinks.map((l) => (
             <Link
@@ -54,7 +54,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
             alt="Mill's Modern Social"
             width={260}
             height={60}
-            className="h-12 md:h-14 w-auto object-contain"
+            className="h-16 md:h-20 w-auto object-contain"
           />
         </Link>
         <div className="hidden md:flex justify-end">
