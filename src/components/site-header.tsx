@@ -68,7 +68,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
 
         <div className="md:hidden flex justify-end">
           <button
-            className="relative z-[60] size-11 grid place-items-center border border-border bg-surface hover:border-accent hover:text-accent transition-colors"
+            className="relative z-[70] size-11 grid place-items-center border border-border bg-surface hover:border-accent hover:text-accent transition-colors"
             onClick={() => setOpen((v) => !v)}
             aria-label="Menu"
             aria-expanded={open}
