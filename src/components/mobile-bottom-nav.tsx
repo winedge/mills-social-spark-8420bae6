@@ -128,7 +128,7 @@ function NavItem({ item, active }: { item: Item; active: boolean }) {
       style={{ color: active ? ACCENT : "#FFFFFF" }}
     >
       <Icon
-        className="size-[22px] transition-all duration-[250ms] group-hover:scale-[1.03]"
+        className="size-[18px] transition-all duration-[250ms] group-hover:scale-[1.03]"
         strokeWidth={1.6}
         style={{
           filter: active ? `drop-shadow(0 0 6px ${ACCENT_SOFT})` : "none",
