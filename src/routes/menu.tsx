@@ -193,14 +193,18 @@ function MenuPage() {
           {/* Mobile filter FAB */}
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
-              <button className="md:hidden shrink-0 h-11 px-4 border border-border bg-surface flex items-center gap-2 text-xs font-bold uppercase tracking-widest hover:border-accent">
+              <button
+                type="button"
+                onClick={() => setSheetOpen(true)}
+                className="md:hidden shrink-0 h-11 px-4 border border-border bg-surface flex items-center gap-2 text-xs font-bold uppercase tracking-widest hover:border-accent"
+              >
                 <SlidersHorizontal className="size-4" />
                 {cat === "All" ? "Filter" : cat}
               </button>
             </SheetTrigger>
             <SheetContent
               side="bottom"
-              className="!bottom-[8.25rem] !z-[90] rounded-t-2xl border-t border-accent/20 bg-background/95 backdrop-blur-xl data-[state=open]:sheet-anim-in data-[state=closed]:sheet-anim-out [&_[data-radix-dialog-overlay]]:hidden max-h-[calc(82vh-8.25rem)] overflow-y-auto pb-0 md:!bottom-0 md:max-h-[85vh]"
+              className="!top-auto !bottom-[8.5rem] !z-[90] h-[min(31rem,calc(100vh-11rem))] rounded-t-2xl border-t border-accent/20 bg-background/95 backdrop-blur-xl data-[state=open]:sheet-anim-in data-[state=closed]:sheet-anim-out [&_[data-radix-dialog-overlay]]:hidden overflow-y-auto pb-0 md:!bottom-0 md:h-auto md:max-h-[85vh]"
             >
               <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-foreground/20" />
               <SheetHeader>
