@@ -48,7 +48,7 @@ export function MobileBottomNav() {
           style={{
             background:
               "linear-gradient(180deg, rgba(21,21,21,0.92) 0%, rgba(10,10,10,0.94) 100%)",
-            border: `1px solid ${GOLD_DIM}`,
+            border: `1px solid ${ACCENT_DIM}`,
             boxShadow: `0 20px 40px -18px rgba(0,0,0,0.9), 0 0 0 1px rgba(231,184,75,0.08), inset 0 1px 0 rgba(255,255,255,0.04)`,
             backdropFilter: "blur(18px) saturate(140%)",
             WebkitBackdropFilter: "blur(18px) saturate(140%)",
@@ -58,7 +58,7 @@ export function MobileBottomNav() {
           <span
             className="pointer-events-none absolute inset-x-10 top-0 h-px"
             style={{
-              background: `linear-gradient(90deg, transparent, ${GOLD_SOFT}, transparent)`,
+              background: `linear-gradient(90deg, transparent, ${ACCENT_SOFT}, transparent)`,
             }}
           />
 
@@ -72,7 +72,7 @@ export function MobileBottomNav() {
               background: "#0A0A0A",
               borderBottomLeftRadius: "50%",
               borderBottomRightRadius: "50%",
-              boxShadow: `inset 0 -1px 0 ${GOLD_DIM}`,
+              boxShadow: `inset 0 -1px 0 ${ACCENT_DIM}`,
             }}
           />
           <span
@@ -83,7 +83,7 @@ export function MobileBottomNav() {
               height: 48,
               borderBottomLeftRadius: "50%",
               borderBottomRightRadius: "50%",
-              border: `1px solid ${GOLD_DIM}`,
+              border: `1px solid ${ACCENT_DIM}`,
               borderTop: "none",
             }}
           />
@@ -105,8 +105,8 @@ export function MobileBottomNav() {
       {/* breathing keyframes */}
       <style>{`
         @keyframes msn-breathe {
-          0%, 100% { box-shadow: 0 0 0 1px ${GOLD}, 0 0 24px ${GOLD_DIM}, 0 14px 28px -10px rgba(0,0,0,0.9); }
-          50% { box-shadow: 0 0 0 1px ${GOLD}, 0 0 34px ${GOLD_SOFT}, 0 14px 28px -10px rgba(0,0,0,0.9); }
+          0%, 100% { box-shadow: 0 0 0 1px ${ACCENT}, 0 0 24px ${ACCENT_DIM}, 0 14px 28px -10px rgba(0,0,0,0.9); }
+          50% { box-shadow: 0 0 0 1px ${ACCENT}, 0 0 34px ${ACCENT_SOFT}, 0 14px 28px -10px rgba(0,0,0,0.9); }
         }
         @keyframes msn-underline {
           from { transform: translateX(-50%) scaleX(0); }
@@ -125,13 +125,13 @@ function NavItem({ item, active }: { item: Item; active: boolean }) {
       aria-label={label}
       aria-current={active ? "page" : undefined}
       className="group relative flex flex-col items-center justify-center gap-1 px-1 py-2 transition-all duration-[250ms] hover:-translate-y-[2px]"
-      style={{ color: active ? GOLD : "#FFFFFF" }}
+      style={{ color: active ? ACCENT : "#FFFFFF" }}
     >
       <Icon
         className="size-[22px] transition-all duration-[250ms] group-hover:scale-[1.03]"
         strokeWidth={1.6}
         style={{
-          filter: active ? `drop-shadow(0 0 6px ${GOLD_SOFT})` : "none",
+          filter: active ? `drop-shadow(0 0 6px ${ACCENT_SOFT})` : "none",
         }}
       />
       <span
@@ -148,9 +148,9 @@ function NavItem({ item, active }: { item: Item; active: boolean }) {
         className="absolute bottom-1 left-1/2 h-[2px] rounded-full origin-center transition-transform duration-[250ms]"
         style={{
           width: 22,
-          background: GOLD,
+          background: ACCENT,
           transform: `translateX(-50%) scaleX(${active ? 1 : 0})`,
-          boxShadow: active ? `0 0 8px ${GOLD_SOFT}` : "none",
+          boxShadow: active ? `0 0 8px ${ACCENT_SOFT}` : "none",
         }}
       />
       {!active && (
@@ -158,7 +158,7 @@ function NavItem({ item, active }: { item: Item; active: boolean }) {
           aria-hidden
           className="absolute bottom-1 left-1/2 h-[2px] w-[22px] rounded-full origin-center scale-x-0 transition-transform duration-[250ms] group-hover:scale-x-100"
           style={{
-            background: GOLD,
+            background: ACCENT,
             transform: "translateX(-50%) scaleX(0)",
           }}
         />
@@ -181,23 +181,23 @@ function CenterButton({ item, active }: { item: Item; active: boolean }) {
           height: 70,
           background:
             "radial-gradient(circle at 30% 25%, #1d1d1d 0%, #0A0A0A 70%)",
-          border: `1.5px solid ${GOLD}`,
+          border: `1.5px solid ${ACCENT}`,
           animation: "msn-breathe 2.8s ease-in-out infinite",
         }}
       >
         <Icon
           className="size-7"
           strokeWidth={1.6}
-          style={{ color: GOLD, filter: `drop-shadow(0 0 6px ${GOLD_SOFT})` }}
+          style={{ color: ACCENT, filter: `drop-shadow(0 0 6px ${ACCENT_SOFT})` }}
         />
       </a>
       <span
         className="pointer-events-auto mt-1.5 text-[10px] font-bold uppercase"
         style={{
-          color: GOLD,
+          color: ACCENT,
           letterSpacing: "2px",
           fontFamily: "'Oswald', 'Bebas Neue', 'Anton', sans-serif",
-          textShadow: `0 0 8px ${GOLD_DIM}`,
+          textShadow: `0 0 8px ${ACCENT_DIM}`,
         }}
       >
         {label}
