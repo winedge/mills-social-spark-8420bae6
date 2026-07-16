@@ -180,20 +180,25 @@ function MenuPage() {
                 {cat === "All" ? "Filter" : cat}
               </button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="rounded-t-2xl">
+            <SheetContent
+              side="bottom"
+              className="rounded-t-2xl border-t border-accent/20 bg-background/95 backdrop-blur-xl data-[state=open]:sheet-anim-in data-[state=closed]:sheet-anim-out [&_[data-radix-dialog-overlay]]:hidden"
+            >
+              <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-foreground/20" />
               <SheetHeader>
                 <SheetTitle className="font-display text-2xl uppercase text-left">Filter by section</SheetTitle>
               </SheetHeader>
               <div className="grid grid-cols-2 gap-2 mt-4 pb-4">
-                {categories.map((c) => {
+                {categories.map((c, idx) => {
                   const active = cat === c;
                   return (
                     <button
                       key={c}
                       onClick={() => setCat(c)}
-                      className={`min-h-12 px-4 text-xs font-bold uppercase tracking-widest border flex items-center justify-between gap-2 transition-colors ${
+                      style={{ animationDelay: `${idx * 40}ms` }}
+                      className={`animate-chip-in min-h-12 px-4 text-xs font-bold uppercase tracking-widest border flex items-center justify-between gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] ${
                         active
-                          ? "bg-accent text-primary-foreground border-accent"
+                          ? "bg-accent text-primary-foreground border-accent shadow-[0_0_20px_-4px] shadow-accent/60"
                           : "border-border text-foreground hover:border-accent/50"
                       }`}
                     >
