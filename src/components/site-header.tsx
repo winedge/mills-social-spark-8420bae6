@@ -54,7 +54,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
             alt="Mill's Modern Social"
             width={260}
             height={60}
-            className="h-16 md:h-20 w-auto object-contain"
+            className="h-14 md:h-[72px] w-auto object-contain"
           />
         </Link>
         <div className="hidden md:flex justify-end">
