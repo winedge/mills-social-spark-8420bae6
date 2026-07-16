@@ -50,13 +50,19 @@ function PhoneIcon({ className }: { className?: string }) {
   );
 }
 
-const items = [
+const items: Array<{
+  to: string;
+  label: string;
+  Icon: (props: { className?: string }) => JSX.Element;
+  badge?: string;
+}> = [
   { to: "/sports", label: "Sports", Icon: FootballIcon, badge: "HOT" },
   { to: "/play", label: "Play", Icon: PlateForkIcon },
   { to: "/menu", label: "Food Menu", Icon: UtensilsIcon },
   { to: "/party", label: "Party", Icon: DrumsIcon },
   { to: "/#contact", label: "Contact", Icon: PhoneIcon },
-] as const;
+];
+
 
 export function MobileBottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
