@@ -26,9 +26,21 @@ const categories = [
 
 type Category = (typeof categories)[number];
 
+const calorieRanges = [
+  { id: "all", label: "All Calories", min: 0, max: Infinity },
+  { id: "light", label: "Under 300", min: 0, max: 299 },
+  { id: "mid", label: "300 – 600", min: 300, max: 600 },
+  { id: "hearty", label: "600 – 900", min: 600, max: 900 },
+  { id: "indulgent", label: "900+", min: 900, max: Infinity },
+] as const;
+
+type CalId = (typeof calorieRanges)[number]["id"];
+const calIds = calorieRanges.map((c) => c.id) as [CalId, ...CalId[]];
+
 const menuSchema = z.object({
   cat: fallback(z.enum(categories), "All").default("All"),
   q: fallback(z.string(), "").default(""),
+  cal: fallback(z.enum(calIds), "all").default("all"),
 });
 
 export const Route = createFileRoute("/menu")({
