@@ -278,7 +278,12 @@ function MenuPage() {
                         </div>
                         <p className="text-sm text-muted-foreground text-pretty">{i.desc}</p>
                       </div>
-                      <div className="font-mono text-accent text-lg shrink-0">{i.price}</div>
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <div className="font-mono text-accent text-lg">{i.price}</div>
+                        <div className="font-mono text-[10px] text-muted-foreground tracking-widest">
+                          {i.cal} CAL
+                        </div>
+                      </div>
                     </article>
                   ))}
                 </div>
