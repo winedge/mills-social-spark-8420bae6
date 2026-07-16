@@ -170,29 +170,23 @@ function NavItem({ item, active }: { item: Item; active: boolean }) {
 function CenterButton({ item, active }: { item: Item; active: boolean }) {
   const { Icon, label, to } = item;
   return (
-    <div className="absolute left-1/2 -translate-x-1/2 -top-[46px] z-10 flex flex-col items-center pointer-events-none">
-      <a
-        href={to}
-        aria-label={label}
-        aria-current={active ? "page" : undefined}
-        className="pointer-events-auto relative grid place-items-center rounded-full transition-transform duration-[250ms] hover:scale-[1.03]"
+    <a
+      href={to}
+      aria-label={label}
+      aria-current={active ? "page" : undefined}
+      className="pointer-events-auto absolute left-1/2 -translate-x-1/2 -top-[2px] z-10 flex flex-col items-center justify-start"
+      style={{ width: 92, height: 72 }}
+    >
+      <Icon
+        className="mt-[6px] size-[26px] transition-transform duration-[250ms] hover:scale-[1.05]"
+        strokeWidth={1.6}
         style={{
-          width: 64,
-          height: 64,
-          background:
-            "radial-gradient(circle at 30% 25%, #1d1d1d 0%, #0A0A0A 70%)",
-          border: `1.5px solid ${ACCENT}`,
-          animation: "msn-breathe 2.8s ease-in-out infinite",
+          color: ACCENT,
+          filter: `drop-shadow(0 0 8px ${ACCENT_SOFT})`,
         }}
-      >
-        <Icon
-          className="size-6"
-          strokeWidth={1.6}
-          style={{ color: ACCENT, filter: `drop-shadow(0 0 6px ${ACCENT_SOFT})` }}
-        />
-      </a>
+      />
       <span
-        className="pointer-events-auto mt-2 text-[9px] font-bold uppercase leading-none whitespace-nowrap"
+        className="mt-[4px] text-[9px] font-bold uppercase leading-none whitespace-nowrap"
         style={{
           color: ACCENT,
           letterSpacing: "2.5px",
@@ -202,6 +196,6 @@ function CenterButton({ item, active }: { item: Item; active: boolean }) {
       >
         {label}
       </span>
-    </div>
+    </a>
   );
 }
