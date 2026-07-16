@@ -61,7 +61,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
           <div className="hidden md:flex md:justify-self-end">
             <Link
               to="/party"
-              className="bg-primary text-primary-foreground px-5 py-2 text-xs font-bold uppercase hover:bg-accent transition-colors"
+              className="bg-primary text-primary-foreground px-7 py-3.5 text-sm font-bold uppercase tracking-widest hover:bg-accent transition-colors"
             >
               Reserve A Table
             </Link>
