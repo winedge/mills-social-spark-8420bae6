@@ -34,17 +34,8 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
           </div>
         </div>
       )}
-      <div className="max-w-7xl mx-auto px-6 h-16 grid grid-cols-[auto_1fr_auto] items-center gap-4">
-        <Link to="/" className="flex items-center min-w-0" aria-label="Mills Modern Social — Home">
-          <img
-            src={millsLogo.url}
-            alt="Mill's Modern Social"
-            width={200}
-            height={44}
-            className="h-9 md:h-10 w-auto object-contain"
-          />
-        </Link>
-        <div className="hidden md:flex justify-center gap-8 text-xs font-semibold uppercase tracking-widest">
+      <div className="max-w-7xl mx-auto px-6 h-20 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+        <div className="hidden md:flex justify-start gap-8 text-xs font-semibold uppercase tracking-widest">
           {navLinks.map((l) => (
             <Link
               key={l.to}
@@ -57,6 +48,15 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
             </Link>
           ))}
         </div>
+        <Link to="/" className="flex items-center justify-center min-w-0" aria-label="Mills Modern Social — Home">
+          <img
+            src={millsLogo.url}
+            alt="Mill's Modern Social"
+            width={260}
+            height={60}
+            className="h-12 md:h-14 w-auto object-contain"
+          />
+        </Link>
         <div className="flex items-center gap-2 justify-end">
           <Link
             to="/party"
