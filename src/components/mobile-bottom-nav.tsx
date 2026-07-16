@@ -170,7 +170,7 @@ function NavItem({ item, active }: { item: Item; active: boolean }) {
 function CenterButton({ item, active }: { item: Item; active: boolean }) {
   const { Icon, label, to } = item;
   return (
-    <div className="absolute left-1/2 -translate-x-1/2 -top-[34px] flex flex-col items-center pointer-events-none">
+    <div className="absolute left-1/2 -translate-x-1/2 -top-[34px] z-10 flex flex-col items-center pointer-events-none">
       <a
         href={to}
         aria-label={label}
