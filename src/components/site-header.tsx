@@ -45,7 +45,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
               className="h-10 md:h-16 w-auto object-contain"
             />
           </Link>
-          <div className="hidden md:flex items-center gap-8 text-base font-semibold uppercase tracking-widest md:justify-self-center">
+          <div className="hidden md:flex items-center gap-8 text-[17px] font-semibold uppercase tracking-widest md:justify-self-center">
             {navLinks.map((l) => (
               <Link
                 key={l.to}
