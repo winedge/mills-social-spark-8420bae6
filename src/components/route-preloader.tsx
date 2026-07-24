@@ -9,23 +9,28 @@ export function RoutePreloader() {
   const status = useRouterState({ select: (s) => s.status });
   const isLoading = status === "pending";
 
-  // Only mount on client to avoid SSR/hydration mismatch, and hard-cap visibility.
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  // On initial page load/refresh, show until window "load" fires so users
+  // actually see the preloader (router status is already "idle" by hydration).
+  const [initialLoad, setInitialLoad] = useState(true);
 
-  const [show, setShow] = useState(false);
   useEffect(() => {
-    if (!isLoading) {
-      setShow(false);
-      return;
+    setMounted(true);
+    const done = () => setInitialLoad(false);
+    if (document.readyState === "complete") {
+      const t = setTimeout(done, 600);
+      return () => clearTimeout(t);
     }
-    setShow(true);
-    // Safety: never stay visible longer than 5s regardless of router state.
-    const t = setTimeout(() => setShow(false), 5000);
-    return () => clearTimeout(t);
-  }, [isLoading]);
+    window.addEventListener("load", done, { once: true });
+    const safety = setTimeout(done, 4000);
+    return () => {
+      window.removeEventListener("load", done);
+      clearTimeout(safety);
+    };
+  }, []);
 
-  if (!mounted || !show) return null;
+  const show = mounted && (isLoading || initialLoad);
+  if (!show) return null;
 
   return (
     <div
