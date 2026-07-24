@@ -1,36 +1,73 @@
 import { useRouterState } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+const MIN_VISIBLE_MS = 900;
 
 /**
  * Full-screen route preloader with an animated beer-cup filling animation.
- * Rendered as inline SVG + CSS so it stays crisp and lightweight (no GIF asset).
+ * Shows on initial load AND on every route change, for a minimum duration.
  */
 export function RoutePreloader() {
   const status = useRouterState({ select: (s) => s.status });
-  const isLoading = status === "pending";
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isPending = status === "pending";
 
   const [mounted, setMounted] = useState(false);
-  // On initial page load/refresh, show until window "load" fires so users
-  // actually see the preloader (router status is already "idle" by hydration).
-  const [initialLoad, setInitialLoad] = useState(true);
+  const [visible, setVisible] = useState(true);
+  const shownAt = useRef<number>(Date.now());
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const showNow = () => {
+    if (hideTimer.current) {
+      clearTimeout(hideTimer.current);
+      hideTimer.current = null;
+    }
+    shownAt.current = Date.now();
+    setVisible(true);
+  };
+
+  const hideWhenReady = () => {
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    const elapsed = Date.now() - shownAt.current;
+    const remaining = Math.max(0, MIN_VISIBLE_MS - elapsed);
+    hideTimer.current = setTimeout(() => setVisible(false), remaining);
+  };
+
+  // Initial mount: show until window load fires, then hide after min duration.
   useEffect(() => {
     setMounted(true);
-    const done = () => setInitialLoad(false);
+    shownAt.current = Date.now();
+    const done = () => hideWhenReady();
     if (document.readyState === "complete") {
-      const t = setTimeout(done, 600);
-      return () => clearTimeout(t);
+      done();
+    } else {
+      window.addEventListener("load", done, { once: true });
     }
-    window.addEventListener("load", done, { once: true });
-    const safety = setTimeout(done, 4000);
+    const safety = setTimeout(() => setVisible(false), 5000);
     return () => {
       window.removeEventListener("load", done);
       clearTimeout(safety);
     };
   }, []);
 
-  const show = mounted && (isLoading || initialLoad);
-  if (!show) return null;
+  // Show on route change.
+  useEffect(() => {
+    if (!mounted) return;
+    showNow();
+    hideWhenReady();
+  }, [pathname, mounted]);
+
+  // Extend while router is actively pending.
+  useEffect(() => {
+    if (!mounted) return;
+    if (isPending) {
+      showNow();
+    } else {
+      hideWhenReady();
+    }
+  }, [isPending, mounted]);
+
+  if (!mounted || !visible) return null;
 
   return (
     <div
