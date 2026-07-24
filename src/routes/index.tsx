@@ -11,6 +11,7 @@ import pulseTrivia from "@/assets/pulse-trivia.jpg";
 import pulseLiveMusic from "@/assets/pulse-live-music.jpg";
 import pulseBrunch from "@/assets/pulse-brunch.jpg";
 import { SiteHeader } from "@/components/site-header";
+import { openReservation } from "@/components/reservation-modal";
 import { SiteFooter } from "@/components/site-footer";
 import { UfcSection, ufcQueryOptions } from "@/components/ufc-section";
 
@@ -157,12 +158,13 @@ function Home() {
             Ice-cold drinks. Scratch-made food. Every big game on the biggest screens.
           </p>
           <div className="flex flex-col md:flex-row gap-3 justify-center">
-            <Link
-              to="/party"
+            <button
+              type="button"
+              onClick={() => openReservation()}
               className="px-8 py-3 bg-accent text-primary-foreground font-bold uppercase tracking-widest text-sm hover:scale-105 transition-transform inline-block"
             >
               Reserve a Table
-            </Link>
+            </button>
             <Link
               to="/menu"
               className="px-8 py-3 border border-foreground/20 bg-surface/80 backdrop-blur-sm font-bold uppercase tracking-widest text-sm hover:bg-primary hover:text-primary-foreground transition-all"
@@ -238,12 +240,13 @@ function Home() {
                   <p className="text-muted-foreground text-sm font-semibold">Every screen, every league</p>
                 </div>
                 <div className="ml-auto">
-                  <Link
-                    to="/party"
+                  <button
+                    type="button"
+                    onClick={() => openReservation()}
                     className="inline-block px-6 py-3 bg-accent text-primary-foreground font-black uppercase text-sm tracking-tighter transition-all hover:brightness-110 active:translate-y-0.5"
                   >
                     Book a Table
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>

@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import millsLogo from "@/assets/mills-logo.png.asset.json";
+import { openReservation } from "@/components/reservation-modal";
 
 const tickerItems = [
   "LIVE: SUNS @ BUCKS · Q3 84-79",
@@ -59,12 +60,13 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
             ))}
           </div>
           <div className="hidden md:flex md:justify-self-end">
-            <Link
-              to="/party"
+            <button
+              type="button"
+              onClick={() => openReservation()}
               className="bg-primary text-primary-foreground px-7 py-3.5 text-sm font-bold uppercase tracking-widest hover:bg-accent transition-colors"
             >
               Reserve A Table
-            </Link>
+            </button>
           </div>
 
 
@@ -152,13 +154,16 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
             }`}
             style={{ transitionDelay: open ? `${120 + navLinks.length * 60}ms` : "0ms" }}
           >
-            <Link
-              to="/party"
-              onClick={() => setOpen(false)}
-              className="block bg-[#4FC3F7] text-black px-5 py-4 text-sm font-bold uppercase text-center tracking-widest hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition"
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                openReservation();
+              }}
+              className="block w-full bg-[#4FC3F7] text-black px-5 py-4 text-sm font-bold uppercase text-center tracking-widest hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition"
             >
               Book a Table
-            </Link>
+            </button>
             <p className="font-mono text-[10px] text-muted-foreground text-center uppercase tracking-widest">
               Mill Ave &amp; Broadway · Tempe, AZ
             </p>
