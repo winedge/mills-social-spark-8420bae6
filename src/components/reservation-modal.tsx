@@ -1,0 +1,235 @@
+import { useEffect, useState, type FormEvent } from "react";
+import { X, Calendar, Clock, Users, User, Mail, Phone, Check } from "lucide-react";
+
+export const RESERVATION_EVENT = "open-reservation";
+
+export function openReservation() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent(RESERVATION_EVENT));
+  }
+}
+
+type Status = "idle" | "submitting" | "success";
+
+export function ReservationModal() {
+  const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [status, setStatus] = useState<Status>("idle");
+
+  useEffect(() => {
+    const handler = () => {
+      setStatus("idle");
+      setOpen(true);
+    };
+    window.addEventListener(RESERVATION_EVENT, handler);
+    return () => window.removeEventListener(RESERVATION_EVENT, handler);
+  }, []);
+
+  useEffect(() => {
+    setMounted(open);
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setStatus("submitting");
+    setTimeout(() => {
+      setStatus("success");
+      setTimeout(() => setOpen(false), 1800);
+    }, 900);
+  };
+
+  const today = new Date().toISOString().split("T")[0];
+
+  return (
+    <div
+      className={`fixed inset-0 z-[200] flex items-center justify-center p-4 transition-all duration-300 ${
+        open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+      }`}
+      aria-hidden={!open}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="reservation-title"
+    >
+      {/* Backdrop */}
+      <div
+        className={`absolute inset-0 bg-background/80 backdrop-blur-md transition-opacity duration-300 ${
+          open ? "opacity-100" : "opacity-0"
+        }`}
+        onClick={() => setOpen(false)}
+      />
+
+      {/* Accent glow */}
+      <div
+        className={`pointer-events-none absolute inset-0 transition-opacity duration-500 ${
+          open ? "opacity-100" : "opacity-0"
+        }`}
+        style={{
+          background:
+            "radial-gradient(ellipse 50% 40% at 50% 30%, rgba(56,189,248,0.18), transparent 70%)",
+        }}
+      />
+
+      {/* Panel */}
+      <div
+        className={`relative w-full max-w-lg bg-surface border border-border shadow-2xl transition-all duration-500 ease-out ${
+          mounted && open
+            ? "opacity-100 translate-y-0 scale-100"
+            : "opacity-0 translate-y-6 scale-95"
+        }`}
+        style={{ transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)" }}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between p-6 border-b border-border">
+          <div>
+            <p className="font-mono text-[10px] text-accent tracking-[0.3em] uppercase mb-2">
+              Mill's Modern Social
+            </p>
+            <h2
+              id="reservation-title"
+              className="font-display text-3xl md:text-4xl uppercase tracking-tight leading-none"
+            >
+              Reserve a Table
+            </h2>
+          </div>
+          <button
+            onClick={() => setOpen(false)}
+            className="size-10 grid place-items-center border border-border bg-background hover:border-accent hover:text-accent transition-colors shrink-0"
+            aria-label="Close"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="relative">
+          {status === "success" ? (
+            <div className="p-10 text-center animate-fade-in">
+              <div className="mx-auto size-16 rounded-full bg-accent/15 grid place-items-center mb-5 animate-scale-in">
+                <Check className="size-8 text-accent" strokeWidth={3} />
+              </div>
+              <h3 className="font-display text-2xl uppercase tracking-tight mb-2">
+                Table Reserved
+              </h3>
+              <p className="text-muted-foreground text-sm">
+                We'll send a confirmation shortly. See you soon.
+              </p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field icon={<User className="size-4" />} label="Full Name">
+                  <input
+                    required
+                    type="text"
+                    placeholder="Jane Doe"
+                    className="input-base"
+                  />
+                </Field>
+                <Field icon={<Phone className="size-4" />} label="Phone">
+                  <input
+                    required
+                    type="tel"
+                    placeholder="(480) 555-0123"
+                    className="input-base"
+                  />
+                </Field>
+              </div>
+
+              <Field icon={<Mail className="size-4" />} label="Email">
+                <input
+                  required
+                  type="email"
+                  placeholder="you@email.com"
+                  className="input-base"
+                />
+              </Field>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Field icon={<Calendar className="size-4" />} label="Date">
+                  <input required type="date" min={today} className="input-base" />
+                </Field>
+                <Field icon={<Clock className="size-4" />} label="Time">
+                  <input required type="time" defaultValue="19:00" className="input-base" />
+                </Field>
+                <Field icon={<Users className="size-4" />} label="Party">
+                  <select required defaultValue="2" className="input-base">
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>
+                        {n} {n === 1 ? "guest" : "guests"}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+
+              <Field label="Special Requests (Optional)">
+                <textarea
+                  rows={3}
+                  placeholder="Big game viewing, birthday, dietary needs…"
+                  className="input-base resize-none"
+                />
+              </Field>
+
+              <button
+                type="submit"
+                disabled={status === "submitting"}
+                className="w-full bg-accent text-primary-foreground py-4 font-bold uppercase tracking-widest text-sm hover:brightness-110 active:scale-[0.99] transition disabled:opacity-70"
+              >
+                {status === "submitting" ? "Reserving…" : "Confirm Reservation"}
+              </button>
+              <p className="text-center font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
+                Mill Ave &amp; Broadway · Tempe, AZ
+              </p>
+            </form>
+          )}
+        </div>
+      </div>
+
+      <style>{`
+        .input-base {
+          width: 100%;
+          background: hsl(var(--background));
+          border: 1px solid hsl(var(--border));
+          padding: 0.65rem 0.75rem;
+          font-size: 0.9rem;
+          color: hsl(var(--foreground));
+          transition: border-color 150ms, box-shadow 150ms;
+          outline: none;
+        }
+        .input-base:focus {
+          border-color: hsl(var(--accent));
+          box-shadow: 0 0 0 3px rgba(56,189,248,0.15);
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  icon,
+  children,
+}: {
+  label: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="block">
+      <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">
+        {icon}
+        {label}
+      </span>
+      {children}
+    </label>
+  );
+}

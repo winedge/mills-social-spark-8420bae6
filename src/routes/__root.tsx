@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { MobileBottomNav } from "../components/mobile-bottom-nav";
 import { RoutePreloader } from "../components/route-preloader";
+import { ReservationModal } from "../components/reservation-modal";
 
 
 function NotFoundComponent() {
@@ -127,6 +128,7 @@ function RootComponent() {
       <Outlet />
       <MobileBottomNav />
       <RoutePreloader />
+      <ReservationModal />
     </QueryClientProvider>
 
   );
