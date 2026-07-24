@@ -9,27 +9,31 @@ export function RoutePreloader() {
   const status = useRouterState({ select: (s) => s.status });
   const isLoading = status === "pending";
 
-  // Keep mounted briefly after status flips so the exit animation can play
-  const [visible, setVisible] = useState(isLoading);
+  // Only mount on client to avoid SSR/hydration mismatch, and hard-cap visibility.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const [show, setShow] = useState(false);
   useEffect(() => {
-    if (isLoading) {
-      setVisible(true);
+    if (!isLoading) {
+      setShow(false);
       return;
     }
-    const t = setTimeout(() => setVisible(false), 260);
+    setShow(true);
+    // Safety: never stay visible longer than 5s regardless of router state.
+    const t = setTimeout(() => setShow(false), 5000);
     return () => clearTimeout(t);
   }, [isLoading]);
 
-  if (!visible) return null;
+  if (!mounted || !show) return null;
 
   return (
     <div
       role="status"
       aria-live="polite"
       aria-label="Loading"
-      className={`fixed inset-0 z-[90] flex flex-col items-center justify-center ${
-        isLoading ? "overlay-anim-in" : "overlay-anim-out"
-      }`}
+      className="fixed inset-0 z-[90] flex flex-col items-center justify-center overlay-anim-in"
+
       style={{
         background:
           "radial-gradient(ellipse at center, rgba(15,23,42,0.92) 0%, rgba(7,9,13,0.98) 70%)",
