@@ -38,14 +38,33 @@ export function ReservationModal() {
     };
   }, [open]);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
     setStatus("submitting");
-    setTimeout(() => {
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    fd.append("_subject", `New Reservation — ${fd.get("name") ?? ""}`);
+    fd.append("_template", "table");
+    fd.append("_captcha", "false");
+    try {
+      const res = await fetch("https://formsubmit.co/ajax/admin@millsmodernsocial.com", {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: fd,
+      });
+      if (!res.ok) throw new Error("Request failed");
       setStatus("success");
-      setTimeout(() => setOpen(false), 1800);
-    }, 900);
+      form.reset();
+      setTimeout(() => setOpen(false), 2200);
+    } catch (err) {
+      setStatus("idle");
+      setError("Couldn't send reservation. Please call us or try again.");
+    }
   };
+
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -129,6 +148,7 @@ export function ReservationModal() {
                 <Field icon={<User className="size-4" />} label="Full Name">
                   <input
                     required
+                    name="name"
                     type="text"
                     placeholder="Jane Doe"
                     className="input-base"
@@ -137,6 +157,7 @@ export function ReservationModal() {
                 <Field icon={<Phone className="size-4" />} label="Phone">
                   <input
                     required
+                    name="phone"
                     type="tel"
                     placeholder="(480) 555-0123"
                     className="input-base"
@@ -147,6 +168,7 @@ export function ReservationModal() {
               <Field icon={<Mail className="size-4" />} label="Email">
                 <input
                   required
+                  name="email"
                   type="email"
                   placeholder="you@email.com"
                   className="input-base"
@@ -155,13 +177,13 @@ export function ReservationModal() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field icon={<Calendar className="size-4" />} label="Date">
-                  <input required type="date" min={today} className="input-base" />
+                  <input required name="date" type="date" min={today} className="input-base" />
                 </Field>
                 <Field icon={<Clock className="size-4" />} label="Time">
-                  <input required type="time" defaultValue="19:00" className="input-base" />
+                  <input required name="time" type="time" defaultValue="19:00" className="input-base" />
                 </Field>
                 <Field icon={<Users className="size-4" />} label="Party">
-                  <select required defaultValue="2" className="input-base">
+                  <select required name="party_size" defaultValue="2" className="input-base">
                     {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
                       <option key={n} value={n}>
                         {n} {n === 1 ? "guest" : "guests"}
@@ -173,11 +195,18 @@ export function ReservationModal() {
 
               <Field label="Special Requests (Optional)">
                 <textarea
+                  name="special_requests"
                   rows={3}
                   placeholder="Big game viewing, birthday, dietary needs…"
                   className="input-base resize-none"
                 />
               </Field>
+
+              {error && (
+                <p className="text-sm text-red-500 font-mono uppercase tracking-wider text-center">
+                  {error}
+                </p>
+              )}
 
               <button
                 type="submit"
@@ -190,6 +219,7 @@ export function ReservationModal() {
                 Mill Ave &amp; Broadway · Tempe, AZ
               </p>
             </form>
+
           )}
         </div>
       </div>
