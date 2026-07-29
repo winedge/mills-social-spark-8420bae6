@@ -1,16 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
 import {
   LogOut, Shield, Loader2, Mail, Phone, Calendar, Users, MapPin,
   Trash2, Check, LayoutDashboard, UtensilsCrossed, PartyPopper, Trophy,
   Settings as SettingsIcon, Menu as MenuIcon, X, Plus, Pencil, Save,
-  MessageCircle, Search, ChevronRight,
+  MessageCircle, Search, ChevronRight, Sparkles, FolderTree, Eye, Activity,
+  TrendingUp,
 } from "lucide-react";
 import logo from "@/assets/mills-logo.png.asset.json";
 import {
   buildWhatsAppUrl, formatReservationMessage, formatSpaceMessage,
 } from "@/lib/whatsapp";
+import { estimateCalories } from "@/lib/menu-ai.functions";
+import { getAnalytics, type AnalyticsStats } from "@/lib/analytics.functions";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -24,7 +28,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 type Section =
-  | "overview" | "reservations" | "spaces" | "menu"
+  | "overview" | "reservations" | "spaces" | "menu" | "categories"
   | "party" | "sports" | "settings";
 
 const NAV: { id: Section; label: string; icon: any }[] = [
@@ -32,6 +36,7 @@ const NAV: { id: Section; label: string; icon: any }[] = [
   { id: "reservations", label: "Reservations", icon: Calendar },
   { id: "spaces", label: "Space Requests", icon: MapPin },
   { id: "menu", label: "Menu", icon: UtensilsCrossed },
+  { id: "categories", label: "Categories", icon: FolderTree },
   { id: "party", label: "Party & Shows", icon: PartyPopper },
   { id: "sports", label: "Sports", icon: Trophy },
   { id: "settings", label: "Settings", icon: SettingsIcon },
@@ -175,6 +180,7 @@ function Dashboard({ email }: { email: string }) {
           {section === "reservations" && <ReservationsSection />}
           {section === "spaces" && <SpacesSection />}
           {section === "menu" && <MenuSection />}
+          {section === "categories" && <CategoriesSection />}
           {section === "party" && <PartySection />}
           {section === "sports" && <SportsSection />}
           {section === "settings" && <SettingsSection />}
