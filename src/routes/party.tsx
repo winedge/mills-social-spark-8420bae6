@@ -67,10 +67,26 @@ function PartyPage() {
       setSubmitting(false);
       return;
     }
-    await new Promise((r) => setTimeout(r, 600));
-    toast.success("Thanks! We'll be in touch within 24 hours.");
-    (e.target as HTMLFormElement).reset();
-    setSubmitting(false);
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { error } = await supabase.from("space_reservations").insert({
+        name: parsed.data.name,
+        email: parsed.data.email,
+        phone: parsed.data.phone,
+        event_date: parsed.data.date,
+        party_size: parsed.data.size,
+        space: parsed.data.space,
+        message: parsed.data.message || null,
+      });
+      if (error) throw error;
+      toast.success("Thanks! We'll be in touch within 24 hours.");
+      (e.target as HTMLFormElement).reset();
+    } catch (err) {
+      console.error(err);
+      toast.error("Couldn't send request. Please try again or call us.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
