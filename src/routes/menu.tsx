@@ -2,10 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useMemo, useState } from "react";
-import { Search, SlidersHorizontal, X, Loader2 } from "lucide-react";
+import { Search, SlidersHorizontal, X, ChevronRight } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { useMenuItems } from "@/lib/content";
+import { useMenuItems, useMenuCategories, type DbMenuCategory } from "@/lib/content";
 import {
   Sheet,
   SheetContent,
@@ -13,19 +13,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-
-const categories = [
-  "All",
-  "Starters",
-  "Wings",
-  "Burgers & Mains",
-  "Shareables",
-  "Cocktails",
-  "Drafts",
-  "Desserts",
-] as const;
-
-type Category = (typeof categories)[number];
 
 const calorieRanges = [
   { id: "all", label: "All Calories", min: 0, max: Infinity },
@@ -39,7 +26,7 @@ type CalId = (typeof calorieRanges)[number]["id"];
 const calIds = calorieRanges.map((c) => c.id) as [CalId, ...CalId[]];
 
 const menuSchema = z.object({
-  cat: fallback(z.enum(categories), "All").default("All"),
+  catId: fallback(z.string(), "").default(""),
   q: fallback(z.string(), "").default(""),
   cal: fallback(z.enum(calIds), "all").default("all"),
 });
@@ -57,73 +44,168 @@ export const Route = createFileRoute("/menu")({
   component: MenuPage,
 });
 
-type Item = {
-  name: string;
-  desc: string;
-  price: string;
-  cal: number;
-  cat: Exclude<Category, "All">;
-  tag?: string | null;
-};
+type TreeNode = DbMenuCategory & { children: TreeNode[]; depth: number };
 
+function buildTree(cats: DbMenuCategory[]): TreeNode[] {
+  const byId = new Map<string, TreeNode>();
+  cats.forEach((c) => byId.set(c.id, { ...c, children: [], depth: 0 }));
+  const roots: TreeNode[] = [];
+  byId.forEach((node) => {
+    if (node.parent_id && byId.has(node.parent_id)) {
+      const parent = byId.get(node.parent_id)!;
+      node.depth = parent.depth + 1;
+      parent.children.push(node);
+    } else {
+      roots.push(node);
+    }
+  });
+  // Recompute depth via BFS to be safe when parents processed after children
+  const walk = (n: TreeNode, d: number) => {
+    n.depth = d;
+    n.children.forEach((c) => walk(c, d + 1));
+  };
+  roots.forEach((r) => walk(r, 0));
+  return roots;
+}
+
+function collectDescendantIds(node: TreeNode): Set<string> {
+  const set = new Set<string>([node.id]);
+  const walk = (n: TreeNode) => {
+    n.children.forEach((c) => {
+      set.add(c.id);
+      walk(c);
+    });
+  };
+  walk(node);
+  return set;
+}
+
+function findNode(nodes: TreeNode[], id: string): TreeNode | null {
+  for (const n of nodes) {
+    if (n.id === id) return n;
+    const found = findNode(n.children, id);
+    if (found) return found;
+  }
+  return null;
+}
 
 function MenuPage() {
-  const { cat, q, cal } = Route.useSearch();
+  const { catId, q, cal } = Route.useSearch();
   const navigate = Route.useNavigate();
   const [query, setQuery] = useState(q);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const { items: dbItems, loading } = useMenuItems();
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const { items: dbItems } = useMenuItems();
+  const { items: cats } = useMenuCategories();
 
-  const items: Item[] = useMemo(
-    () =>
-      dbItems.map((i) => ({
-        name: i.name,
-        desc: i.description,
-        price: i.price,
-        cal: i.calories ?? 0,
-        cat: (categories.includes(i.category as Category) ? i.category : "Starters") as Exclude<Category, "All">,
-        tag: i.tag,
-      })),
-    [dbItems],
-  );
+  const tree = useMemo(() => buildTree(cats), [cats]);
+  const nameById = useMemo(() => {
+    const m = new Map<string, string>();
+    cats.forEach((c) => m.set(c.id, c.name));
+    return m;
+  }, [cats]);
 
   const activeCal = calorieRanges.find((r) => r.id === cal) ?? calorieRanges[0];
 
-  const counts = useMemo(() => {
-    const m = new Map<Category, number>();
-    m.set("All", items.length);
-    for (const i of items) m.set(i.cat, (m.get(i.cat) ?? 0) + 1);
-    return m;
-  }, [items]);
+  const selectedIds = useMemo(() => {
+    if (!catId) return null;
+    const node = findNode(tree, catId);
+    return node ? collectDescendantIds(node) : new Set([catId]);
+  }, [catId, tree]);
 
   const filtered = useMemo(() => {
-    return items.filter((i) => {
-      const inCat = cat === "All" || i.cat === cat;
+    return dbItems.filter((i) => {
+      const inCat = !selectedIds || (i.category_id && selectedIds.has(i.category_id));
       const inQ =
         !query ||
         i.name.toLowerCase().includes(query.toLowerCase()) ||
-        i.desc.toLowerCase().includes(query.toLowerCase());
-      const inCal = i.cal >= activeCal.min && i.cal <= activeCal.max;
+        i.description.toLowerCase().includes(query.toLowerCase());
+      const c = i.calories ?? 0;
+      const inCal = c >= activeCal.min && c <= activeCal.max;
       return inCat && inQ && inCal;
     });
-  }, [cat, query, activeCal, items]);
+  }, [dbItems, selectedIds, query, activeCal]);
 
   const grouped = useMemo(() => {
-    const g = new Map<string, Item[]>();
+    const g = new Map<string, typeof filtered>();
     for (const i of filtered) {
-      if (!g.has(i.cat)) g.set(i.cat, []);
-      g.get(i.cat)!.push(i);
+      const label = (i.category_id && nameById.get(i.category_id)) || i.category || "Other";
+      if (!g.has(label)) g.set(label, []);
+      g.get(label)!.push(i);
     }
     return Array.from(g.entries());
-  }, [filtered]);
+  }, [filtered, nameById]);
 
-  function setCat(c: Category) {
-    navigate({ search: (prev: z.infer<typeof menuSchema>) => ({ ...prev, cat: c }) });
+  const counts = useMemo(() => {
+    const m = new Map<string, number>();
+    // For each category node, count items where item's category_id is in its descendant set
+    const walk = (n: TreeNode) => {
+      const set = collectDescendantIds(n);
+      let c = 0;
+      for (const it of dbItems) if (it.category_id && set.has(it.category_id)) c++;
+      m.set(n.id, c);
+      n.children.forEach(walk);
+    };
+    tree.forEach(walk);
+    return m;
+  }, [tree, dbItems]);
+
+  function setCat(id: string) {
+    navigate({ search: (prev: z.infer<typeof menuSchema>) => ({ ...prev, catId: id }) });
   }
-
   function setCal(id: CalId) {
     navigate({ search: (prev: z.infer<typeof menuSchema>) => ({ ...prev, cal: id }) });
   }
+  function toggleExpand(id: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  const activeName = catId ? nameById.get(catId) ?? "All" : "All";
+
+  const renderNode = (node: TreeNode) => {
+    const active = catId === node.id;
+    const hasChildren = node.children.length > 0;
+    const open = expanded.has(node.id) || active || node.children.some((c) => c.id === catId);
+    return (
+      <li key={node.id}>
+        <div className={`flex items-center gap-1 group`}>
+          {hasChildren ? (
+            <button
+              onClick={() => toggleExpand(node.id)}
+              aria-label={open ? "Collapse" : "Expand"}
+              className="p-1.5 text-muted-foreground hover:text-foreground shrink-0"
+            >
+              <ChevronRight className={`size-3.5 transition-transform ${open ? "rotate-90" : ""}`} />
+            </button>
+          ) : (
+            <span className="w-6 shrink-0" />
+          )}
+          <button
+            onClick={() => setCat(node.id)}
+            className={`flex-1 flex items-center justify-between gap-2 px-3 py-2 text-xs font-bold uppercase tracking-widest border transition ${
+              active
+                ? "bg-accent text-primary-foreground border-accent"
+                : "border-border/60 text-foreground hover:border-accent/60"
+            }`}
+          >
+            <span className="truncate">{node.name}</span>
+            <span className={`font-mono text-[10px] ${active ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+              {counts.get(node.id) ?? 0}
+            </span>
+          </button>
+        </div>
+        {hasChildren && open && (
+          <ul className="mt-1 ml-4 pl-3 border-l border-border/50 space-y-1">
+            {node.children.map(renderNode)}
+          </ul>
+        )}
+      </li>
+    );
+  };
 
   return (
     <div className="bg-background text-foreground font-body min-h-screen">
@@ -138,14 +220,13 @@ function MenuPage() {
           The <span className="text-accent">Menu</span>
         </h1>
         <p className="text-muted-foreground max-w-xl text-pretty">
-          Elevated game-day food and craft cocktails. Filter by section or search for your favorite.
+          Elevated game-day food and craft cocktails. Browse by category or search for your favorite.
         </p>
       </section>
 
       {/* Sticky filter bar */}
       <section className="sticky top-16 z-30 bg-background/95 backdrop-blur-md border-y border-border">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center gap-2">
-          {/* Search */}
           <div className="relative flex-1 min-w-0">
             <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
@@ -177,16 +258,16 @@ function MenuPage() {
             )}
           </div>
 
-          {/* Mobile filter FAB */}
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
               <button
                 type="button"
                 onClick={() => setSheetOpen(true)}
-                className="md:hidden shrink-0 h-11 px-4 border border-border bg-surface flex items-center gap-2 text-xs font-bold uppercase tracking-widest hover:border-accent"
+                className="shrink-0 h-11 px-4 border border-border bg-surface flex items-center gap-2 text-xs font-bold uppercase tracking-widest hover:border-accent"
               >
                 <SlidersHorizontal className="size-4" />
-                {cat === "All" ? "Filter" : cat}
+                <span className="hidden sm:inline">{activeName}</span>
+                <span className="sm:hidden">Filter</span>
               </button>
             </SheetTrigger>
             <SheetContent
@@ -207,42 +288,41 @@ function MenuPage() {
               </SheetHeader>
 
               <div className="mt-5">
-                <div className="font-mono text-[10px] text-muted-foreground tracking-widest mb-2">SECTION</div>
-                <div className="grid grid-cols-2 gap-2">
-                  {categories.map((c, idx) => {
-                    const active = cat === c;
-                    return (
-                      <button
-                        key={c}
-                        onClick={() => setCat(c)}
-                        style={{ animationDelay: `${idx * 40}ms` }}
-                        className={`animate-chip-in min-h-12 px-4 text-xs font-bold uppercase tracking-widest border flex items-center justify-between gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] ${
-                          active
-                            ? "bg-accent text-primary-foreground border-accent shadow-[0_0_20px_-4px] shadow-accent/60"
-                            : "border-border text-foreground hover:border-accent/50"
-                        }`}
-                      >
-                        <span>{c}</span>
-                        <span className={`font-mono text-[10px] ${active ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                          {counts.get(c) ?? 0}
-                        </span>
-                      </button>
-                    );
-                  })}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="font-mono text-[10px] text-muted-foreground tracking-widest">CATEGORY</div>
+                  {catId && (
+                    <button
+                      onClick={() => setCat("")}
+                      className="font-mono text-[10px] text-accent uppercase tracking-widest"
+                    >
+                      Clear
+                    </button>
+                  )}
                 </div>
+                <button
+                  onClick={() => setCat("")}
+                  className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-xs font-bold uppercase tracking-widest border mb-2 ${
+                    !catId ? "bg-accent text-primary-foreground border-accent" : "border-border/60"
+                  }`}
+                >
+                  <span>All items</span>
+                  <span className={`font-mono text-[10px] ${!catId ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                    {dbItems.length}
+                  </span>
+                </button>
+                <ul className="space-y-1">{tree.map(renderNode)}</ul>
               </div>
 
               <div className="mt-6">
                 <div className="font-mono text-[10px] text-muted-foreground tracking-widest mb-2">CALORIES</div>
                 <div className="grid grid-cols-2 gap-2">
-                  {calorieRanges.map((r, idx) => {
+                  {calorieRanges.map((r) => {
                     const active = cal === r.id;
                     return (
                       <button
                         key={r.id}
                         onClick={() => setCal(r.id)}
-                        style={{ animationDelay: `${(idx + categories.length) * 40}ms` }}
-                        className={`animate-chip-in min-h-12 px-4 text-xs font-bold uppercase tracking-widest border transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                        className={`min-h-12 px-4 text-xs font-bold uppercase tracking-widest border transition-all hover:scale-[1.02] active:scale-[0.98] ${
                           active
                             ? "bg-accent text-primary-foreground border-accent shadow-[0_0_20px_-4px] shadow-accent/60"
                             : "border-border text-foreground hover:border-accent/50"
@@ -267,24 +347,35 @@ function MenuPage() {
           </Sheet>
         </div>
 
-        {/* Desktop chip row */}
+        {/* Desktop top-level chip row */}
         <div className="hidden md:block border-t border-border">
           <div className="max-w-7xl mx-auto px-6 py-3 flex gap-2 overflow-x-auto items-center">
-            {categories.map((c) => {
-              const active = cat === c;
+            <button
+              onClick={() => setCat("")}
+              className={`shrink-0 px-4 h-10 text-xs font-bold uppercase tracking-widest border transition-colors ${
+                !catId ? "bg-accent text-primary-foreground border-accent" : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/40"
+              }`}
+            >
+              All
+              <span className={`ml-2 font-mono text-[10px] ${!catId ? "text-primary-foreground/70" : "text-muted-foreground/60"}`}>
+                {dbItems.length}
+              </span>
+            </button>
+            {tree.map((n) => {
+              const active = catId === n.id || (findNode([n], catId) != null && !!catId);
               return (
                 <button
-                  key={c}
-                  onClick={() => setCat(c)}
+                  key={n.id}
+                  onClick={() => setCat(n.id)}
                   className={`shrink-0 px-4 h-10 text-xs font-bold uppercase tracking-widest border transition-colors ${
                     active
                       ? "bg-accent text-primary-foreground border-accent"
                       : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/40"
                   }`}
                 >
-                  {c}
+                  {n.name}
                   <span className={`ml-2 font-mono text-[10px] ${active ? "text-primary-foreground/70" : "text-muted-foreground/60"}`}>
-                    {counts.get(c) ?? 0}
+                    {counts.get(n.id) ?? 0}
                   </span>
                 </button>
               );
@@ -329,7 +420,7 @@ function MenuPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 lg:gap-x-12 gap-y-6 md:gap-y-8">
                   {list.map((i) => (
                     <article
-                      key={i.name}
+                      key={i.id}
                       className="group grid grid-cols-[1fr_auto] items-start gap-4 pb-6 border-b border-border/60"
                     >
                       <div className="min-w-0">
@@ -351,13 +442,15 @@ function MenuPage() {
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground text-pretty">{i.desc}</p>
+                        <p className="text-sm text-muted-foreground text-pretty">{i.description}</p>
                       </div>
                       <div className="flex flex-col items-end gap-1 shrink-0">
                         <div className="font-mono text-accent text-lg">{i.price}</div>
-                        <div className="font-mono text-[10px] text-muted-foreground tracking-widest">
-                          {i.cal} CAL
-                        </div>
+                        {i.calories != null && i.calories > 0 && (
+                          <div className="font-mono text-[10px] text-muted-foreground tracking-widest">
+                            {i.calories} CAL
+                          </div>
+                        )}
                       </div>
                     </article>
                   ))}

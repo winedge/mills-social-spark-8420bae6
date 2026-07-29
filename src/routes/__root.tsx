@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { MobileBottomNav } from "../components/mobile-bottom-nav";
 import { RoutePreloader } from "../components/route-preloader";
 import { ReservationModal } from "../components/reservation-modal";
+import { AnalyticsTracker } from "../components/analytics-tracker";
 
 
 function NotFoundComponent() {
@@ -130,6 +131,7 @@ function RootComponent() {
       <MobileBottomNav />
       <RoutePreloader />
       <ReservationModal />
+      <AnalyticsTracker />
     </QueryClientProvider>
 
   );

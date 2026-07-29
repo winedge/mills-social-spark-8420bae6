@@ -8,7 +8,17 @@ export type DbMenuItem = {
   price: string;
   calories: number | null;
   category: string;
+  category_id: string | null;
   tag: string | null;
+  sort_order: number;
+  active: boolean;
+};
+
+export type DbMenuCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  parent_id: string | null;
   sort_order: number;
   active: boolean;
 };
@@ -57,6 +67,24 @@ export function useMenuItems() {
       .order("sort_order")
       .then(({ data }) => {
         setItems((data ?? []) as DbMenuItem[]);
+        setLoading(false);
+      });
+  }, []);
+  return { items, loading };
+}
+
+export function useMenuCategories() {
+  const [items, setItems] = useState<DbMenuCategory[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    (supabase as any)
+      .from("menu_categories")
+      .select("*")
+      .eq("active", true)
+      .order("sort_order")
+      .order("name")
+      .then(({ data }: { data: DbMenuCategory[] | null }) => {
+        setItems((data ?? []) as DbMenuCategory[]);
         setLoading(false);
       });
   }, []);
