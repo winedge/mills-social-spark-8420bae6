@@ -3,6 +3,7 @@ import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Users, PartyPopper, Building2, Mic2, Disc3, Calendar, MapPin } from "lucide-react";
+import * as Icons from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Toaster } from "@/components/ui/sonner";
@@ -10,6 +11,7 @@ import LightRays from "@/components/LightRays";
 import concertImg from "@/assets/party-concert.jpg";
 import celebrationImg from "@/assets/party-celebration.jpg";
 import djImg from "@/assets/party-dj.jpg";
+import { usePartySpaces, usePartyShows } from "@/lib/content";
 
 export const Route = createFileRoute("/party")({
   head: () => ({
@@ -23,18 +25,12 @@ export const Route = createFileRoute("/party")({
   component: PartyPage,
 });
 
-const spaces = [
-  { icon: Users, name: "Bar Lounge", capacity: "Up to 25", price: "From $250 min. spend", desc: "Reserved section of the main bar with dedicated bartender. Perfect for birthdays and small crews." },
-  { icon: PartyPopper, name: "Game Floor Buyout", capacity: "Up to 60", price: "From $1,200 min. spend", desc: "Take over the pool tables, darts, and arcade for the night. Your own space, your own soundtrack." },
-  { icon: Building2, name: "Full Venue", capacity: "Up to 200", price: "Custom quote", desc: "The whole house. Dining room, bar, patio, stage, and game floor — ideal for corporate events and weddings." },
-];
+const showImageFallbacks = [concertImg, djImg, celebrationImg];
 
-const upcomingShows = [
-  { date: "FRI · JUL 03", time: "9:00 PM", act: "The Copper Kings", type: "Live Band", genre: "Indie Rock", img: concertImg },
-  { date: "SAT · JUL 04", time: "10:00 PM", act: "DJ Nova", type: "DJ Set", genre: "House / Top 40", img: djImg },
-  { date: "THU · JUL 09", time: "8:00 PM", act: "Open Mic Night", type: "Live", genre: "All Genres", img: celebrationImg },
-  { date: "SAT · JUL 11", time: "9:30 PM", act: "Desert Static", type: "Live Band", genre: "Alt Rock", img: concertImg },
-];
+function iconFor(name: string) {
+  const C = (Icons as any)[name];
+  return (C ?? Users) as typeof Users;
+}
 
 const formSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
@@ -48,6 +44,23 @@ const formSchema = z.object({
 
 function PartyPage() {
   const [submitting, setSubmitting] = useState(false);
+  const dbSpaces = usePartySpaces();
+  const dbShows = usePartyShows();
+  const spaces = dbSpaces.map((s) => ({
+    icon: iconFor(s.icon),
+    name: s.name,
+    capacity: s.capacity,
+    price: s.price,
+    desc: s.description,
+  }));
+  const upcomingShows = dbShows.map((s, i) => ({
+    date: s.date_label,
+    time: s.time_label,
+    act: s.act,
+    type: s.event_type,
+    genre: s.genre,
+    img: s.image_url || showImageFallbacks[i % showImageFallbacks.length],
+  }));
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -69,7 +82,7 @@ function PartyPage() {
     }
     try {
       const { supabase } = await import("@/integrations/supabase/client");
-      const { error } = await supabase.from("space_reservations").insert({
+      const payload = {
         name: parsed.data.name,
         email: parsed.data.email,
         phone: parsed.data.phone,
@@ -77,8 +90,15 @@ function PartyPage() {
         party_size: parsed.data.size,
         space: parsed.data.space,
         message: parsed.data.message || null,
-      });
+      };
+      const { error } = await supabase.from("space_reservations").insert(payload);
       if (error) throw error;
+      try {
+        const { openWhatsAppNotification, formatSpaceMessage } = await import("@/lib/whatsapp");
+        await openWhatsAppNotification(formatSpaceMessage(payload));
+      } catch (waErr) {
+        console.warn("WhatsApp notify failed", waErr);
+      }
       toast.success("Thanks! We'll be in touch within 24 hours.");
       (e.target as HTMLFormElement).reset();
     } catch (err) {

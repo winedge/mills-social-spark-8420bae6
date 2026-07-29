@@ -14,6 +14,129 @@ export type Database = {
   }
   public: {
     Tables: {
+      menu_items: {
+        Row: {
+          active: boolean
+          calories: number | null
+          category: string
+          created_at: string
+          description: string
+          id: string
+          name: string
+          price: string
+          sort_order: number
+          tag: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          calories?: number | null
+          category: string
+          created_at?: string
+          description?: string
+          id?: string
+          name: string
+          price: string
+          sort_order?: number
+          tag?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          calories?: number | null
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          name?: string
+          price?: string
+          sort_order?: number
+          tag?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      party_shows: {
+        Row: {
+          act: string
+          active: boolean
+          created_at: string
+          date_label: string
+          event_type: string
+          genre: string
+          id: string
+          image_url: string | null
+          sort_order: number
+          time_label: string
+          updated_at: string
+        }
+        Insert: {
+          act: string
+          active?: boolean
+          created_at?: string
+          date_label: string
+          event_type?: string
+          genre?: string
+          id?: string
+          image_url?: string | null
+          sort_order?: number
+          time_label: string
+          updated_at?: string
+        }
+        Update: {
+          act?: string
+          active?: boolean
+          created_at?: string
+          date_label?: string
+          event_type?: string
+          genre?: string
+          id?: string
+          image_url?: string | null
+          sort_order?: number
+          time_label?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      party_spaces: {
+        Row: {
+          active: boolean
+          capacity: string
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          name: string
+          price: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          capacity: string
+          created_at?: string
+          description: string
+          icon?: string
+          id?: string
+          name: string
+          price: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          capacity?: string
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+          price?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reservations: {
         Row: {
           created_at: string
@@ -53,6 +176,27 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          id: number
+          notification_email: string
+          updated_at: string
+          whatsapp_number: string
+        }
+        Insert: {
+          id?: number
+          notification_email?: string
+          updated_at?: string
+          whatsapp_number?: string
+        }
+        Update: {
+          id?: number
+          notification_email?: string
+          updated_at?: string
+          whatsapp_number?: string
+        }
+        Relationships: []
+      }
       space_reservations: {
         Row: {
           created_at: string
@@ -89,6 +233,42 @@ export type Database = {
           phone?: string
           space?: string
           status?: string
+        }
+        Relationships: []
+      }
+      sports_schedule: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          league: string
+          match_label: string
+          note: string
+          sort_order: number
+          updated_at: string
+          when_label: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          league: string
+          match_label: string
+          note?: string
+          sort_order?: number
+          updated_at?: string
+          when_label: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          league?: string
+          match_label?: string
+          note?: string
+          sort_order?: number
+          updated_at?: string
+          when_label?: string
         }
         Relationships: []
       }

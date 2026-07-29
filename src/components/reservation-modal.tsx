@@ -46,18 +46,25 @@ export function ReservationModal() {
     setStatus("submitting");
     const form = e.currentTarget;
     const fd = new FormData(form);
+    const payload = {
+      name: String(fd.get("name") ?? ""),
+      phone: String(fd.get("phone") ?? ""),
+      email: String(fd.get("email") ?? ""),
+      date: String(fd.get("date") ?? ""),
+      time: String(fd.get("time") ?? ""),
+      party_size: Number(fd.get("party_size") ?? 1),
+      special_requests: String(fd.get("special_requests") ?? "") || null,
+    };
     try {
       const { supabase } = await import("@/integrations/supabase/client");
-      const { error: insertError } = await supabase.from("reservations").insert({
-        name: String(fd.get("name") ?? ""),
-        phone: String(fd.get("phone") ?? ""),
-        email: String(fd.get("email") ?? ""),
-        date: String(fd.get("date") ?? ""),
-        time: String(fd.get("time") ?? ""),
-        party_size: Number(fd.get("party_size") ?? 1),
-        special_requests: String(fd.get("special_requests") ?? "") || null,
-      });
+      const { error: insertError } = await supabase.from("reservations").insert(payload);
       if (insertError) throw insertError;
+      try {
+        const { openWhatsAppNotification, formatReservationMessage } = await import("@/lib/whatsapp");
+        await openWhatsAppNotification(formatReservationMessage(payload));
+      } catch (waErr) {
+        console.warn("WhatsApp notify failed", waErr);
+      }
       setStatus("success");
       form.reset();
       setTimeout(() => setOpen(false), 2200);

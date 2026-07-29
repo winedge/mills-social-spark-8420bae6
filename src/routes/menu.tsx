@@ -2,9 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useMemo, useState } from "react";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Search, SlidersHorizontal, X, Loader2 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { useMenuItems } from "@/lib/content";
 import {
   Sheet,
   SheetContent,
@@ -62,43 +63,29 @@ type Item = {
   price: string;
   cal: number;
   cat: Exclude<Category, "All">;
-  tag?: "New" | "Chef's Pick" | "Spicy" | "Local";
+  tag?: string | null;
 };
 
-const items: Item[] = [
-  { name: "Smoked Bone Marrow", desc: "Roasted marrow, charred sourdough, gremolata.", price: "$15", cal: 620, cat: "Starters", tag: "Chef's Pick" },
-  { name: "Tempura Green Beans", desc: "Crispy beans, sriracha-honey aioli.", price: "$11", cal: 480, cat: "Starters" },
-  { name: "Charred Street Corn", desc: "Cotija, lime, chili, cilantro.", price: "$10", cal: 340, cat: "Starters", tag: "Local" },
-  { name: "Tuna Tartare Tacos", desc: "Ahi, avocado, ponzu, crispy wontons.", price: "$16", cal: 410, cat: "Starters", tag: "New" },
-  { name: "Sticky Social Wings", desc: "Gochujang glaze, pickled radish, sesame.", price: "$16", cal: 780, cat: "Wings", tag: "Chef's Pick" },
-  { name: "Ghost Pepper Wings", desc: "Hickory smoked, ghost glaze, ranch.", price: "$16", cal: 820, cat: "Wings", tag: "Spicy" },
-  { name: "Classic Buffalo", desc: "Frank's, butter, blue cheese, celery.", price: "$14", cal: 750, cat: "Wings" },
-  { name: "Lemon Pepper Dry Rub", desc: "Crispy, citrusy, served with garlic aioli.", price: "$14", cal: 690, cat: "Wings" },
-  { name: "The Mill Burger", desc: "Wagyu blend, caramelized onion, truffle aioli, brioche.", price: "$18", cal: 980, cat: "Burgers & Mains", tag: "Chef's Pick" },
-  { name: "Tempe Smash", desc: "Double smash, American, balsamic onions, secret sauce.", price: "$16", cal: 890, cat: "Burgers & Mains" },
-  { name: "Nashville Hot Chicken", desc: "Buttermilk fried, hot honey, pickles, brioche.", price: "$17", cal: 920, cat: "Burgers & Mains", tag: "Spicy" },
-  { name: "Cast Iron Ribeye", desc: "12oz prime, herb butter, hand-cut fries.", price: "$38", cal: 1180, cat: "Burgers & Mains" },
-  { name: "Short Rib Skins", desc: "Braised beef, chipotle crema, pickled Fresno.", price: "$16", cal: 860, cat: "Shareables" },
-  { name: "Truffle Parm Fries", desc: "Hand cut, parmesan, herbs, garlic oil.", price: "$12", cal: 640, cat: "Shareables" },
-  { name: "Brisket Nachos", desc: "Smoked brisket, queso, jalapeño, pico.", price: "$17", cal: 1050, cat: "Shareables" },
-  { name: "Soft Pretzel Board", desc: "Bavarian pretzels, beer cheese, mustard.", price: "$13", cal: 720, cat: "Shareables" },
-  { name: "Desert Heat Old Fashioned", desc: "Bourbon, ancho chili, charred orange.", price: "$14", cal: 220, cat: "Cocktails", tag: "Chef's Pick" },
-  { name: "Cobalt Mule", desc: "Vodka, blueberry, lime, house ginger beer.", price: "$13", cal: 190, cat: "Cocktails" },
-  { name: "Smoked Paloma", desc: "Mezcal, grapefruit, lime, smoked salt rim.", price: "$14", cal: 210, cat: "Cocktails", tag: "New" },
-  { name: "Espresso Martini", desc: "Vodka, cold brew, vanilla, salted cream.", price: "$13", cal: 250, cat: "Cocktails" },
-  { name: "Four Peaks Kilt Lifter", desc: "Scottish-style amber. Tempe local.", price: "$7", cal: 210, cat: "Drafts", tag: "Local" },
-  { name: "Huss Scottsdale Blonde", desc: "Crisp, light, easy drinking.", price: "$7", cal: 170, cat: "Drafts", tag: "Local" },
-  { name: "Wren House Spellbinder", desc: "Hazy IPA, juicy citrus hops.", price: "$8", cal: 230, cat: "Drafts", tag: "Local" },
-  { name: "Guinness", desc: "The classic Irish dry stout.", price: "$8", cal: 210, cat: "Drafts" },
-  { name: "Skillet Cookie", desc: "Warm chocolate chip, vanilla bean ice cream.", price: "$10", cal: 890, cat: "Desserts" },
-  { name: "Bourbon Bread Pudding", desc: "Brioche, caramel, candied pecans.", price: "$11", cal: 760, cat: "Desserts" },
-];
 
 function MenuPage() {
   const { cat, q, cal } = Route.useSearch();
   const navigate = Route.useNavigate();
   const [query, setQuery] = useState(q);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const { items: dbItems, loading } = useMenuItems();
+
+  const items: Item[] = useMemo(
+    () =>
+      dbItems.map((i) => ({
+        name: i.name,
+        desc: i.description,
+        price: i.price,
+        cal: i.calories ?? 0,
+        cat: (categories.includes(i.category as Category) ? i.category : "Starters") as Exclude<Category, "All">,
+        tag: i.tag,
+      })),
+    [dbItems],
+  );
 
   const activeCal = calorieRanges.find((r) => r.id === cal) ?? calorieRanges[0];
 
@@ -107,7 +94,7 @@ function MenuPage() {
     m.set("All", items.length);
     for (const i of items) m.set(i.cat, (m.get(i.cat) ?? 0) + 1);
     return m;
-  }, []);
+  }, [items]);
 
   const filtered = useMemo(() => {
     return items.filter((i) => {
@@ -119,7 +106,7 @@ function MenuPage() {
       const inCal = i.cal >= activeCal.min && i.cal <= activeCal.max;
       return inCat && inQ && inCal;
     });
-  }, [cat, query, activeCal]);
+  }, [cat, query, activeCal, items]);
 
   const grouped = useMemo(() => {
     const g = new Map<string, Item[]>();
