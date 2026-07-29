@@ -30,7 +30,7 @@ export function AnalyticsTracker() {
       user_agent: navigator.userAgent.slice(0, 500),
       referrer: document.referrer ? document.referrer.slice(0, 500) : null,
     };
-    supabase.from("page_views").insert(payload).then(() => {}, () => {});
+    (supabase as any).from("page_views").insert(payload).then(() => {}, () => {});
   }, [pathname]);
 
   return null;

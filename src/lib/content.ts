@@ -77,13 +77,13 @@ export function useMenuCategories() {
   const [items, setItems] = useState<DbMenuCategory[]>([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    supabase
+    (supabase as any)
       .from("menu_categories")
       .select("*")
       .eq("active", true)
       .order("sort_order")
       .order("name")
-      .then(({ data }) => {
+      .then(({ data }: { data: DbMenuCategory[] | null }) => {
         setItems((data ?? []) as DbMenuCategory[]);
         setLoading(false);
       });
