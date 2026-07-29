@@ -13,6 +13,7 @@ import { Route as SportsRouteImport } from './routes/sports'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as PartyRouteImport } from './routes/party'
 import { Route as MenuRouteImport } from './routes/menu'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
 const SportsRoute = SportsRouteImport.update({
@@ -35,6 +36,11 @@ const MenuRoute = MenuRouteImport.update({
   path: '/menu',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,6 +49,7 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/menu': typeof MenuRoute
   '/party': typeof PartyRoute
   '/play': typeof PlayRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/menu': typeof MenuRoute
   '/party': typeof PartyRoute
   '/play': typeof PlayRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/menu': typeof MenuRoute
   '/party': typeof PartyRoute
   '/play': typeof PlayRoute
@@ -65,14 +74,15 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/menu' | '/party' | '/play' | '/sports'
+  fullPaths: '/' | '/admin' | '/menu' | '/party' | '/play' | '/sports'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/menu' | '/party' | '/play' | '/sports'
-  id: '__root__' | '/' | '/menu' | '/party' | '/play' | '/sports'
+  to: '/' | '/admin' | '/menu' | '/party' | '/play' | '/sports'
+  id: '__root__' | '/' | '/admin' | '/menu' | '/party' | '/play' | '/sports'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   MenuRoute: typeof MenuRoute
   PartyRoute: typeof PartyRoute
   PlayRoute: typeof PlayRoute
@@ -109,6 +119,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MenuRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -121,6 +138,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   MenuRoute: MenuRoute,
   PartyRoute: PartyRoute,
   PlayRoute: PlayRoute,
@@ -129,3 +147,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
