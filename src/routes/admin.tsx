@@ -98,7 +98,6 @@ function AdminPage() {
 }
 
 function AdminLogin() {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -110,17 +109,8 @@ function AdminLogin() {
     const email = String(fd.get("email"));
     const password = String(fd.get("password"));
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: `${window.location.origin}/admin` },
-        });
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
     } catch (e: any) {
       setErr(e?.message ?? "Something went wrong");
     } finally {
@@ -138,9 +128,7 @@ function AdminLogin() {
         <h1 className="font-display text-4xl uppercase leading-none mb-2">
           Mill's <span className="text-accent italic">admin</span>
         </h1>
-        <p className="text-sm text-muted-foreground mb-6">
-          {mode === "signin" ? "Sign in to view reservations." : "Create the first admin account."}
-        </p>
+        <p className="text-sm text-muted-foreground mb-6">Sign in to view reservations.</p>
         <form onSubmit={submit} className="space-y-4">
           <label className="block">
             <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Email</span>
@@ -148,6 +136,7 @@ function AdminLogin() {
               name="email"
               type="email"
               required
+              autoComplete="email"
               className="mt-1 w-full bg-background border border-border px-3 h-11 text-sm outline-none focus:border-accent"
             />
           </label>
@@ -157,7 +146,7 @@ function AdminLogin() {
               name="password"
               type="password"
               required
-              minLength={6}
+              autoComplete="current-password"
               className="mt-1 w-full bg-background border border-border px-3 h-11 text-sm outline-none focus:border-accent"
             />
           </label>
@@ -167,18 +156,9 @@ function AdminLogin() {
             disabled={busy}
             className="w-full bg-accent text-primary-foreground py-3 font-bold uppercase tracking-widest text-sm hover:brightness-110 disabled:opacity-60"
           >
-            {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+            {busy ? "Signing in…" : "Sign in"}
           </button>
         </form>
-        <button
-          onClick={() => {
-            setMode(mode === "signin" ? "signup" : "signin");
-            setErr(null);
-          }}
-          className="mt-4 w-full text-xs text-muted-foreground hover:text-accent transition-colors font-mono uppercase tracking-widest"
-        >
-          {mode === "signin" ? "First time? Create admin account →" : "Have an account? Sign in →"}
-        </button>
       </div>
     </div>
   );
