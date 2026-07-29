@@ -18,16 +18,16 @@ import { UfcSection, ufcQueryOptions } from "@/components/ufc-section";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Mills Modern Social — Tempe's Modern Sports Bar" },
+      { title: "Lovable App" },
       {
         name: "description",
         content:
-          "Mills Modern Social in Tempe, AZ — elevated bar fare, craft cocktails, 40+ screens, live UFC fights, and the loudest game day in Arizona.",
+          "Mills Social Hub is a modern, user-friendly website for a sports bar in Tempe, Arizona.",
       },
-      { property: "og:title", content: "Mills Modern Social — Tempe's Modern Sports Bar" },
+      { property: "og:title", content: "Lovable App" },
       {
         property: "og:description",
-        content: "Elevated bar fare, craft cocktails, live UFC nights, and the loudest game day in Arizona.",
+        content: "Mills Social Hub is a modern, user-friendly website for a sports bar in Tempe, Arizona.",
       },
       { property: "og:image", content: heroBar },
       { name: "twitter:image", content: heroBar },
