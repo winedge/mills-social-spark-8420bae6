@@ -484,11 +484,62 @@ function SpacesSection() {
 
 type MenuRow = {
   id: string; name: string; description: string; price: string;
-  calories: number | null; category: string; tag: string | null;
+  calories: number | null; category: string; category_id: string | null;
+  tag: string | null; sort_order: number; active: boolean;
+};
+
+type CategoryRow = {
+  id: string; name: string; slug: string; parent_id: string | null;
   sort_order: number; active: boolean;
 };
 
-const MENU_CATEGORIES = ["Starters", "Wings", "Burgers & Mains", "Shareables", "Cocktails", "Drafts", "Desserts"];
+type CatNode = CategoryRow & { children: CatNode[]; depth: number; pathLabel: string };
+
+function buildCategoryTree(cats: CategoryRow[]): CatNode[] {
+  const byId = new Map<string, CatNode>();
+  cats.forEach((c) => byId.set(c.id, { ...c, children: [], depth: 0, pathLabel: c.name }));
+  const roots: CatNode[] = [];
+  byId.forEach((n) => {
+    if (n.parent_id && byId.has(n.parent_id)) byId.get(n.parent_id)!.children.push(n);
+    else roots.push(n);
+  });
+  const walk = (n: CatNode, d: number, parentPath: string) => {
+    n.depth = d;
+    n.pathLabel = parentPath ? `${parentPath} › ${n.name}` : n.name;
+    n.children.sort((a, b) => a.sort_order - b.sort_order || a.name.localeCompare(b.name));
+    n.children.forEach((c) => walk(c, d + 1, n.pathLabel));
+  };
+  roots.sort((a, b) => a.sort_order - b.sort_order || a.name.localeCompare(b.name));
+  roots.forEach((r) => walk(r, 0, ""));
+  return roots;
+}
+
+function flattenTree(nodes: CatNode[]): CatNode[] {
+  const out: CatNode[] = [];
+  const walk = (list: CatNode[]) => list.forEach((n) => { out.push(n); walk(n.children); });
+  walk(nodes);
+  return out;
+}
+
+function descendantIds(node: CatNode): Set<string> {
+  const s = new Set<string>([node.id]);
+  const walk = (n: CatNode) => n.children.forEach((c) => { s.add(c.id); walk(c); });
+  walk(node);
+  return s;
+}
+
+function useCategories() {
+  const [items, setItems] = useState<CategoryRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    const { data } = await (supabase as any).from("menu_categories").select("*").order("sort_order").order("name");
+    setItems((data ?? []) as CategoryRow[]);
+    setLoading(false);
+  }, []);
+  useEffect(() => { refresh(); }, [refresh]);
+  return { items, loading, refresh };
+}
 
 function MenuSection() {
   const [items, setItems] = useState<MenuRow[]>([]);
@@ -496,6 +547,10 @@ function MenuSection() {
   const [editing, setEditing] = useState<MenuRow | null>(null);
   const [q, setQ] = useState("");
   const [catFilter, setCatFilter] = useState("all");
+  const { items: cats } = useCategories();
+  const tree = useMemo(() => buildCategoryTree(cats), [cats]);
+  const flat = useMemo(() => flattenTree(tree), [tree]);
+  const catNameById = useMemo(() => new Map(cats.map((c) => [c.id, c.name])), [cats]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -505,8 +560,14 @@ function MenuSection() {
   }, []);
   useEffect(() => { refresh(); }, [refresh]);
 
+  const filterIds = useMemo(() => {
+    if (catFilter === "all") return null;
+    const node = flat.find((n) => n.id === catFilter);
+    return node ? descendantIds(node) : new Set([catFilter]);
+  }, [catFilter, flat]);
+
   const filtered = items.filter((i) => {
-    if (catFilter !== "all" && i.category !== catFilter) return false;
+    if (filterIds && !(i.category_id && filterIds.has(i.category_id))) return false;
     if (q && !i.name.toLowerCase().includes(q.toLowerCase())) return false;
     return true;
   });
@@ -516,11 +577,12 @@ function MenuSection() {
       <FilterBar>
         <SearchInput value={q} onChange={setQ} placeholder="Search menu…" />
         <Select value={catFilter} onChange={setCatFilter} options={[
-          { value: "all", label: "All categories" }, ...MENU_CATEGORIES.map((c) => ({ value: c, label: c })),
+          { value: "all", label: "All categories" },
+          ...flat.map((c) => ({ value: c.id, label: `${"— ".repeat(c.depth)}${c.name}` })),
         ]} />
         <button onClick={() => setEditing({
           id: "", name: "", description: "", price: "", calories: null,
-          category: "Starters", tag: null, sort_order: 0, active: true,
+          category: "", category_id: null, tag: null, sort_order: 0, active: true,
         })}
           className="ml-auto inline-flex items-center gap-2 px-4 h-10 bg-accent text-primary-foreground text-xs font-bold uppercase tracking-widest hover:brightness-110">
           <Plus className="size-3.5" /> Add item
@@ -544,7 +606,9 @@ function MenuSection() {
               {filtered.map((i) => (
                 <tr key={i.id} className="border-t border-border hover:bg-muted/20">
                   <td className="px-4 py-3 font-medium">{i.name}</td>
-                  <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">{i.category}</td>
+                  <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">
+                    {(i.category_id && catNameById.get(i.category_id)) || i.category || "—"}
+                  </td>
                   <td className="px-4 py-3 hidden md:table-cell">{i.price}</td>
                   <td className="px-4 py-3 hidden lg:table-cell text-muted-foreground">{i.calories ?? "—"}</td>
                   <td className="px-4 py-3 hidden lg:table-cell text-muted-foreground">{i.tag ?? "—"}</td>
@@ -566,26 +630,54 @@ function MenuSection() {
           </table>
         </div>
       )}
-      {editing && <MenuEditor row={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); refresh(); }} />}
+      {editing && <MenuEditor row={editing} categories={flat} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); refresh(); }} />}
     </div>
   );
 }
 
-function MenuEditor({ row, onClose, onSaved }: { row: MenuRow; onClose: () => void; onSaved: () => void }) {
+function MenuEditor({ row, categories, onClose, onSaved }: { row: MenuRow; categories: CatNode[]; onClose: () => void; onSaved: () => void }) {
   const [busy, setBusy] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [autoAi, setAutoAi] = useState(row.calories == null);
+  const [form, setForm] = useState({
+    name: row.name,
+    description: row.description,
+    price: row.price,
+    calories: row.calories ?? ("" as number | ""),
+    category_id: row.category_id ?? "",
+    tag: row.tag ?? "",
+    sort_order: row.sort_order,
+    active: row.active,
+  });
+  const aiFn = useServerFn(estimateCalories);
+
+  const runAi = async () => {
+    if (!form.name) { alert("Enter a name first."); return; }
+    setAiBusy(true);
+    try {
+      const catName = categories.find((c) => c.id === form.category_id)?.name ?? "";
+      const { calories } = await aiFn({ data: { name: form.name, description: form.description, category: catName } });
+      setForm((f) => ({ ...f, calories }));
+    } catch (e: any) { alert(e?.message ?? "AI estimate failed"); }
+    finally { setAiBusy(false); }
+  };
+
   const save = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setBusy(true);
-    const fd = new FormData(e.currentTarget);
-    const payload = {
-      name: String(fd.get("name")),
-      description: String(fd.get("description") ?? ""),
-      price: String(fd.get("price")),
-      calories: fd.get("calories") ? Number(fd.get("calories")) : null,
-      category: String(fd.get("category")),
-      tag: (fd.get("tag") as string) || null,
-      sort_order: Number(fd.get("sort_order") ?? 0),
-      active: fd.get("active") === "on",
+    let cal = form.calories === "" ? null : Number(form.calories);
+    if (autoAi && (cal == null || cal <= 0) && form.name) {
+      try {
+        const catName = categories.find((c) => c.id === form.category_id)?.name ?? "";
+        const r = await aiFn({ data: { name: form.name, description: form.description, category: catName } });
+        cal = r.calories;
+      } catch { /* keep null */ }
+    }
+    const catName = categories.find((c) => c.id === form.category_id)?.name ?? row.category ?? "";
+    const payload: any = {
+      name: form.name, description: form.description, price: form.price,
+      calories: cal, category: catName, category_id: form.category_id || null,
+      tag: form.tag || null, sort_order: Number(form.sort_order) || 0, active: form.active,
     };
     const q = row.id
       ? supabase.from("menu_items").update(payload).eq("id", row.id)
@@ -595,26 +687,42 @@ function MenuEditor({ row, onClose, onSaved }: { row: MenuRow; onClose: () => vo
     if (error) { alert(error.message); return; }
     onSaved();
   };
+
   return (
     <Modal title={row.id ? "Edit Item" : "New Item"} onClose={onClose}>
       <form onSubmit={save} className="space-y-4">
-        <Input name="name" label="Name" defaultValue={row.name} required />
-        <Textarea name="description" label="Description" defaultValue={row.description} />
+        <Input name="name" label="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+        <Textarea name="description" label="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
         <div className="grid grid-cols-2 gap-3">
-          <Input name="price" label="Price (e.g. $15)" defaultValue={row.price} required />
-          <Input name="calories" label="Calories" type="number" defaultValue={row.calories ?? ""} />
+          <Input name="price" label="Price (e.g. $15)" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
+          <div>
+            <span className="block font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Calories</span>
+            <div className="flex gap-2">
+              <input type="number" value={form.calories} onChange={(e) => setForm({ ...form, calories: e.target.value === "" ? "" : Number(e.target.value) })}
+                className="flex-1 min-w-0 bg-background border border-border h-10 px-3 text-sm focus:border-accent outline-none" />
+              <button type="button" onClick={runAi} disabled={aiBusy || !form.name} title="Estimate with AI"
+                className="inline-flex items-center gap-1 px-3 h-10 border border-accent/60 text-accent text-[10px] font-bold uppercase tracking-widest hover:bg-accent hover:text-primary-foreground disabled:opacity-50">
+                {aiBusy ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />} AI
+              </button>
+            </div>
+            <label className="flex items-center gap-2 mt-2 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              <input type="checkbox" checked={autoAi} onChange={(e) => setAutoAi(e.target.checked)} />
+              Auto-estimate on save if empty
+            </label>
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <SelectField name="category" label="Category" defaultValue={row.category} options={MENU_CATEGORIES.map((c) => ({ value: c, label: c }))} />
-          <SelectField name="tag" label="Tag" defaultValue={row.tag ?? ""} options={[
+          <SelectField name="category_id" label="Category" value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })}
+            options={[{ value: "", label: "— None —" }, ...categories.map((c) => ({ value: c.id, label: `${"— ".repeat(c.depth)}${c.name}` }))]} />
+          <SelectField name="tag" label="Tag" value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value })} options={[
             { value: "", label: "None" }, { value: "New", label: "New" },
             { value: "Chef's Pick", label: "Chef's Pick" }, { value: "Spicy", label: "Spicy" }, { value: "Local", label: "Local" },
           ]} />
         </div>
         <div className="grid grid-cols-2 gap-3 items-end">
-          <Input name="sort_order" label="Sort order" type="number" defaultValue={row.sort_order} />
+          <Input name="sort_order" label="Sort order" type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} />
           <label className="flex items-center gap-2 h-10">
-            <input type="checkbox" name="active" defaultChecked={row.active} /> Active
+            <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} /> Active
           </label>
         </div>
         <SaveBar busy={busy} onCancel={onClose} />
@@ -622,6 +730,91 @@ function MenuEditor({ row, onClose, onSaved }: { row: MenuRow; onClose: () => vo
     </Modal>
   );
 }
+
+/* ================= CATEGORIES ================= */
+
+function CategoriesSection() {
+  const { items, loading, refresh } = useCategories();
+  const [editing, setEditing] = useState<Partial<CategoryRow> | null>(null);
+  const tree = useMemo(() => buildCategoryTree(items), [items]);
+  const flat = useMemo(() => flattenTree(tree), [tree]);
+
+  const del = async (id: string) => {
+    if (!confirm("Delete this category and all its children? Menu items will be unassigned.")) return;
+    await (supabase as any).from("menu_categories").delete().eq("id", id);
+    refresh();
+  };
+
+  const renderNode = (n: CatNode) => (
+    <li key={n.id}>
+      <div className="flex items-center gap-2 py-2 border-b border-border/60">
+        <div style={{ paddingLeft: n.depth * 20 }} className="flex-1 flex items-center gap-2 min-w-0">
+          <ChevronRight className="size-3 text-muted-foreground shrink-0" />
+          <span className="font-medium truncate">{n.name}</span>
+          {!n.active && <span className="font-mono text-[10px] text-muted-foreground uppercase">inactive</span>}
+        </div>
+        <button onClick={() => setEditing({ parent_id: n.id })}
+          className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-accent px-2">+ Sub</button>
+        <IconBtn label="Edit" onClick={() => setEditing(n)}><Pencil className="size-3.5" /></IconBtn>
+        <IconBtn label="Delete" danger onClick={() => del(n.id)}><Trash2 className="size-3.5" /></IconBtn>
+      </div>
+      {n.children.length > 0 && <ul>{n.children.map(renderNode)}</ul>}
+    </li>
+  );
+
+  return (
+    <div className="space-y-6 max-w-3xl">
+      <FilterBar>
+        <p className="text-xs text-muted-foreground flex-1">Organize the menu with nested categories. Sub-categories can go as deep as you need.</p>
+        <button onClick={() => setEditing({})}
+          className="inline-flex items-center gap-2 px-4 h-10 bg-accent text-primary-foreground text-xs font-bold uppercase tracking-widest hover:brightness-110">
+          <Plus className="size-3.5" /> New root
+        </button>
+      </FilterBar>
+      {loading ? <LoaderBlock /> : items.length === 0 ? <Empty label="No categories yet." /> : (
+        <div className="border border-border bg-surface/40 p-4">
+          <ul>{tree.map(renderNode)}</ul>
+        </div>
+      )}
+      {editing && (
+        <Modal title={editing.id ? "Edit Category" : "New Category"} onClose={() => setEditing(null)}>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.currentTarget);
+            const name = String(fd.get("name") ?? "").trim();
+            const slug = String(fd.get("slug") ?? "").trim() || name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+            const payload: any = {
+              name, slug,
+              parent_id: (fd.get("parent_id") as string) || null,
+              sort_order: Number(fd.get("sort_order") ?? 0),
+              active: fd.get("active") === "on",
+            };
+            const q = editing.id
+              ? (supabase as any).from("menu_categories").update(payload).eq("id", editing.id)
+              : (supabase as any).from("menu_categories").insert(payload);
+            const { error } = await q;
+            if (error) return alert(error.message);
+            setEditing(null); refresh();
+          }} className="space-y-4">
+            <Input name="name" label="Name" defaultValue={editing.name ?? ""} required />
+            <Input name="slug" label="Slug (optional)" defaultValue={editing.slug ?? ""} />
+            <SelectField name="parent_id" label="Parent" defaultValue={editing.parent_id ?? ""}
+              options={[{ value: "", label: "— Top level —" },
+                ...flat.filter((c) => c.id !== editing.id).map((c) => ({ value: c.id, label: `${"— ".repeat(c.depth)}${c.name}` }))]} />
+            <div className="grid grid-cols-2 gap-3">
+              <Input name="sort_order" label="Sort order" type="number" defaultValue={editing.sort_order ?? 0} />
+              <label className="flex items-center gap-2 h-10">
+                <input type="checkbox" name="active" defaultChecked={editing.active ?? true} /> Active
+              </label>
+            </div>
+            <SaveBar busy={false} onCancel={() => setEditing(null)} />
+          </form>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
 
 /* ================= PARTY (spaces + shows) ================= */
 
