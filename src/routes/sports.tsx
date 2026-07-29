@@ -3,6 +3,7 @@ import { Trophy, Circle, Zap } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { UfcSection, ufcQueryOptions } from "@/components/ufc-section";
+import { useSportsSchedule } from "@/lib/content";
 
 export const Route = createFileRoute("/sports")({
   head: () => ({
@@ -38,16 +39,14 @@ const pillars = [
   },
 ];
 
-const bigScreen = [
-  { league: "MLB", when: "TONIGHT · 6:40 PM", match: "D-BACKS vs DODGERS", note: "Chase Field feed · sound on Screen 1" },
-  { league: "UFC", when: "SAT · 7:00 PM", match: "UFC 329 · MAIN CARD", note: "PPV · full audio · reserved booths" },
-  { league: "FIFA 2026", when: "JUN 11 · 10:00 AM", match: "USA vs MEXICO · GROUP A", note: "Opening kickoff · brunch service" },
-  { league: "BOXING", when: "JUN 21 · 6:00 PM", match: "CANELO vs CRAWFORD", note: "PPV · $10 reserved seat" },
-  { league: "MLB", when: "SUN · 1:10 PM", match: "YANKEES vs RED SOX", note: "Screen 4 · sound on request" },
-  { league: "FIFA 2026", when: "JUN 15 · 12:00 PM", match: "ARGENTINA vs GERMANY", note: "Watch party · Messi jerseys 10% off" },
-];
-
 function SportsPage() {
+  const dbSchedule = useSportsSchedule();
+  const bigScreen = dbSchedule.map((s) => ({
+    league: s.league,
+    when: s.when_label,
+    match: s.match_label,
+    note: s.note,
+  }));
   return (
     <div className="bg-background text-foreground font-body min-h-screen">
       <SiteHeader />
