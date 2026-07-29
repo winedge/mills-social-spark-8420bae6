@@ -46,20 +46,23 @@ export function ReservationModal() {
     setStatus("submitting");
     const form = e.currentTarget;
     const fd = new FormData(form);
-    fd.append("_subject", `New Reservation — ${fd.get("name") ?? ""}`);
-    fd.append("_template", "table");
-    fd.append("_captcha", "false");
     try {
-      const res = await fetch("https://formsubmit.co/ajax/admin@millsmodernsocial.com", {
-        method: "POST",
-        headers: { Accept: "application/json" },
-        body: fd,
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { error: insertError } = await supabase.from("reservations").insert({
+        name: String(fd.get("name") ?? ""),
+        phone: String(fd.get("phone") ?? ""),
+        email: String(fd.get("email") ?? ""),
+        date: String(fd.get("date") ?? ""),
+        time: String(fd.get("time") ?? ""),
+        party_size: Number(fd.get("party_size") ?? 1),
+        special_requests: String(fd.get("special_requests") ?? "") || null,
       });
-      if (!res.ok) throw new Error("Request failed");
+      if (insertError) throw insertError;
       setStatus("success");
       form.reset();
       setTimeout(() => setOpen(false), 2200);
     } catch (err) {
+      console.error(err);
       setStatus("idle");
       setError("Couldn't send reservation. Please call us or try again.");
     }
