@@ -38,14 +38,33 @@ export function ReservationModal() {
     };
   }, [open]);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
     setStatus("submitting");
-    setTimeout(() => {
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    fd.append("_subject", `New Reservation — ${fd.get("name") ?? ""}`);
+    fd.append("_template", "table");
+    fd.append("_captcha", "false");
+    try {
+      const res = await fetch("https://formsubmit.co/ajax/admin@millsmodernsocial.com", {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: fd,
+      });
+      if (!res.ok) throw new Error("Request failed");
       setStatus("success");
-      setTimeout(() => setOpen(false), 1800);
-    }, 900);
+      form.reset();
+      setTimeout(() => setOpen(false), 2200);
+    } catch (err) {
+      setStatus("idle");
+      setError("Couldn't send reservation. Please call us or try again.");
+    }
   };
+
 
   const today = new Date().toISOString().split("T")[0];
 
