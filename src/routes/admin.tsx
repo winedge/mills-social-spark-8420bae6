@@ -194,6 +194,11 @@ function Dashboard({ email }: { email: string }) {
 
 function Overview({ onNav }: { onNav: (s: Section) => void }) {
   const [stats, setStats] = useState({ res: 0, sp: 0, newRes: 0, newSp: 0, menu: 0 });
+  const [range, setRange] = useState<"week" | "month" | "year">("week");
+  const [analytics, setAnalytics] = useState<AnalyticsStats | null>(null);
+  const [aLoading, setALoading] = useState(true);
+  const fetchAnalytics = useServerFn(getAnalytics);
+
   useEffect(() => {
     (async () => {
       const [r, s, m] = await Promise.all([
@@ -210,23 +215,124 @@ function Overview({ onNav }: { onNav: (s: Section) => void }) {
       });
     })();
   }, []);
+
+  useEffect(() => {
+    setALoading(true);
+    fetchAnalytics({ data: { range } })
+      .then((d) => setAnalytics(d))
+      .catch(() => setAnalytics(null))
+      .finally(() => setALoading(false));
+  }, [range, fetchAnalytics]);
+
   const cards = [
     { label: "Table Reservations", value: stats.res, badge: stats.newRes, s: "reservations" as Section },
     { label: "Space Requests", value: stats.sp, badge: stats.newSp, s: "spaces" as Section },
     { label: "Menu Items", value: stats.menu, badge: 0, s: "menu" as Section },
   ];
+
+  const maxViews = Math.max(1, ...(analytics?.series.map((s) => s.views) ?? [0]));
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {cards.map((c) => (
-        <button key={c.label} onClick={() => onNav(c.s)}
-          className="text-left border border-border bg-surface/40 p-6 hover:border-accent transition">
-          <p className="font-mono text-[10px] tracking-widest uppercase text-muted-foreground mb-2">{c.label}</p>
-          <div className="flex items-end justify-between">
-            <span className="font-display text-5xl">{c.value}</span>
-            {c.badge > 0 && <span className="bg-accent text-primary-foreground px-2 py-1 text-[10px] font-mono uppercase tracking-widest">{c.badge} new</span>}
+    <div className="space-y-8">
+      {/* Live analytics summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatTile icon={Activity} label="Active now" value={analytics?.activeNow ?? 0} accent hint="last 5 min" />
+        <StatTile icon={Users} label="Unique visitors" value={analytics?.totalVisitors ?? 0} hint={rangeLabel(range)} />
+        <StatTile icon={Eye} label="Page views" value={analytics?.totalViews ?? 0} hint={rangeLabel(range)} />
+        <StatTile icon={TrendingUp} label="Bookings" value={stats.res + stats.sp} hint={`${stats.newRes + stats.newSp} new`} />
+      </div>
+
+      {/* Traffic chart */}
+      <section className="border border-border bg-surface/40 p-6">
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-widest text-accent mb-1">TRAFFIC</p>
+            <h2 className="font-display text-2xl uppercase">Website visitors</h2>
           </div>
-        </button>
-      ))}
+          <div className="flex border border-border">
+            {(["week", "month", "year"] as const).map((r) => (
+              <button key={r} onClick={() => setRange(r)}
+                className={`px-4 h-9 text-[11px] font-bold uppercase tracking-widest border-r border-border last:border-r-0 ${
+                  range === r ? "bg-accent text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}>
+                {r === "week" ? "7 days" : r === "month" ? "30 days" : "12 months"}
+              </button>
+            ))}
+          </div>
+        </div>
+        {aLoading ? <div className="h-48 grid place-items-center"><Loader2 className="size-6 animate-spin text-accent" /></div> :
+          !analytics || analytics.series.length === 0 ? <div className="h-48 grid place-items-center text-muted-foreground font-mono text-xs">NO DATA YET</div> : (
+          <div>
+            <div className="flex items-end gap-1 h-48">
+              {analytics.series.map((s, idx) => {
+                const h = Math.max(2, Math.round((s.views / maxViews) * 100));
+                return (
+                  <div key={idx} className="flex-1 min-w-0 group relative flex items-end">
+                    <div style={{ height: `${h}%` }}
+                      className="w-full bg-accent/30 hover:bg-accent transition relative">
+                      <div className="absolute inset-x-0 -top-1 h-1 bg-accent opacity-0 group-hover:opacity-100" />
+                    </div>
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-background border border-border px-2 py-1 text-[10px] font-mono whitespace-nowrap z-10">
+                      {s.views} views · {s.visitors} visitors
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex justify-between mt-2 font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
+              <span>{analytics.series[0]?.date}</span>
+              <span>{analytics.series[analytics.series.length - 1]?.date}</span>
+            </div>
+            {analytics.topPaths.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-border">
+                <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-3">TOP PAGES</p>
+                <div className="space-y-1.5">
+                  {analytics.topPaths.map((p) => (
+                    <div key={p.path} className="flex items-center gap-3 text-xs">
+                      <span className="font-mono text-muted-foreground truncate flex-1">{p.path || "/"}</span>
+                      <div className="w-32 h-1.5 bg-muted">
+                        <div className="h-full bg-accent" style={{ width: `${(p.views / analytics.topPaths[0].views) * 100}%` }} />
+                      </div>
+                      <span className="font-mono text-accent w-12 text-right">{p.views}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* Booking cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {cards.map((c) => (
+          <button key={c.label} onClick={() => onNav(c.s)}
+            className="text-left border border-border bg-surface/40 p-6 hover:border-accent transition">
+            <p className="font-mono text-[10px] tracking-widest uppercase text-muted-foreground mb-2">{c.label}</p>
+            <div className="flex items-end justify-between">
+              <span className="font-display text-5xl">{c.value}</span>
+              {c.badge > 0 && <span className="bg-accent text-primary-foreground px-2 py-1 text-[10px] font-mono uppercase tracking-widest">{c.badge} new</span>}
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function rangeLabel(r: "week" | "month" | "year") {
+  return r === "week" ? "past 7 days" : r === "month" ? "past 30 days" : "past 12 months";
+}
+
+function StatTile({ icon: Icon, label, value, hint, accent }: { icon: any; label: string; value: number; hint?: string; accent?: boolean }) {
+  return (
+    <div className={`border p-5 bg-surface/40 ${accent ? "border-accent/60" : "border-border"}`}>
+      <div className="flex items-center gap-2 mb-3">
+        <Icon className={`size-3.5 ${accent ? "text-accent" : "text-muted-foreground"}`} />
+        <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{label}</p>
+      </div>
+      <div className={`font-display text-4xl ${accent ? "text-accent" : ""}`}>{value}</div>
+      {hint && <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mt-1">{hint}</p>}
     </div>
   );
 }
