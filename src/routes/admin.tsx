@@ -239,6 +239,8 @@ function Overview({ onNav }: { onNav: (s: Section) => void }) {
   const [range, setRange] = useState<"week" | "month" | "year">("week");
   const [analytics, setAnalytics] = useState<AnalyticsStats | null>(null);
   const [aLoading, setALoading] = useState(true);
+  const [aError, setAError] = useState<string | null>(null);
+
   const fetchAnalytics = useServerFn(getAnalytics);
 
   useEffect(() => {
