@@ -458,24 +458,20 @@ function SpacesSection() {
         ]} />
       </FilterBar>
       {filtered.length === 0 ? <Empty label="No requests match." /> : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          {filtered.map((r) => (
-            <BookingCard key={r.id} name={r.name} status={r.status} created={r.created_at}
-              rows={[
-                { icon: Calendar, label: r.event_date },
-                { icon: Users, label: `${r.party_size} guests` },
-                { icon: MapPin, label: r.space },
-                { icon: Mail, label: r.email },
-                { icon: Phone, label: r.phone },
-              ]}
-              note={r.message}
-              waUrl={waNumber ? buildWhatsAppUrl(waNumber, formatSpaceMessage(r)) : ""}
-              onMark={async () => { await supabase.from("space_reservations").update({ status: "handled" }).eq("id", r.id); refresh(); }}
-              onDelete={async () => { if (!confirm("Delete?")) return; await supabase.from("space_reservations").delete().eq("id", r.id); refresh(); }}
-            />
-          ))}
-        </div>
+        <BookingTable
+          rows={filtered}
+          kind="space"
+          note={(r) => r.message}
+          columns={[
+            { label: "Event date", render: (r) => r.event_date },
+            { label: "Party", render: (r) => `${r.party_size} guests` },
+            { label: "Space", render: (r) => r.space },
+          ]}
+          onMark={async (id) => { await supabase.from("space_reservations").update({ status: "handled" }).eq("id", id); refresh(); }}
+          onDelete={async (id) => { if (!confirm("Delete this request?")) return; await supabase.from("space_reservations").delete().eq("id", id); refresh(); }}
+        />
       )}
+
     </div>
   );
 }
