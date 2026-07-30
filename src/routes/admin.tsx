@@ -1332,7 +1332,7 @@ function BookingTable<T extends { id: string; name: string; phone: string; email
     <div className="space-y-3">
       {msg && <p className="font-mono text-[11px] uppercase tracking-widest text-accent">{msg}</p>}
       <div className="border border-border bg-surface/40 overflow-x-auto">
-        <table className="w-full min-w-[900px] text-sm">
+        <table className="w-full min-w-[820px] text-sm">
           <thead>
             <tr className="border-b border-border bg-background/40">
               <Th>Guest</Th>
