@@ -10,10 +10,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 import logo from "@/assets/mills-logo.png.asset.json";
-import {
-  buildWhatsAppUrl, formatReservationMessage, formatSpaceMessage,
-} from "@/lib/whatsapp";
 import { estimateCalories } from "@/lib/menu-ai.functions";
+import { sendCustomerConfirmation } from "@/lib/notify.functions";
 import { getAnalytics, type AnalyticsStats } from "@/lib/analytics.functions";
 
 export const Route = createFileRoute("/admin")({
@@ -31,16 +29,34 @@ type Section =
   | "overview" | "reservations" | "spaces" | "menu" | "categories"
   | "party" | "sports" | "settings";
 
-const NAV: { id: Section; label: string; icon: any }[] = [
+type NavItem = { id: Section; label: string; icon: any };
+type NavGroup = { label: string; icon: any; children: NavItem[] };
+type NavEntry = NavItem | NavGroup;
+
+const isGroup = (e: NavEntry): e is NavGroup => "children" in e;
+
+const NAV: NavEntry[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
-  { id: "reservations", label: "Reservations", icon: Calendar },
-  { id: "spaces", label: "Space Requests", icon: MapPin },
-  { id: "menu", label: "Menu", icon: UtensilsCrossed },
-  { id: "categories", label: "Categories", icon: FolderTree },
+  {
+    label: "Bookings", icon: Calendar, children: [
+      { id: "reservations", label: "Table Reservations", icon: Calendar },
+      { id: "spaces", label: "Space Requests", icon: MapPin },
+    ],
+  },
+  {
+    label: "Menu", icon: UtensilsCrossed, children: [
+      { id: "menu", label: "Menu Items", icon: UtensilsCrossed },
+      { id: "categories", label: "Categories", icon: FolderTree },
+    ],
+  },
   { id: "party", label: "Party & Shows", icon: PartyPopper },
   { id: "sports", label: "Sports", icon: Trophy },
   { id: "settings", label: "Settings", icon: SettingsIcon },
 ];
+
+const ALL_SECTIONS: NavItem[] = NAV.flatMap((e) => (isGroup(e) ? e.children : [e]));
+const sectionLabel = (s: Section) => ALL_SECTIONS.find((n) => n.id === s)?.label ?? "";
+
 
 function AdminPage() {
   const [session, setSession] = useState<any>(null);
