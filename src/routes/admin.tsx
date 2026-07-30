@@ -422,17 +422,15 @@ function SpacesSection() {
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "new" | "handled">("all");
   const [spaceFilter, setSpaceFilter] = useState("all");
-  const [waNumber, setWaNumber] = useState("");
 
   const refresh = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase.from("space_reservations").select("*").order("created_at", { ascending: false });
     setItems((data ?? []) as SpaceRes[]);
-    const { data: s } = await supabase.from("site_settings").select("whatsapp_number").eq("id", 1).maybeSingle();
-    setWaNumber(s?.whatsapp_number ?? "");
     setLoading(false);
   }, []);
   useEffect(() => { refresh(); }, [refresh]);
+
 
   const spaces = useMemo(() => Array.from(new Set(items.map((i) => i.space))), [items]);
   const filtered = useMemo(() => items.filter((r) => {
