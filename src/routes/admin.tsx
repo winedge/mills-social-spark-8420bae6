@@ -1157,7 +1157,7 @@ function SettingsSection() {
               placeholder="+14805550123" className="w-full bg-background border border-border h-11 px-3 text-sm focus:border-accent outline-none" />
           </label>
           <p className="text-xs text-muted-foreground mt-2">
-            Include country code. When customers submit a reservation, a pre-filled WhatsApp message opens to this number. Also used for the "Send to WhatsApp" button on each booking.
+            Include country code. New bookings are sent here automatically from the server. Automatic delivery needs the WhatsApp API keys below to be configured; otherwise the WhatsApp button falls back to opening a pre-filled chat.
           </p>
         </div>
         <div>
