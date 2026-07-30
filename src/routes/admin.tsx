@@ -352,17 +352,15 @@ function ReservationsSection() {
   const [statusFilter, setStatusFilter] = useState<"all" | "new" | "handled">("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const [waNumber, setWaNumber] = useState("");
 
   const refresh = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase.from("reservations").select("*").order("created_at", { ascending: false });
     setItems((data ?? []) as Reservation[]);
-    const { data: s } = await supabase.from("site_settings").select("whatsapp_number").eq("id", 1).maybeSingle();
-    setWaNumber(s?.whatsapp_number ?? "");
     setLoading(false);
   }, []);
   useEffect(() => { refresh(); }, [refresh]);
+
 
   const filtered = useMemo(() => items.filter((r) => {
     if (statusFilter !== "all" && r.status !== statusFilter) return false;
