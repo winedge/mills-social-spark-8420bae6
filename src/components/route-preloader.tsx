@@ -74,7 +74,7 @@ export function RoutePreloader() {
       role="status"
       aria-live="polite"
       aria-label="Loading"
-      className="fixed inset-0 z-[90] flex flex-col items-center justify-center overlay-anim-in"
+      className="fixed inset-0 z-[90] flex flex-col items-center justify-center overlay-anim-in pointer-events-none"
 
       style={{
         background:

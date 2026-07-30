@@ -3,7 +3,13 @@ import { X, Calendar, Clock, Users, User, Mail, Phone, Check } from "lucide-reac
 
 export const RESERVATION_EVENT = "open-reservation";
 
+/** Module-level store so a click always lands, even before the modal mounts. */
+let requestedOpen = false;
+const listeners = new Set<() => void>();
+
 export function openReservation() {
+  requestedOpen = true;
+  listeners.forEach((l) => l());
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent(RESERVATION_EVENT));
   }
@@ -18,12 +24,19 @@ export function ReservationModal() {
 
   useEffect(() => {
     const handler = () => {
+      requestedOpen = false;
       setStatus("idle");
       setOpen(true);
     };
+    listeners.add(handler);
     window.addEventListener(RESERVATION_EVENT, handler);
-    return () => window.removeEventListener(RESERVATION_EVENT, handler);
+    if (requestedOpen) handler();
+    return () => {
+      listeners.delete(handler);
+      window.removeEventListener(RESERVATION_EVENT, handler);
+    };
   }, []);
+
 
   useEffect(() => {
     setMounted(open);
@@ -60,11 +73,12 @@ export function ReservationModal() {
       const { error: insertError } = await supabase.from("reservations").insert(payload);
       if (insertError) throw insertError;
       try {
-        const { openWhatsAppNotification, formatReservationMessage } = await import("@/lib/whatsapp");
-        await openWhatsAppNotification(formatReservationMessage(payload));
+        const { notifyTableBooking } = await import("@/lib/notify.functions");
+        await notifyTableBooking({ data: payload });
       } catch (waErr) {
         console.warn("WhatsApp notify failed", waErr);
       }
+
       setStatus("success");
       form.reset();
       setTimeout(() => setOpen(false), 2200);

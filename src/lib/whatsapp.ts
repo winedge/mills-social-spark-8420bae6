@@ -1,21 +1,10 @@
-import { supabase } from "@/integrations/supabase/client";
-
-export async function getWhatsAppNumber(): Promise<string> {
-  const { data } = await supabase
-    .from("site_settings")
-    .select("whatsapp_number")
-    .eq("id", 1)
-    .maybeSingle();
-  return (data?.whatsapp_number ?? "").replace(/[^\d]/g, "");
-}
-
 export function buildWhatsAppUrl(number: string, message: string): string {
   const digits = number.replace(/[^\d]/g, "");
   if (!digits) return "";
   return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
 }
 
-export function formatReservationMessage(r: {
+export type TableBooking = {
   name: string;
   phone: string;
   email: string;
@@ -23,7 +12,19 @@ export function formatReservationMessage(r: {
   time: string;
   party_size: number;
   special_requests?: string | null;
-}): string {
+};
+
+export type SpaceBooking = {
+  name: string;
+  phone: string;
+  email: string;
+  event_date: string;
+  party_size: number;
+  space: string;
+  message?: string | null;
+};
+
+export function formatReservationMessage(r: TableBooking): string {
   return [
     "🍽️ *New Table Reservation — Mill's Modern Social*",
     "",
@@ -39,15 +40,7 @@ export function formatReservationMessage(r: {
     .join("\n");
 }
 
-export function formatSpaceMessage(r: {
-  name: string;
-  phone: string;
-  email: string;
-  event_date: string;
-  party_size: number;
-  space: string;
-  message?: string | null;
-}): string {
+export function formatSpaceMessage(r: SpaceBooking): string {
   return [
     "🎉 *New Space Reservation — Mill's Modern Social*",
     "",
@@ -63,11 +56,28 @@ export function formatSpaceMessage(r: {
     .join("\n");
 }
 
-export async function openWhatsAppNotification(message: string): Promise<boolean> {
-  const num = await getWhatsAppNumber();
-  if (!num) return false;
-  const url = buildWhatsAppUrl(num, message);
-  if (!url) return false;
-  window.open(url, "_blank", "noopener,noreferrer");
-  return true;
+/** Confirmation sent to the CUSTOMER's WhatsApp. */
+export function formatTableConfirmation(r: TableBooking): string {
+  return [
+    `Hi ${r.name}! 🍻`,
+    "",
+    "Your table at *Mill's Modern Social* is confirmed:",
+    `📅 ${r.date}  •  🕒 ${r.time}`,
+    `👥 ${r.party_size} guests`,
+    "",
+    "📍 Mill Ave & Broadway, Tempe, AZ",
+    "Reply to this message if anything changes. See you soon!",
+  ].join("\n");
+}
+
+export function formatSpaceConfirmation(r: SpaceBooking): string {
+  return [
+    `Hi ${r.name}! 🎉`,
+    "",
+    "We've received your space request at *Mill's Modern Social*:",
+    `📍 ${r.space}`,
+    `📅 ${r.event_date}  •  👥 ${r.party_size} guests`,
+    "",
+    "Our events team will confirm the details shortly. Thanks for choosing us!",
+  ].join("\n");
 }

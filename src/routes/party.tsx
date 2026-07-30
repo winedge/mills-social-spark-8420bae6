@@ -94,11 +94,12 @@ function PartyPage() {
       const { error } = await supabase.from("space_reservations").insert(payload);
       if (error) throw error;
       try {
-        const { openWhatsAppNotification, formatSpaceMessage } = await import("@/lib/whatsapp");
-        await openWhatsAppNotification(formatSpaceMessage(payload));
+        const { notifySpaceBooking } = await import("@/lib/notify.functions");
+        await notifySpaceBooking({ data: payload });
       } catch (waErr) {
         console.warn("WhatsApp notify failed", waErr);
       }
+
       toast.success("Thanks! We'll be in touch within 24 hours.");
       (e.target as HTMLFormElement).reset();
     } catch (err) {

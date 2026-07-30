@@ -10,10 +10,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 import logo from "@/assets/mills-logo.png.asset.json";
-import {
-  buildWhatsAppUrl, formatReservationMessage, formatSpaceMessage,
-} from "@/lib/whatsapp";
 import { estimateCalories } from "@/lib/menu-ai.functions";
+import { sendCustomerConfirmation } from "@/lib/notify.functions";
 import { getAnalytics, type AnalyticsStats } from "@/lib/analytics.functions";
 
 export const Route = createFileRoute("/admin")({
@@ -31,16 +29,34 @@ type Section =
   | "overview" | "reservations" | "spaces" | "menu" | "categories"
   | "party" | "sports" | "settings";
 
-const NAV: { id: Section; label: string; icon: any }[] = [
+type NavItem = { id: Section; label: string; icon: any };
+type NavGroup = { label: string; icon: any; children: NavItem[] };
+type NavEntry = NavItem | NavGroup;
+
+const isGroup = (e: NavEntry): e is NavGroup => "children" in e;
+
+const NAV: NavEntry[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
-  { id: "reservations", label: "Reservations", icon: Calendar },
-  { id: "spaces", label: "Space Requests", icon: MapPin },
-  { id: "menu", label: "Menu", icon: UtensilsCrossed },
-  { id: "categories", label: "Categories", icon: FolderTree },
+  {
+    label: "Bookings", icon: Calendar, children: [
+      { id: "reservations", label: "Table Reservations", icon: Calendar },
+      { id: "spaces", label: "Space Requests", icon: MapPin },
+    ],
+  },
+  {
+    label: "Menu", icon: UtensilsCrossed, children: [
+      { id: "menu", label: "Menu Items", icon: UtensilsCrossed },
+      { id: "categories", label: "Categories", icon: FolderTree },
+    ],
+  },
   { id: "party", label: "Party & Shows", icon: PartyPopper },
   { id: "sports", label: "Sports", icon: Trophy },
   { id: "settings", label: "Settings", icon: SettingsIcon },
 ];
+
+const ALL_SECTIONS: NavItem[] = NAV.flatMap((e) => (isGroup(e) ? e.children : [e]));
+const sectionLabel = (s: Section) => ALL_SECTIONS.find((n) => n.id === s)?.label ?? "";
+
 
 function AdminPage() {
   const [session, setSession] = useState<any>(null);
@@ -141,20 +157,32 @@ function Dashboard({ email }: { email: string }) {
           <img src={logo.url} alt="Mill's" className="h-10" />
           <button className="lg:hidden" onClick={() => setNavOpen(false)}><X className="size-5" /></button>
         </div>
-        <nav className="p-3 space-y-1">
-          {NAV.map((n) => {
-            const I = n.icon;
-            const active = section === n.id;
+        <nav className="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-11rem)]">
+          {NAV.map((entry) => {
+            if (!isGroup(entry)) {
+              return (
+                <NavButton key={entry.id} item={entry} active={section === entry.id}
+                  onClick={() => { setSection(entry.id); setNavOpen(false); }} />
+              );
+            }
+            const GI = entry.icon;
+            const groupActive = entry.children.some((c) => c.id === section);
             return (
-              <button key={n.id} onClick={() => { setSection(n.id); setNavOpen(false); }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium uppercase tracking-wider transition ${
-                  active ? "bg-accent/15 text-accent border-l-2 border-accent" : "text-muted-foreground hover:bg-muted/40 hover:text-foreground border-l-2 border-transparent"
-                }`}>
-                <I className="size-4" /> {n.label}
-              </button>
+              <div key={entry.label} className="pt-3">
+                <p className={`flex items-center gap-2 px-3 pb-1 font-mono text-[10px] uppercase tracking-[0.25em] ${groupActive ? "text-accent" : "text-muted-foreground/70"}`}>
+                  <GI className="size-3" /> {entry.label}
+                </p>
+                <div className="space-y-1">
+                  {entry.children.map((c) => (
+                    <NavButton key={c.id} item={c} active={section === c.id} nested
+                      onClick={() => { setSection(c.id); setNavOpen(false); }} />
+                  ))}
+                </div>
+              </div>
             );
           })}
         </nav>
+
         <div className="absolute bottom-0 inset-x-0 p-4 border-t border-border">
           <p className="text-[10px] font-mono text-muted-foreground truncate mb-2">{email}</p>
           <button onClick={() => supabase.auth.signOut()}
@@ -172,7 +200,7 @@ function Dashboard({ email }: { email: string }) {
             <button className="lg:hidden" onClick={() => setNavOpen(true)}><MenuIcon className="size-5" /></button>
             <p className="font-mono text-[10px] tracking-[0.3em] text-accent uppercase">Mill's · Admin</p>
             <ChevronRight className="size-3 text-muted-foreground" />
-            <h1 className="font-display text-lg uppercase tracking-tight">{NAV.find(n => n.id === section)?.label}</h1>
+            <h1 className="font-display text-lg uppercase tracking-tight">{sectionLabel(section)}</h1>
           </div>
         </header>
         <main className="p-6">
@@ -190,6 +218,20 @@ function Dashboard({ email }: { email: string }) {
   );
 }
 
+function NavButton({ item, active, nested, onClick }: { item: NavItem; active: boolean; nested?: boolean; onClick: () => void }) {
+  const I = item.icon;
+  return (
+    <button onClick={onClick}
+      className={`w-full flex items-center gap-3 py-2.5 text-sm font-medium uppercase tracking-wider transition ${nested ? "pl-6 pr-3" : "px-3"} ${
+        active ? "bg-accent/15 text-accent border-l-2 border-accent" : "text-muted-foreground hover:bg-muted/40 hover:text-foreground border-l-2 border-transparent"
+      }`}>
+      <I className="size-4 shrink-0" /> <span className="truncate text-left">{item.label}</span>
+    </button>
+  );
+}
+
+
+
 /* ================= OVERVIEW ================= */
 
 function Overview({ onNav }: { onNav: (s: Section) => void }) {
@@ -197,6 +239,8 @@ function Overview({ onNav }: { onNav: (s: Section) => void }) {
   const [range, setRange] = useState<"week" | "month" | "year">("week");
   const [analytics, setAnalytics] = useState<AnalyticsStats | null>(null);
   const [aLoading, setALoading] = useState(true);
+  const [aError, setAError] = useState<string | null>(null);
+
   const fetchAnalytics = useServerFn(getAnalytics);
 
   useEffect(() => {
@@ -218,11 +262,16 @@ function Overview({ onNav }: { onNav: (s: Section) => void }) {
 
   useEffect(() => {
     setALoading(true);
+    setAError(null);
     fetchAnalytics({ data: { range } })
       .then((d) => setAnalytics(d))
-      .catch(() => setAnalytics(null))
+      .catch((e: any) => {
+        setAnalytics(null);
+        setAError(e?.message ? `Couldn't load traffic: ${e.message}` : "Couldn't load traffic data.");
+      })
       .finally(() => setALoading(false));
   }, [range, fetchAnalytics]);
+
 
   const cards = [
     { label: "Table Reservations", value: stats.res, badge: stats.newRes, s: "reservations" as Section },
@@ -260,29 +309,46 @@ function Overview({ onNav }: { onNav: (s: Section) => void }) {
             ))}
           </div>
         </div>
-        {aLoading ? <div className="h-48 grid place-items-center"><Loader2 className="size-6 animate-spin text-accent" /></div> :
-          !analytics || analytics.series.length === 0 ? <div className="h-48 grid place-items-center text-muted-foreground font-mono text-xs">NO DATA YET</div> : (
+        {aLoading ? <div className="h-56 grid place-items-center"><Loader2 className="size-6 animate-spin text-accent" /></div> :
+          aError ? <div className="h-56 grid place-items-center text-center text-muted-foreground font-mono text-xs px-4">{aError}</div> :
+          !analytics || analytics.series.length === 0 ? <div className="h-56 grid place-items-center text-muted-foreground font-mono text-xs">NO DATA YET</div> : (
           <div>
-            <div className="flex items-end gap-1 h-48">
-              {analytics.series.map((s, idx) => {
-                const h = Math.max(2, Math.round((s.views / maxViews) * 100));
-                return (
-                  <div key={idx} className="flex-1 min-w-0 group relative flex items-end">
-                    <div style={{ height: `${h}%` }}
-                      className="w-full bg-accent/30 hover:bg-accent transition relative">
-                      <div className="absolute inset-x-0 -top-1 h-1 bg-accent opacity-0 group-hover:opacity-100" />
-                    </div>
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-background border border-border px-2 py-1 text-[10px] font-mono whitespace-nowrap z-10">
-                      {s.views} views · {s.visitors} visitors
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="flex items-center gap-4 mb-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              <span className="flex items-center gap-1.5"><span className="size-2.5 bg-accent" /> Views</span>
+              <span className="flex items-center gap-1.5"><span className="size-2.5 bg-accent/35" /> Visitors</span>
+              <span className="ml-auto">Peak {maxViews} views</span>
             </div>
-            <div className="flex justify-between mt-2 font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
+            <div className="relative h-56 pl-10">
+              {/* Y axis */}
+              {[1, 0.75, 0.5, 0.25, 0].map((f) => (
+                <div key={f} className="absolute inset-x-0 flex items-center gap-2" style={{ bottom: `${f * 100}%`, left: 0 }}>
+                  <span className="w-9 text-right font-mono text-[9px] text-muted-foreground shrink-0">{Math.round(maxViews * f)}</span>
+                  <span className="flex-1 border-t border-border/50" />
+                </div>
+              ))}
+              <div className="absolute inset-y-0 left-10 right-0 flex items-end gap-[3px]">
+                {analytics.series.map((s, idx) => {
+                  const hv = (s.views / maxViews) * 100;
+                  const hu = (s.visitors / maxViews) * 100;
+                  return (
+                    <div key={idx} className="flex-1 min-w-0 group relative h-full flex items-end justify-center gap-[2px]">
+                      <div className="w-1/2 bg-accent group-hover:brightness-125 transition-all"
+                        style={{ height: `${Math.max(s.views > 0 ? 3 : 0.5, hv)}%` }} />
+                      <div className="w-1/2 bg-accent/35 group-hover:bg-accent/60 transition-all"
+                        style={{ height: `${Math.max(s.visitors > 0 ? 3 : 0.5, hu)}%` }} />
+                      <div className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-background border border-border px-2 py-1 text-[10px] font-mono whitespace-nowrap z-10">
+                        {s.date} · {s.views} views · {s.visitors} visitors
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="flex justify-between mt-3 pl-10 font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
               <span>{analytics.series[0]?.date}</span>
               <span>{analytics.series[analytics.series.length - 1]?.date}</span>
             </div>
+
             {analytics.topPaths.length > 0 && (
               <div className="mt-6 pt-6 border-t border-border">
                 <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-3">TOP PAGES</p>
@@ -352,17 +418,15 @@ function ReservationsSection() {
   const [statusFilter, setStatusFilter] = useState<"all" | "new" | "handled">("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const [waNumber, setWaNumber] = useState("");
 
   const refresh = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase.from("reservations").select("*").order("created_at", { ascending: false });
     setItems((data ?? []) as Reservation[]);
-    const { data: s } = await supabase.from("site_settings").select("whatsapp_number").eq("id", 1).maybeSingle();
-    setWaNumber(s?.whatsapp_number ?? "");
     setLoading(false);
   }, []);
   useEffect(() => { refresh(); }, [refresh]);
+
 
   const filtered = useMemo(() => items.filter((r) => {
     if (statusFilter !== "all" && r.status !== statusFilter) return false;
@@ -387,23 +451,20 @@ function ReservationsSection() {
         <DateInput value={dateTo} onChange={setDateTo} label="To" />
       </FilterBar>
       {filtered.length === 0 ? <Empty label="No reservations match." /> : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          {filtered.map((r) => (
-            <BookingCard key={r.id} name={r.name} status={r.status} created={r.created_at}
-              rows={[
-                { icon: Calendar, label: `${r.date} · ${r.time}` },
-                { icon: Users, label: `${r.party_size} guests` },
-                { icon: Mail, label: r.email },
-                { icon: Phone, label: r.phone },
-              ]}
-              note={r.special_requests}
-              waUrl={waNumber ? buildWhatsAppUrl(waNumber, formatReservationMessage(r)) : ""}
-              onMark={async () => { await supabase.from("reservations").update({ status: "handled" }).eq("id", r.id); refresh(); }}
-              onDelete={async () => { if (!confirm("Delete?")) return; await supabase.from("reservations").delete().eq("id", r.id); refresh(); }}
-            />
-          ))}
-        </div>
+        <BookingTable
+          rows={filtered}
+          kind="table"
+          note={(r) => r.special_requests}
+          columns={[
+            { label: "Date", render: (r) => r.date },
+            { label: "Time", render: (r) => r.time },
+            { label: "Party", render: (r) => `${r.party_size} guests` },
+          ]}
+          onMark={async (id) => { await supabase.from("reservations").update({ status: "handled" }).eq("id", id); refresh(); }}
+          onDelete={async (id) => { if (!confirm("Delete this reservation?")) return; await supabase.from("reservations").delete().eq("id", id); refresh(); }}
+        />
       )}
+
     </div>
   );
 }
@@ -422,17 +483,15 @@ function SpacesSection() {
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "new" | "handled">("all");
   const [spaceFilter, setSpaceFilter] = useState("all");
-  const [waNumber, setWaNumber] = useState("");
 
   const refresh = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase.from("space_reservations").select("*").order("created_at", { ascending: false });
     setItems((data ?? []) as SpaceRes[]);
-    const { data: s } = await supabase.from("site_settings").select("whatsapp_number").eq("id", 1).maybeSingle();
-    setWaNumber(s?.whatsapp_number ?? "");
     setLoading(false);
   }, []);
   useEffect(() => { refresh(); }, [refresh]);
+
 
   const spaces = useMemo(() => Array.from(new Set(items.map((i) => i.space))), [items]);
   const filtered = useMemo(() => items.filter((r) => {
@@ -458,24 +517,20 @@ function SpacesSection() {
         ]} />
       </FilterBar>
       {filtered.length === 0 ? <Empty label="No requests match." /> : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          {filtered.map((r) => (
-            <BookingCard key={r.id} name={r.name} status={r.status} created={r.created_at}
-              rows={[
-                { icon: Calendar, label: r.event_date },
-                { icon: Users, label: `${r.party_size} guests` },
-                { icon: MapPin, label: r.space },
-                { icon: Mail, label: r.email },
-                { icon: Phone, label: r.phone },
-              ]}
-              note={r.message}
-              waUrl={waNumber ? buildWhatsAppUrl(waNumber, formatSpaceMessage(r)) : ""}
-              onMark={async () => { await supabase.from("space_reservations").update({ status: "handled" }).eq("id", r.id); refresh(); }}
-              onDelete={async () => { if (!confirm("Delete?")) return; await supabase.from("space_reservations").delete().eq("id", r.id); refresh(); }}
-            />
-          ))}
-        </div>
+        <BookingTable
+          rows={filtered}
+          kind="space"
+          note={(r) => r.message}
+          columns={[
+            { label: "Event date", render: (r) => r.event_date },
+            { label: "Party", render: (r) => `${r.party_size} guests` },
+            { label: "Space", render: (r) => r.space },
+          ]}
+          onMark={async (id) => { await supabase.from("space_reservations").update({ status: "handled" }).eq("id", id); refresh(); }}
+          onDelete={async (id) => { if (!confirm("Delete this request?")) return; await supabase.from("space_reservations").delete().eq("id", id); refresh(); }}
+        />
       )}
+
     </div>
   );
 }
@@ -1102,7 +1157,7 @@ function SettingsSection() {
               placeholder="+14805550123" className="w-full bg-background border border-border h-11 px-3 text-sm focus:border-accent outline-none" />
           </label>
           <p className="text-xs text-muted-foreground mt-2">
-            Include country code. When customers submit a reservation, a pre-filled WhatsApp message opens to this number. Also used for the "Send to WhatsApp" button on each booking.
+            Include country code. New bookings are sent here automatically from the server. Automatic delivery needs the WhatsApp API keys below to be configured; otherwise the WhatsApp button falls back to opening a pre-filled chat.
           </p>
         </div>
         <div>
@@ -1114,7 +1169,7 @@ function SettingsSection() {
               placeholder="admin@millsmodern.social" className="w-full bg-background border border-border h-11 px-3 text-sm focus:border-accent outline-none" />
           </label>
           <p className="text-xs text-muted-foreground mt-2">
-            Displayed as the reservations contact. Email dispatch can be wired to a provider like Resend on request.
+            Private — only admins can read this. Used as the internal reservations contact.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -1237,45 +1292,111 @@ function SaveBar({ busy, onCancel }: { busy: boolean; onCancel: () => void }) {
     </div>
   );
 }
-function BookingCard({
-  name, status, created, rows, note, onMark, onDelete, waUrl,
+
+
+
+/* ================= BOOKING TABLE ================= */
+
+function BookingTable<T extends { id: string; name: string; phone: string; email: string; status: string; created_at: string }>({
+  rows, columns, kind, note, onMark, onDelete,
 }: {
-  name: string; status: string; created: string;
-  rows: { icon: any; label: string }[]; note: string | null;
-  onMark: () => void; onDelete: () => void; waUrl?: string;
+  rows: T[];
+  columns: { label: string; render: (r: T) => React.ReactNode }[];
+  kind: "table" | "space";
+  note: (r: T) => string | null;
+  onMark: (id: string) => void;
+  onDelete: (id: string) => void;
 }) {
-  const isNew = status === "new";
+  const send = useServerFn(sendCustomerConfirmation);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const confirmCustomer = async (r: T) => {
+    setBusy(r.id); setMsg(null);
+    try {
+      const res = await send({ data: { kind, id: r.id } });
+      if (res.sent) setMsg(`Confirmation sent to ${r.name} (${r.phone}).`);
+      else if (res.fallbackUrl) {
+        window.open(res.fallbackUrl, "_blank", "noopener,noreferrer");
+        setMsg("Automatic sending isn't configured yet — opened WhatsApp instead.");
+      }
+    } catch (e: any) {
+      setMsg(e?.message ?? "Couldn't send confirmation.");
+    } finally {
+      setBusy(null);
+      setTimeout(() => setMsg(null), 6000);
+    }
+  };
+
   return (
-    <article className={`border p-5 bg-surface/40 ${isNew ? "border-accent/60" : "border-border"}`}>
-      <div className="flex items-start justify-between gap-3 mb-4">
-        <div>
-          <h3 className="font-display text-2xl uppercase leading-none">{name}</h3>
-          <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest mt-1">{new Date(created).toLocaleString()}</p>
-        </div>
-        <span className={`font-mono text-[10px] px-2 py-1 tracking-widest uppercase ${isNew ? "bg-accent text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{status}</span>
+    <div className="space-y-3">
+      {msg && <p className="font-mono text-[11px] uppercase tracking-widest text-accent">{msg}</p>}
+      <div className="border border-border bg-surface/40 overflow-x-auto">
+        <table className="w-full min-w-[820px] text-sm">
+          <thead>
+            <tr className="border-b border-border bg-background/40">
+              <Th>Guest</Th>
+              {columns.map((c) => <Th key={c.label}>{c.label}</Th>)}
+              <Th>Status</Th>
+              <Th>Received</Th>
+              <Th align="right">Actions</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => {
+              const isNew = r.status === "new";
+              const n = note(r);
+              return (
+                <tr key={r.id} className="border-b border-border/60 last:border-b-0 hover:bg-muted/20 align-top">
+                  <td className="px-4 py-3">
+                    <p className="font-bold uppercase tracking-wide">{r.name}</p>
+                    <p className="text-xs text-muted-foreground">{r.email}</p>
+                    <p className="text-xs text-muted-foreground">{r.phone}</p>
+                    {n && <p className="mt-1 text-xs border-l-2 border-accent pl-2 text-foreground/80 max-w-[240px] whitespace-pre-wrap">{n}</p>}
+                  </td>
+                  {columns.map((c) => (
+                    <td key={c.label} className="px-4 py-3 whitespace-nowrap text-muted-foreground">{c.render(r)}</td>
+                  ))}
+                  <td className="px-4 py-3">
+                    <span className={`font-mono text-[10px] px-2 py-1 tracking-widest uppercase ${isNew ? "bg-accent text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{r.status}</span>
+                  </td>
+                  <td className="px-4 py-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">
+                    {new Date(r.created_at).toLocaleString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-2">
+                      <button onClick={() => confirmCustomer(r)} disabled={busy === r.id}
+                        title="Send WhatsApp confirmation to the customer"
+                        className="inline-flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-widest border border-border hover:border-accent hover:text-accent disabled:opacity-50">
+                        {busy === r.id ? <Loader2 className="size-3 animate-spin" /> : <MessageCircle className="size-3" />} WhatsApp
+                      </button>
+                      {isNew && (
+                        <button onClick={() => onMark(r.id)}
+                          className="inline-flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-widest border border-border hover:border-accent hover:text-accent">
+                          <Check className="size-3" /> Handled
+                        </button>
+                      )}
+                      <button onClick={() => onDelete(r.id)}
+                        className="inline-flex items-center justify-center size-8 border border-border hover:border-red-500 hover:text-red-500">
+                        <Trash2 className="size-3" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground mb-3">
-        {rows.map((r, i) => { const I = r.icon; return (
-          <div key={i} className="flex items-center gap-2 min-w-0"><I className="size-3.5 text-accent shrink-0" /><span className="truncate">{r.label}</span></div>
-        );})}
-      </div>
-      {note && <p className="text-sm text-foreground border-l-2 border-accent pl-3 py-1 mb-3 whitespace-pre-wrap">{note}</p>}
-      <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
-        {waUrl && (
-          <a href={waUrl} target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-widest border border-border hover:border-accent hover:text-accent">
-            <MessageCircle className="size-3" /> WhatsApp
-          </a>
-        )}
-        {isNew && (
-          <button onClick={onMark} className="inline-flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-widest border border-border hover:border-accent hover:text-accent">
-            <Check className="size-3" /> Mark handled
-          </button>
-        )}
-        <button onClick={onDelete} className="inline-flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-widest border border-border hover:border-red-500 hover:text-red-500 ml-auto">
-          <Trash2 className="size-3" /> Delete
-        </button>
-      </div>
-    </article>
+    </div>
   );
 }
+
+function Th({ children, align }: { children: React.ReactNode; align?: "right" }) {
+  return (
+    <th className={`px-4 py-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground ${align === "right" ? "text-right" : "text-left"}`}>
+      {children}
+    </th>
+  );
+}
+
