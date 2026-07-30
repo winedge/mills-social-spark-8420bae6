@@ -1292,48 +1292,8 @@ function SaveBar({ busy, onCancel }: { busy: boolean; onCancel: () => void }) {
     </div>
   );
 }
-function BookingCard({
-  name, status, created, rows, note, onMark, onDelete, waUrl,
-}: {
-  name: string; status: string; created: string;
-  rows: { icon: any; label: string }[]; note: string | null;
-  onMark: () => void; onDelete: () => void; waUrl?: string;
-}) {
-  const isNew = status === "new";
-  return (
-    <article className={`border p-5 bg-surface/40 ${isNew ? "border-accent/60" : "border-border"}`}>
-      <div className="flex items-start justify-between gap-3 mb-4">
-        <div>
-          <h3 className="font-display text-2xl uppercase leading-none">{name}</h3>
-          <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest mt-1">{new Date(created).toLocaleString()}</p>
-        </div>
-        <span className={`font-mono text-[10px] px-2 py-1 tracking-widest uppercase ${isNew ? "bg-accent text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{status}</span>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground mb-3">
-        {rows.map((r, i) => { const I = r.icon; return (
-          <div key={i} className="flex items-center gap-2 min-w-0"><I className="size-3.5 text-accent shrink-0" /><span className="truncate">{r.label}</span></div>
-        );})}
-      </div>
-      {note && <p className="text-sm text-foreground border-l-2 border-accent pl-3 py-1 mb-3 whitespace-pre-wrap">{note}</p>}
-      <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
-        {waUrl && (
-          <a href={waUrl} target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-widest border border-border hover:border-accent hover:text-accent">
-            <MessageCircle className="size-3" /> WhatsApp
-          </a>
-        )}
-        {isNew && (
-          <button onClick={onMark} className="inline-flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-widest border border-border hover:border-accent hover:text-accent">
-            <Check className="size-3" /> Mark handled
-          </button>
-        )}
-        <button onClick={onDelete} className="inline-flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-widest border border-border hover:border-red-500 hover:text-red-500 ml-auto">
-          <Trash2 className="size-3" /> Delete
-        </button>
-      </div>
-    </article>
-  );
-}
+
+
 
 /* ================= BOOKING TABLE ================= */
 
