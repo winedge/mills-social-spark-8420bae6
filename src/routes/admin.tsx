@@ -1169,7 +1169,7 @@ function SettingsSection() {
               placeholder="admin@millsmodern.social" className="w-full bg-background border border-border h-11 px-3 text-sm focus:border-accent outline-none" />
           </label>
           <p className="text-xs text-muted-foreground mt-2">
-            Displayed as the reservations contact. Email dispatch can be wired to a provider like Resend on request.
+            Private — only admins can read this. Used as the internal reservations contact.
           </p>
         </div>
         <div className="flex items-center gap-3">
