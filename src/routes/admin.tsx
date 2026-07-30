@@ -302,29 +302,46 @@ function Overview({ onNav }: { onNav: (s: Section) => void }) {
             ))}
           </div>
         </div>
-        {aLoading ? <div className="h-48 grid place-items-center"><Loader2 className="size-6 animate-spin text-accent" /></div> :
-          !analytics || analytics.series.length === 0 ? <div className="h-48 grid place-items-center text-muted-foreground font-mono text-xs">NO DATA YET</div> : (
+        {aLoading ? <div className="h-56 grid place-items-center"><Loader2 className="size-6 animate-spin text-accent" /></div> :
+          aError ? <div className="h-56 grid place-items-center text-center text-muted-foreground font-mono text-xs px-4">{aError}</div> :
+          !analytics || analytics.series.length === 0 ? <div className="h-56 grid place-items-center text-muted-foreground font-mono text-xs">NO DATA YET</div> : (
           <div>
-            <div className="flex items-end gap-1 h-48">
-              {analytics.series.map((s, idx) => {
-                const h = Math.max(2, Math.round((s.views / maxViews) * 100));
-                return (
-                  <div key={idx} className="flex-1 min-w-0 group relative flex items-end">
-                    <div style={{ height: `${h}%` }}
-                      className="w-full bg-accent/30 hover:bg-accent transition relative">
-                      <div className="absolute inset-x-0 -top-1 h-1 bg-accent opacity-0 group-hover:opacity-100" />
-                    </div>
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-background border border-border px-2 py-1 text-[10px] font-mono whitespace-nowrap z-10">
-                      {s.views} views · {s.visitors} visitors
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="flex items-center gap-4 mb-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              <span className="flex items-center gap-1.5"><span className="size-2.5 bg-accent" /> Views</span>
+              <span className="flex items-center gap-1.5"><span className="size-2.5 bg-accent/35" /> Visitors</span>
+              <span className="ml-auto">Peak {maxViews} views</span>
             </div>
-            <div className="flex justify-between mt-2 font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
+            <div className="relative h-56 pl-10">
+              {/* Y axis */}
+              {[1, 0.75, 0.5, 0.25, 0].map((f) => (
+                <div key={f} className="absolute inset-x-0 flex items-center gap-2" style={{ bottom: `${f * 100}%`, left: 0 }}>
+                  <span className="w-9 text-right font-mono text-[9px] text-muted-foreground shrink-0">{Math.round(maxViews * f)}</span>
+                  <span className="flex-1 border-t border-border/50" />
+                </div>
+              ))}
+              <div className="absolute inset-y-0 left-10 right-0 flex items-end gap-[3px]">
+                {analytics.series.map((s, idx) => {
+                  const hv = (s.views / maxViews) * 100;
+                  const hu = (s.visitors / maxViews) * 100;
+                  return (
+                    <div key={idx} className="flex-1 min-w-0 group relative h-full flex items-end justify-center gap-[2px]">
+                      <div className="w-1/2 bg-accent group-hover:brightness-125 transition-all"
+                        style={{ height: `${Math.max(s.views > 0 ? 3 : 0.5, hv)}%` }} />
+                      <div className="w-1/2 bg-accent/35 group-hover:bg-accent/60 transition-all"
+                        style={{ height: `${Math.max(s.visitors > 0 ? 3 : 0.5, hu)}%` }} />
+                      <div className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-background border border-border px-2 py-1 text-[10px] font-mono whitespace-nowrap z-10">
+                        {s.date} · {s.views} views · {s.visitors} visitors
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="flex justify-between mt-3 pl-10 font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
               <span>{analytics.series[0]?.date}</span>
               <span>{analytics.series[analytics.series.length - 1]?.date}</span>
             </div>
+
             {analytics.topPaths.length > 0 && (
               <div className="mt-6 pt-6 border-t border-border">
                 <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-3">TOP PAGES</p>
