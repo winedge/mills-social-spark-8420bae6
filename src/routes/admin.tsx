@@ -218,6 +218,20 @@ function Dashboard({ email }: { email: string }) {
   );
 }
 
+function NavButton({ item, active, nested, onClick }: { item: NavItem; active: boolean; nested?: boolean; onClick: () => void }) {
+  const I = item.icon;
+  return (
+    <button onClick={onClick}
+      className={`w-full flex items-center gap-3 py-2.5 text-sm font-medium uppercase tracking-wider transition ${nested ? "pl-6 pr-3" : "px-3"} ${
+        active ? "bg-accent/15 text-accent border-l-2 border-accent" : "text-muted-foreground hover:bg-muted/40 hover:text-foreground border-l-2 border-transparent"
+      }`}>
+      <I className="size-4 shrink-0" /> <span className="truncate text-left">{item.label}</span>
+    </button>
+  );
+}
+
+
+
 /* ================= OVERVIEW ================= */
 
 function Overview({ onNav }: { onNav: (s: Section) => void }) {
