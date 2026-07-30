@@ -157,20 +157,32 @@ function Dashboard({ email }: { email: string }) {
           <img src={logo.url} alt="Mill's" className="h-10" />
           <button className="lg:hidden" onClick={() => setNavOpen(false)}><X className="size-5" /></button>
         </div>
-        <nav className="p-3 space-y-1">
-          {NAV.map((n) => {
-            const I = n.icon;
-            const active = section === n.id;
+        <nav className="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-11rem)]">
+          {NAV.map((entry) => {
+            if (!isGroup(entry)) {
+              return (
+                <NavButton key={entry.id} item={entry} active={section === entry.id}
+                  onClick={() => { setSection(entry.id); setNavOpen(false); }} />
+              );
+            }
+            const GI = entry.icon;
+            const groupActive = entry.children.some((c) => c.id === section);
             return (
-              <button key={n.id} onClick={() => { setSection(n.id); setNavOpen(false); }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium uppercase tracking-wider transition ${
-                  active ? "bg-accent/15 text-accent border-l-2 border-accent" : "text-muted-foreground hover:bg-muted/40 hover:text-foreground border-l-2 border-transparent"
-                }`}>
-                <I className="size-4" /> {n.label}
-              </button>
+              <div key={entry.label} className="pt-3">
+                <p className={`flex items-center gap-2 px-3 pb-1 font-mono text-[10px] uppercase tracking-[0.25em] ${groupActive ? "text-accent" : "text-muted-foreground/70"}`}>
+                  <GI className="size-3" /> {entry.label}
+                </p>
+                <div className="space-y-1">
+                  {entry.children.map((c) => (
+                    <NavButton key={c.id} item={c} active={section === c.id} nested
+                      onClick={() => { setSection(c.id); setNavOpen(false); }} />
+                  ))}
+                </div>
+              </div>
             );
           })}
         </nav>
+
         <div className="absolute bottom-0 inset-x-0 p-4 border-t border-border">
           <p className="text-[10px] font-mono text-muted-foreground truncate mb-2">{email}</p>
           <button onClick={() => supabase.auth.signOut()}
