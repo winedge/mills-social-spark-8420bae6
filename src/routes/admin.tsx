@@ -1279,3 +1279,109 @@ function BookingCard({
     </article>
   );
 }
+
+/* ================= BOOKING TABLE ================= */
+
+function BookingTable<T extends { id: string; name: string; phone: string; email: string; status: string; created_at: string }>({
+  rows, columns, kind, note, onMark, onDelete,
+}: {
+  rows: T[];
+  columns: { label: string; render: (r: T) => React.ReactNode }[];
+  kind: "table" | "space";
+  note: (r: T) => string | null;
+  onMark: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  const send = useServerFn(sendCustomerConfirmation);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const confirmCustomer = async (r: T) => {
+    setBusy(r.id); setMsg(null);
+    try {
+      const res = await send({ data: { kind, id: r.id } });
+      if (res.sent) setMsg(`Confirmation sent to ${r.name} (${r.phone}).`);
+      else if (res.fallbackUrl) {
+        window.open(res.fallbackUrl, "_blank", "noopener,noreferrer");
+        setMsg("Automatic sending isn't configured yet — opened WhatsApp instead.");
+      }
+    } catch (e: any) {
+      setMsg(e?.message ?? "Couldn't send confirmation.");
+    } finally {
+      setBusy(null);
+      setTimeout(() => setMsg(null), 6000);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      {msg && <p className="font-mono text-[11px] uppercase tracking-widest text-accent">{msg}</p>}
+      <div className="border border-border bg-surface/40 overflow-x-auto">
+        <table className="w-full min-w-[900px] text-sm">
+          <thead>
+            <tr className="border-b border-border bg-background/40">
+              <Th>Guest</Th>
+              {columns.map((c) => <Th key={c.label}>{c.label}</Th>)}
+              <Th>Status</Th>
+              <Th>Received</Th>
+              <Th align="right">Actions</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => {
+              const isNew = r.status === "new";
+              const n = note(r);
+              return (
+                <tr key={r.id} className="border-b border-border/60 last:border-b-0 hover:bg-muted/20 align-top">
+                  <td className="px-4 py-3">
+                    <p className="font-bold uppercase tracking-wide">{r.name}</p>
+                    <p className="text-xs text-muted-foreground">{r.email}</p>
+                    <p className="text-xs text-muted-foreground">{r.phone}</p>
+                    {n && <p className="mt-1 text-xs border-l-2 border-accent pl-2 text-foreground/80 max-w-[240px] whitespace-pre-wrap">{n}</p>}
+                  </td>
+                  {columns.map((c) => (
+                    <td key={c.label} className="px-4 py-3 whitespace-nowrap text-muted-foreground">{c.render(r)}</td>
+                  ))}
+                  <td className="px-4 py-3">
+                    <span className={`font-mono text-[10px] px-2 py-1 tracking-widest uppercase ${isNew ? "bg-accent text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{r.status}</span>
+                  </td>
+                  <td className="px-4 py-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">
+                    {new Date(r.created_at).toLocaleString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-2">
+                      <button onClick={() => confirmCustomer(r)} disabled={busy === r.id}
+                        title="Send WhatsApp confirmation to the customer"
+                        className="inline-flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-widest border border-border hover:border-accent hover:text-accent disabled:opacity-50">
+                        {busy === r.id ? <Loader2 className="size-3 animate-spin" /> : <MessageCircle className="size-3" />} WhatsApp
+                      </button>
+                      {isNew && (
+                        <button onClick={() => onMark(r.id)}
+                          className="inline-flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-widest border border-border hover:border-accent hover:text-accent">
+                          <Check className="size-3" /> Handled
+                        </button>
+                      )}
+                      <button onClick={() => onDelete(r.id)}
+                        className="inline-flex items-center justify-center size-8 border border-border hover:border-red-500 hover:text-red-500">
+                        <Trash2 className="size-3" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function Th({ children, align }: { children: React.ReactNode; align?: "right" }) {
+  return (
+    <th className={`px-4 py-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground ${align === "right" ? "text-right" : "text-left"}`}>
+      {children}
+    </th>
+  );
+}
+
