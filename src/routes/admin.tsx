@@ -387,23 +387,20 @@ function ReservationsSection() {
         <DateInput value={dateTo} onChange={setDateTo} label="To" />
       </FilterBar>
       {filtered.length === 0 ? <Empty label="No reservations match." /> : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          {filtered.map((r) => (
-            <BookingCard key={r.id} name={r.name} status={r.status} created={r.created_at}
-              rows={[
-                { icon: Calendar, label: `${r.date} · ${r.time}` },
-                { icon: Users, label: `${r.party_size} guests` },
-                { icon: Mail, label: r.email },
-                { icon: Phone, label: r.phone },
-              ]}
-              note={r.special_requests}
-              waUrl={waNumber ? buildWhatsAppUrl(waNumber, formatReservationMessage(r)) : ""}
-              onMark={async () => { await supabase.from("reservations").update({ status: "handled" }).eq("id", r.id); refresh(); }}
-              onDelete={async () => { if (!confirm("Delete?")) return; await supabase.from("reservations").delete().eq("id", r.id); refresh(); }}
-            />
-          ))}
-        </div>
+        <BookingTable
+          rows={filtered}
+          kind="table"
+          note={(r) => r.special_requests}
+          columns={[
+            { label: "Date", render: (r) => r.date },
+            { label: "Time", render: (r) => r.time },
+            { label: "Party", render: (r) => `${r.party_size} guests` },
+          ]}
+          onMark={async (id) => { await supabase.from("reservations").update({ status: "handled" }).eq("id", id); refresh(); }}
+          onDelete={async (id) => { if (!confirm("Delete this reservation?")) return; await supabase.from("reservations").delete().eq("id", id); refresh(); }}
+        />
       )}
+
     </div>
   );
 }
