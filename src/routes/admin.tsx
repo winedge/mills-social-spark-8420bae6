@@ -200,7 +200,7 @@ function Dashboard({ email }: { email: string }) {
             <button className="lg:hidden" onClick={() => setNavOpen(true)}><MenuIcon className="size-5" /></button>
             <p className="font-mono text-[10px] tracking-[0.3em] text-accent uppercase">Mill's · Admin</p>
             <ChevronRight className="size-3 text-muted-foreground" />
-            <h1 className="font-display text-lg uppercase tracking-tight">{NAV.find(n => n.id === section)?.label}</h1>
+            <h1 className="font-display text-lg uppercase tracking-tight">{sectionLabel(section)}</h1>
           </div>
         </header>
         <main className="p-6">
