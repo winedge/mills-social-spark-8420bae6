@@ -60,11 +60,12 @@ export function ReservationModal() {
       const { error: insertError } = await supabase.from("reservations").insert(payload);
       if (insertError) throw insertError;
       try {
-        const { openWhatsAppNotification, formatReservationMessage } = await import("@/lib/whatsapp");
-        await openWhatsAppNotification(formatReservationMessage(payload));
+        const { notifyTableBooking } = await import("@/lib/notify.functions");
+        await notifyTableBooking({ data: payload });
       } catch (waErr) {
         console.warn("WhatsApp notify failed", waErr);
       }
+
       setStatus("success");
       form.reset();
       setTimeout(() => setOpen(false), 2200);
