@@ -262,11 +262,16 @@ function Overview({ onNav }: { onNav: (s: Section) => void }) {
 
   useEffect(() => {
     setALoading(true);
+    setAError(null);
     fetchAnalytics({ data: { range } })
       .then((d) => setAnalytics(d))
-      .catch(() => setAnalytics(null))
+      .catch((e: any) => {
+        setAnalytics(null);
+        setAError(e?.message ? `Couldn't load traffic: ${e.message}` : "Couldn't load traffic data.");
+      })
       .finally(() => setALoading(false));
   }, [range, fetchAnalytics]);
+
 
   const cards = [
     { label: "Table Reservations", value: stats.res, badge: stats.newRes, s: "reservations" as Section },
