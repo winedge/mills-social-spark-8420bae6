@@ -7,7 +7,7 @@ import {
   Trash2, Check, LayoutDashboard, UtensilsCrossed, PartyPopper, Trophy,
   Settings as SettingsIcon, Menu as MenuIcon, X, Plus, Pencil, Save,
   MessageCircle, Search, ChevronRight, Sparkles, FolderTree, Eye, Activity,
-  TrendingUp, Tv,
+  TrendingUp, Tv, CalendarClock,
 } from "lucide-react";
 import logo from "@/assets/mills-logo.png.asset.json";
 import { estimateCalories } from "@/lib/menu-ai.functions";
@@ -28,7 +28,7 @@ export const Route = createFileRoute("/admin")({
 
 type Section =
   | "overview" | "reservations" | "spaces" | "menu" | "categories"
-  | "party" | "sports" | "ufc" | "settings";
+  | "party" | "sports" | "ufc" | "specials" | "pulse" | "settings";
 
 type NavItem = { id: Section; label: string; icon: any };
 type NavGroup = { label: string; icon: any; children: NavItem[] };
@@ -48,6 +48,12 @@ const NAV: NavEntry[] = [
     label: "Menu", icon: UtensilsCrossed, children: [
       { id: "menu", label: "Menu Items", icon: UtensilsCrossed },
       { id: "categories", label: "Categories", icon: FolderTree },
+    ],
+  },
+  {
+    label: "Homepage", icon: Sparkles, children: [
+      { id: "specials", label: "Daily Specials", icon: UtensilsCrossed },
+      { id: "pulse", label: "Weekly Pulse", icon: CalendarClock },
     ],
   },
   { id: "party", label: "Party & Shows", icon: PartyPopper },
@@ -218,6 +224,8 @@ function Dashboard({ email }: { email: string }) {
           {section === "party" && <PartySection />}
           {section === "sports" && <SportsSection />}
           {section === "ufc" && <AdminUfcSection />}
+          {section === "specials" && <SpecialsSection />}
+          {section === "pulse" && <PulseSection />}
           {section === "settings" && <SettingsSection />}
         </main>
       </div>
@@ -1191,6 +1199,160 @@ function SettingsSection() {
 }
 
 /* ================= SHARED UI ================= */
+
+type SpecialRow = { id: string; day: string; badge: string; title: string; description: string; price: string; image_url: string | null; sort_order: number; active: boolean };
+
+function SpecialsSection() {
+  const [rows, setRows] = useState<SpecialRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState<SpecialRow | null>(null);
+  const refresh = async () => {
+    setLoading(true);
+    const { data } = await supabase.from("daily_specials").select("*").order("sort_order");
+    setRows((data ?? []) as SpecialRow[]);
+    setLoading(false);
+  };
+  useEffect(() => { refresh(); }, []);
+  return (
+    <div className="space-y-4">
+      <button onClick={() => setEditing({ id: "", day: "", badge: "", title: "", description: "", price: "", image_url: "", sort_order: rows.length + 1, active: true })}
+        className="inline-flex items-center gap-2 px-4 h-10 bg-accent text-primary-foreground text-xs font-bold uppercase tracking-widest">
+        <Plus className="size-3.5" /> Add special
+      </button>
+      {loading ? <LoaderBlock /> : rows.length === 0 ? <Empty label="No daily specials." /> : (
+        <div className="border border-border overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/30 text-[10px] uppercase tracking-widest font-mono text-muted-foreground">
+              <tr><th className="text-left px-4 py-3">Day</th><th className="text-left px-4 py-3">Title</th><th className="text-left px-4 py-3">Badge</th><th className="text-left px-4 py-3 hidden md:table-cell">Description</th><th className="text-left px-4 py-3">Price</th><th className="text-left px-4 py-3">Live</th><th></th></tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.id} className="border-t border-border">
+                  <td className="px-4 py-3 font-mono text-xs">{r.day}</td>
+                  <td className="px-4 py-3 font-medium">{r.title}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-accent">{r.badge}</td>
+                  <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">{r.description}</td>
+                  <td className="px-4 py-3 font-mono text-xs">{r.price}</td>
+                  <td className="px-4 py-3"><ToggleActive checked={r.active} onChange={async (v) => { await supabase.from("daily_specials").update({ active: v }).eq("id", r.id); refresh(); }} /></td>
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
+                    <IconBtn label="Edit" onClick={() => setEditing(r)}><Pencil className="size-3.5" /></IconBtn>
+                    <IconBtn label="Delete" danger onClick={async () => { if (!confirm("Delete?")) return; await supabase.from("daily_specials").delete().eq("id", r.id); refresh(); }}><Trash2 className="size-3.5" /></IconBtn>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {editing && (
+        <Modal title={editing.id ? "Edit Special" : "New Special"} onClose={() => setEditing(null)}>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.currentTarget);
+            const payload = {
+              day: String(fd.get("day")), badge: String(fd.get("badge") ?? ""),
+              title: String(fd.get("title")), description: String(fd.get("description") ?? ""),
+              price: String(fd.get("price") ?? ""), image_url: String(fd.get("image_url") ?? "") || null,
+              sort_order: Number(fd.get("sort_order") ?? 0), active: fd.get("active") === "on",
+            };
+            const q = editing.id ? supabase.from("daily_specials").update(payload).eq("id", editing.id) : supabase.from("daily_specials").insert(payload);
+            const { error } = await q; if (error) alert(error.message); else { setEditing(null); refresh(); }
+          }} className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <Input name="day" label="Day (e.g. MONDAY)" defaultValue={editing.day} required />
+              <Input name="badge" label="Badge (e.g. 1/2 OFF)" defaultValue={editing.badge} />
+            </div>
+            <Input name="title" label="Title" defaultValue={editing.title} required />
+            <Textarea name="description" label="Description" defaultValue={editing.description} />
+            <div className="grid grid-cols-2 gap-3">
+              <Input name="price" label="Price label" defaultValue={editing.price} />
+              <Input name="sort_order" label="Sort" type="number" defaultValue={editing.sort_order} />
+            </div>
+            <Input name="image_url" label="Image URL (optional)" defaultValue={editing.image_url ?? ""} placeholder="https://…" />
+            <label className="flex items-center gap-2 h-10"><input type="checkbox" name="active" defaultChecked={editing.active} /> Active</label>
+            <SaveBar busy={false} onCancel={() => setEditing(null)} />
+          </form>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+type PulseRow = { id: string; days_label: string; title: string; copy: string; accent: boolean; image_url: string | null; sort_order: number; active: boolean };
+
+function PulseSection() {
+  const [rows, setRows] = useState<PulseRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState<PulseRow | null>(null);
+  const refresh = async () => {
+    setLoading(true);
+    const { data } = await supabase.from("weekly_pulse").select("*").order("sort_order");
+    setRows((data ?? []) as PulseRow[]);
+    setLoading(false);
+  };
+  useEffect(() => { refresh(); }, []);
+  return (
+    <div className="space-y-4">
+      <button onClick={() => setEditing({ id: "", days_label: "", title: "", copy: "", accent: false, image_url: "", sort_order: rows.length + 1, active: true })}
+        className="inline-flex items-center gap-2 px-4 h-10 bg-accent text-primary-foreground text-xs font-bold uppercase tracking-widest">
+        <Plus className="size-3.5" /> Add pulse item
+      </button>
+      {loading ? <LoaderBlock /> : rows.length === 0 ? <Empty label="No weekly pulse items." /> : (
+        <div className="border border-border overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/30 text-[10px] uppercase tracking-widest font-mono text-muted-foreground">
+              <tr><th className="text-left px-4 py-3">Days</th><th className="text-left px-4 py-3">Title</th><th className="text-left px-4 py-3 hidden md:table-cell">Copy</th><th className="text-left px-4 py-3">Highlight</th><th className="text-left px-4 py-3">Live</th><th></th></tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.id} className="border-t border-border">
+                  <td className="px-4 py-3 font-mono text-xs">{r.days_label}</td>
+                  <td className="px-4 py-3 font-medium">{r.title}</td>
+                  <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">{r.copy}</td>
+                  <td className="px-4 py-3 font-mono text-[10px] uppercase tracking-widest">{r.accent ? "Yes" : "No"}</td>
+                  <td className="px-4 py-3"><ToggleActive checked={r.active} onChange={async (v) => { await supabase.from("weekly_pulse").update({ active: v }).eq("id", r.id); refresh(); }} /></td>
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
+                    <IconBtn label="Edit" onClick={() => setEditing(r)}><Pencil className="size-3.5" /></IconBtn>
+                    <IconBtn label="Delete" danger onClick={async () => { if (!confirm("Delete?")) return; await supabase.from("weekly_pulse").delete().eq("id", r.id); refresh(); }}><Trash2 className="size-3.5" /></IconBtn>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {editing && (
+        <Modal title={editing.id ? "Edit Pulse Item" : "New Pulse Item"} onClose={() => setEditing(null)}>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.currentTarget);
+            const payload = {
+              days_label: String(fd.get("days_label")), title: String(fd.get("title")),
+              copy: String(fd.get("copy") ?? ""), accent: fd.get("accent") === "on",
+              image_url: String(fd.get("image_url") ?? "") || null,
+              sort_order: Number(fd.get("sort_order") ?? 0), active: fd.get("active") === "on",
+            };
+            const q = editing.id ? supabase.from("weekly_pulse").update(payload).eq("id", editing.id) : supabase.from("weekly_pulse").insert(payload);
+            const { error } = await q; if (error) alert(error.message); else { setEditing(null); refresh(); }
+          }} className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <Input name="days_label" label="Days (e.g. MON–WED)" defaultValue={editing.days_label} required />
+              <Input name="title" label="Title" defaultValue={editing.title} required />
+            </div>
+            <Textarea name="copy" label="Copy" defaultValue={editing.copy} />
+            <Input name="image_url" label="Image URL (optional)" defaultValue={editing.image_url ?? ""} placeholder="https://…" />
+            <div className="grid grid-cols-2 gap-3">
+              <Input name="sort_order" label="Sort" type="number" defaultValue={editing.sort_order} />
+              <label className="flex items-center gap-2 h-10"><input type="checkbox" name="accent" defaultChecked={editing.accent} /> Highlight</label>
+            </div>
+            <label className="flex items-center gap-2 h-10"><input type="checkbox" name="active" defaultChecked={editing.active} /> Active</label>
+            <SaveBar busy={false} onCancel={() => setEditing(null)} />
+          </form>
+        </Modal>
+      )}
+    </div>
+  );
+}
 
 function LoaderBlock() {
   return <div className="grid place-items-center py-20"><Loader2 className="size-8 animate-spin text-accent" /></div>;
