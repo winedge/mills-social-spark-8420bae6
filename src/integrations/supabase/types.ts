@@ -351,6 +351,33 @@ export type Database = {
         }
         Relationships: []
       }
+      ufc_streamed_events: {
+        Row: {
+          created_at: string
+          date_time: string | null
+          event_id: number
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date_time?: string | null
+          event_id: number
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date_time?: string | null
+          event_id?: number
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

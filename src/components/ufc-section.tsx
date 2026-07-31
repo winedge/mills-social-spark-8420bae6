@@ -1,6 +1,17 @@
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { getUfcFights, type UfcEvent } from "@/lib/ufc.functions";
+
+const streamedQueryOptions = queryOptions({
+  queryKey: ["ufc", "streamed"],
+  queryFn: async () => {
+    const { data } = await supabase.from("ufc_streamed_events").select("event_id");
+    return ((data ?? []) as { event_id: number }[]).map((r) => Number(r.event_id));
+  },
+  staleTime: 60_000,
+});
 
 export const ufcQueryOptions = queryOptions({
   queryKey: ["ufc", "fights"],
@@ -145,9 +156,12 @@ function NextEventCountdown({ event }: { event: UfcEvent }) {
 
 export function UfcSection() {
   const { data, dataUpdatedAt, isFetching } = useSuspenseQuery(ufcQueryOptions);
-  const live = data.live ?? [];
-  const upcoming = data.upcoming ?? [];
-  const recent = data.recent ?? [];
+  const { data: streamedIds } = useQuery(streamedQueryOptions);
+  const allow = new Set(streamedIds ?? []);
+  const keep = (e: UfcEvent) => allow.has(e.eventId);
+  const live = (data.live ?? []).filter(keep);
+  const upcoming = (data.upcoming ?? []).filter(keep);
+  const recent = (data.recent ?? []).filter(keep);
   const featured = [...live, ...upcoming, ...recent].slice(0, 6);
   const nextEvent = live[0] ?? upcoming[0] ?? null;
   const [updated, setUpdated] = useState<string>("");
@@ -209,7 +223,7 @@ export function UfcSection() {
 
         {data.configured && featured.length === 0 && (
           <div className="border border-border p-8 font-mono text-xs text-muted-foreground text-center">
-            No upcoming or live UFC events on the SportsDataIO feed right now. Check back closer to the next fight night.
+            No fight nights announced yet. Check back soon for the next card showing at Mills.
           </div>
         )}
 
