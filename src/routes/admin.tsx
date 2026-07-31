@@ -7,11 +7,12 @@ import {
   Trash2, Check, LayoutDashboard, UtensilsCrossed, PartyPopper, Trophy,
   Settings as SettingsIcon, Menu as MenuIcon, X, Plus, Pencil, Save,
   MessageCircle, Search, ChevronRight, Sparkles, FolderTree, Eye, Activity,
-  TrendingUp,
+  TrendingUp, Tv,
 } from "lucide-react";
 import logo from "@/assets/mills-logo.png.asset.json";
 import { estimateCalories } from "@/lib/menu-ai.functions";
 import { sendCustomerConfirmation } from "@/lib/notify.functions";
+import { AdminUfcSection } from "@/components/admin-ufc-section";
 import { getAnalytics, type AnalyticsStats } from "@/lib/analytics.functions";
 
 export const Route = createFileRoute("/admin")({
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/admin")({
 
 type Section =
   | "overview" | "reservations" | "spaces" | "menu" | "categories"
-  | "party" | "sports" | "settings";
+  | "party" | "sports" | "ufc" | "settings";
 
 type NavItem = { id: Section; label: string; icon: any };
 type NavGroup = { label: string; icon: any; children: NavItem[] };
@@ -50,7 +51,12 @@ const NAV: NavEntry[] = [
     ],
   },
   { id: "party", label: "Party & Shows", icon: PartyPopper },
-  { id: "sports", label: "Sports", icon: Trophy },
+  {
+    label: "Sports", icon: Trophy, children: [
+      { id: "sports", label: "Big Screen Schedule", icon: Trophy },
+      { id: "ufc", label: "UFC Fight Nights", icon: Tv },
+    ],
+  },
   { id: "settings", label: "Settings", icon: SettingsIcon },
 ];
 
@@ -211,6 +217,7 @@ function Dashboard({ email }: { email: string }) {
           {section === "categories" && <CategoriesSection />}
           {section === "party" && <PartySection />}
           {section === "sports" && <SportsSection />}
+          {section === "ufc" && <AdminUfcSection />}
           {section === "settings" && <SettingsSection />}
         </main>
       </div>
