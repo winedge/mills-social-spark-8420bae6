@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_specials: {
+        Row: {
+          active: boolean
+          badge: string
+          created_at: string
+          day: string
+          description: string
+          id: string
+          image_url: string | null
+          price: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          badge?: string
+          created_at?: string
+          day?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          price?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          badge?: string
+          created_at?: string
+          day?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          price?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       menu_categories: {
         Row: {
           active: boolean
@@ -396,6 +438,45 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      weekly_pulse: {
+        Row: {
+          accent: boolean
+          active: boolean
+          copy: string
+          created_at: string
+          days_label: string
+          id: string
+          image_url: string | null
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          accent?: boolean
+          active?: boolean
+          copy?: string
+          created_at?: string
+          days_label?: string
+          id?: string
+          image_url?: string | null
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          accent?: boolean
+          active?: boolean
+          copy?: string
+          created_at?: string
+          days_label?: string
+          id?: string
+          image_url?: string | null
+          sort_order?: number
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
