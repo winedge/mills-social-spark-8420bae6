@@ -6,6 +6,7 @@ import heroVideo from "@/assets/hero-loop.mp4.asset.json";
 import menuBurger from "@/assets/menu-burger.jpg";
 import menuCocktail from "@/assets/menu-cocktail.jpg";
 import menuWings from "@/assets/menu-wings.jpg";
+import { useDailySpecials, useWeeklyPulse } from "@/lib/content";
 import pulseHappyHour from "@/assets/pulse-happy-hour.jpg";
 import pulseTrivia from "@/assets/pulse-trivia.jpg";
 import pulseLiveMusic from "@/assets/pulse-live-music.jpg";
@@ -37,7 +38,7 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const dailySpecials = [
+const fallbackSpecials = [
   {
     img: menuBurger,
     day: "MONDAY",
@@ -64,7 +65,7 @@ const dailySpecials = [
   },
 ];
 
-const schedule = [
+const fallbackSchedule = [
   { days: "MON–WED", title: "HAPPY HOUR", copy: "4PM–7PM. $2 off all drafts & signature cocktails.", accent: false, img: pulseHappyHour },
   { days: "THURSDAY", title: "TRIVIA NIGHT", copy: "8PM start. Win a $50 bar tab. Hosted by DJ Mac.", accent: true, img: pulseTrivia },
   { days: "FRIDAY", title: "LIVE SESSIONS", copy: "Local artists 9PM–late. High-energy acoustic sets.", accent: false, img: pulseLiveMusic },
@@ -123,6 +124,31 @@ function OpenStatus() {
 }
 
 function Home() {
+  const dbSpecials = useDailySpecials();
+  const specialImgs = [menuBurger, menuWings, menuCocktail];
+  const dailySpecials = dbSpecials.length
+    ? dbSpecials.map((s, i) => ({
+        img: s.image_url || specialImgs[i % specialImgs.length],
+        day: s.day,
+        badge: s.badge,
+        title: s.title,
+        desc: s.description,
+        price: s.price,
+      }))
+    : fallbackSpecials;
+
+  const dbPulse = useWeeklyPulse();
+  const pulseImgs = [pulseHappyHour, pulseTrivia, pulseLiveMusic, pulseBrunch];
+  const schedule = dbPulse.length
+    ? dbPulse.map((s, i) => ({
+        days: s.days_label,
+        title: s.title,
+        copy: s.copy,
+        accent: s.accent,
+        img: s.image_url || pulseImgs[i % pulseImgs.length],
+      }))
+    : fallbackSchedule;
+
   return (
     <div className="bg-background text-foreground font-body">
       <SiteHeader />
