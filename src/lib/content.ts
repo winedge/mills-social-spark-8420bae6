@@ -129,3 +129,52 @@ export function useSportsSchedule() {
   }, []);
   return items;
 }
+
+export type DbDailySpecial = {
+  id: string;
+  day: string;
+  badge: string;
+  title: string;
+  description: string;
+  price: string;
+  image_url: string | null;
+  sort_order: number;
+  active: boolean;
+};
+
+export type DbWeeklyPulse = {
+  id: string;
+  days_label: string;
+  title: string;
+  copy: string;
+  accent: boolean;
+  image_url: string | null;
+  sort_order: number;
+  active: boolean;
+};
+
+export function useDailySpecials() {
+  const [items, setItems] = useState<DbDailySpecial[]>([]);
+  useEffect(() => {
+    supabase
+      .from("daily_specials")
+      .select("*")
+      .eq("active", true)
+      .order("sort_order")
+      .then(({ data }) => setItems((data ?? []) as DbDailySpecial[]));
+  }, []);
+  return items;
+}
+
+export function useWeeklyPulse() {
+  const [items, setItems] = useState<DbWeeklyPulse[]>([]);
+  useEffect(() => {
+    supabase
+      .from("weekly_pulse")
+      .select("*")
+      .eq("active", true)
+      .order("sort_order")
+      .then(({ data }) => setItems((data ?? []) as DbWeeklyPulse[]));
+  }, []);
+  return items;
+}
