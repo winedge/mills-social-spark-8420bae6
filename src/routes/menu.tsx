@@ -362,59 +362,107 @@ function MenuPage() {
           </Sheet>
         </div>
 
-        {/* Desktop top-level chip row */}
-        <div className="hidden md:block border-t border-border">
-          <div className="max-w-7xl mx-auto px-6 py-3 flex gap-2 overflow-x-auto items-center">
-            <button
-              onClick={() => setCat("")}
-              className={`shrink-0 px-4 h-10 text-xs font-bold uppercase tracking-widest border transition-colors ${
-                !catId ? "bg-accent text-primary-foreground border-accent" : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/40"
-              }`}
-            >
-              All
-              <span className={`ml-2 font-mono text-[10px] ${!catId ? "text-primary-foreground/70" : "text-muted-foreground/60"}`}>
-                {dbItems.length}
-              </span>
-            </button>
-            {tree.map((n) => {
-              const active = catId === n.id || (findNode([n], catId) != null && !!catId);
-              return (
-                <button
-                  key={n.id}
-                  onClick={() => setCat(n.id)}
-                  className={`shrink-0 px-4 h-10 text-xs font-bold uppercase tracking-widest border transition-colors ${
-                    active
-                      ? "bg-accent text-primary-foreground border-accent"
-                      : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/40"
-                  }`}
-                >
-                  {n.name}
-                  <span className={`ml-2 font-mono text-[10px] ${active ? "text-primary-foreground/70" : "text-muted-foreground/60"}`}>
-                    {counts.get(n.id) ?? 0}
+        {/* Desktop command grid */}
+        <div className="hidden md:block">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="border border-border bg-surface/30">
+              {/* Header / search row */}
+              <div className="grid grid-cols-12 border-b border-border">
+                <div className="col-span-3 border-r border-border p-3 bg-surface/40">
+                  <span className="block font-mono text-[10px] text-muted-foreground uppercase tracking-widest mb-1">
+                    System // Filter
                   </span>
-                </button>
-              );
-            })}
-            <div className="mx-2 h-6 w-px bg-border shrink-0" />
-            {calorieRanges.map((r) => {
-              const active = cal === r.id;
-              return (
-                <button
-                  key={r.id}
-                  onClick={() => setCal(r.id)}
-                  className={`shrink-0 px-4 h-10 text-xs font-bold uppercase tracking-widest border transition-colors ${
-                    active
-                      ? "bg-accent text-primary-foreground border-accent"
-                      : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/40"
-                  }`}
-                >
-                  {r.label}
-                </button>
-              );
-            })}
+                  <h2 className="font-display text-xl uppercase tracking-tight text-foreground">Menu Explorer</h2>
+                </div>
+                <div className="col-span-9 relative flex items-center px-4 bg-background/40">
+                  <span className="font-mono text-[10px] text-accent mr-3 shrink-0">SEARCH_QUERY &gt;</span>
+                  <input
+                    value={query}
+                    onChange={(e) => {
+                      setQuery(e.target.value);
+                      navigate({
+                        search: (prev: z.infer<typeof menuSchema>) => ({ ...prev, q: e.target.value }),
+                        replace: true,
+                      });
+                    }}
+                    placeholder="FIND AN ITEM..."
+                    className="bg-transparent border-none outline-none w-full text-sm uppercase tracking-wider text-foreground placeholder:text-muted-foreground/50 py-3"
+                  />
+                  <div className="flex gap-1 shrink-0 ml-3">
+                    <span className="w-1 h-1 bg-border" />
+                    <span className="w-1 h-1 bg-border" />
+                    <span className="w-1 h-1 bg-accent" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Category grid - no scroll */}
+              <div
+                className="grid border-b border-border"
+                style={{ gridTemplateColumns: `repeat(${tree.length + 1}, minmax(0,1fr))` }}
+              >
+                {[{ id: "", name: "All", count: dbItems.length }, ...tree.map((n) => ({ id: n.id, name: n.name, count: counts.get(n.id) ?? 0 }))].map(
+                  (c, idx, arr) => {
+                    const active = c.id === "" ? !catId : catId === c.id || (findNode(tree, catId) != null && catId === c.id);
+                    return (
+                      <button
+                        key={c.id || "all"}
+                        onClick={() => setCat(c.id)}
+                        className={`relative group flex flex-col items-start p-4 text-left transition-colors ${
+                          idx < arr.length - 1 ? "border-r border-border" : ""
+                        } ${active ? "bg-surface border-b-2 border-b-accent" : "hover:bg-surface/60 border-b-2 border-b-transparent"}`}
+                      >
+                        <span className={`absolute top-2 right-2 font-mono text-[9px] ${active ? "text-accent" : "text-muted-foreground/70"}`}>
+                          [ {String(c.count).padStart(2, "0")} ]
+                        </span>
+                        <span className={`font-mono text-[10px] mb-1 ${active ? "text-accent/60" : "text-muted-foreground/60"}`}>
+                          CAT_{String(idx + 1).padStart(2, "0")}
+                        </span>
+                        <span
+                          className={`font-display text-lg uppercase tracking-tight leading-[0.95] ${
+                            active ? "text-accent" : "text-foreground/80 group-hover:text-foreground"
+                          }`}
+                        >
+                          {c.name}
+                        </span>
+                      </button>
+                    );
+                  },
+                )}
+              </div>
+
+              {/* Calorie range bar */}
+              <div className="grid grid-cols-12">
+                <div className="col-span-3 border-r border-border px-4 py-2 flex items-center justify-between bg-background/40">
+                  <span className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">CAL_ENERGY_RANGE</span>
+                  <span className="flex gap-[2px]">
+                    <span className="w-1 h-3 bg-accent/20" />
+                    <span className="w-1 h-3 bg-accent/40" />
+                    <span className="w-1 h-3 bg-accent/60" />
+                  </span>
+                </div>
+                <div className="col-span-9 flex">
+                  {calorieRanges.map((r, i) => {
+                    const active = cal === r.id;
+                    return (
+                      <button
+                        key={r.id}
+                        onClick={() => setCal(r.id)}
+                        className={`flex-1 py-2 font-mono text-[11px] uppercase transition-colors ${
+                          i < calorieRanges.length - 1 ? "border-r border-border" : ""
+                        } ${active ? "bg-accent text-primary-foreground font-bold" : "text-muted-foreground hover:text-foreground hover:bg-surface/60"}`}
+                      >
+                        {r.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
+
 
       <DailySpecialsStrip />
 
