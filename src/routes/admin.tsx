@@ -13,6 +13,7 @@ import logo from "@/assets/mills-logo.png.asset.json";
 import { estimateCalories } from "@/lib/menu-ai.functions";
 import { sendCustomerConfirmation } from "@/lib/notify.functions";
 import { AdminUfcSection } from "@/components/admin-ufc-section";
+import { AdminNflSection } from "@/components/admin-nfl-section";
 import { getAnalytics, type AnalyticsStats } from "@/lib/analytics.functions";
 
 export const Route = createFileRoute("/admin")({
@@ -233,6 +234,10 @@ function Dashboard({ email }: { email: string }) {
           {section === "party" && <PartySection />}
           {section === "sports" && <SportsSection />}
           {section === "ufc" && <AdminUfcSection />}
+          {section === "nfl" && <AdminNflSection />}
+          {section === "messages" && <MessagesSection />}
+          {section === "subscribers" && <SubscribersSection />}
+          {section === "contactinfo" && <ContactInfoSection />}
           {section === "specials" && <SpecialsSection />}
           {section === "pulse" && <PulseSection />}
           {section === "settings" && <SettingsSection />}
