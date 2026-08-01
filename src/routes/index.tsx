@@ -35,7 +35,11 @@ export const Route = createFileRoute("/")({
       { name: "twitter:image", content: heroBar },
     ],
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(ufcQueryOptions),
+  loader: ({ context }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData(ufcQueryOptions),
+      context.queryClient.ensureQueryData(nflQueryOptions),
+    ]),
   component: Home,
 });
 
