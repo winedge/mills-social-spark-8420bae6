@@ -217,38 +217,54 @@ function useCountdown(iso: string | null) {
   };
 }
 
-function NextEventCountdown({ event }: { event: UfcEvent }) {
+function NextEventCountdown({ event, isLive }: { event: UfcEvent; isLive?: boolean }) {
   const c = useCountdown(event.dateTime);
-  if (!c) return null;
-  const parts = [
-    { v: c.d, l: "DAYS" },
-    { v: c.h, l: "HRS" },
-    { v: c.m, l: "MIN" },
-    { v: c.s, l: "SEC" },
-  ];
+  const started = isLive || (c !== null && c.d + c.h + c.m + c.s === 0);
+  if (!c && !started) return null;
+  const parts = c
+    ? [
+        { v: c.d, l: "DAYS" },
+        { v: c.h, l: "HRS" },
+        { v: c.m, l: "MIN" },
+        { v: c.s, l: "SEC" },
+      ]
+    : [];
   return (
-    <div className="border border-accent/30 bg-accent/5 p-6 mb-10">
+    <div
+      className={`border p-6 mb-10 ${started ? "border-red-500/40 bg-red-500/5" : "border-accent/30 bg-accent/5"}`}
+    >
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <div className="font-mono text-[10px] text-accent tracking-widest mb-1">
-            NEXT FIGHT NIGHT · COUNTDOWN
+        <div className="min-w-0">
+          <div
+            className={`font-mono text-[10px] tracking-widest mb-1 ${started ? "text-red-500" : "text-accent"}`}
+          >
+            {started ? "FIGHT NIGHT · UNDERWAY" : "NEXT FIGHT NIGHT · COUNTDOWN"}
           </div>
           <div className="font-display text-2xl md:text-3xl uppercase leading-tight">
             {event.name}
           </div>
         </div>
-        <div className="flex gap-4">
-          {parts.map((p) => (
-            <div key={p.l} className="text-center min-w-[52px]">
-              <div className="font-display text-3xl md:text-4xl text-accent tabular-nums">
-                {String(p.v).padStart(2, "0")}
+        {started ? (
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="size-2.5 bg-red-500 rounded-full animate-pulse" />
+            <span className="font-display text-3xl md:text-4xl text-red-500 uppercase">
+              Live Now
+            </span>
+          </div>
+        ) : (
+          <div className="flex gap-4">
+            {parts.map((p) => (
+              <div key={p.l} className="text-center min-w-[52px]">
+                <div className="font-display text-3xl md:text-4xl text-accent tabular-nums">
+                  {String(p.v).padStart(2, "0")}
+                </div>
+                <div className="font-mono text-[9px] text-muted-foreground tracking-widest">
+                  {p.l}
+                </div>
               </div>
-              <div className="font-mono text-[9px] text-muted-foreground tracking-widest">
-                {p.l}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
