@@ -6,7 +6,13 @@ import heroVideo from "@/assets/hero-loop.mp4.asset.json";
 import menuBurger from "@/assets/menu-burger.jpg";
 import menuCocktail from "@/assets/menu-cocktail.jpg";
 import menuWings from "@/assets/menu-wings.jpg";
-import { useDailySpecials, useWeeklyPulse } from "@/lib/content";
+import { useDailySpecialsState, useWeeklyPulseState } from "@/lib/content";
+import {
+  DailySpecialsSkeleton,
+  WeeklyPulseSkeleton,
+  NflSectionSkeleton,
+  UfcSectionSkeleton,
+} from "@/components/skeletons";
 import pulseHappyHour from "@/assets/pulse-happy-hour.jpg";
 import pulseTrivia from "@/assets/pulse-trivia.jpg";
 import pulseLiveMusic from "@/assets/pulse-live-music.jpg";
