@@ -138,16 +138,16 @@ function MenuPage() {
   }, [tree]);
 
   const grouped = useMemo(() => {
-    const g = new Map<string, { items: typeof filtered; order: number }>();
+    const g = new Map<string, { items: typeof filtered; order: number; id: string }>();
     for (const i of filtered) {
       const label = (i.category_id && nameById.get(i.category_id)) || i.category || "Other";
       const order = (i.category_id ? catOrder.get(i.category_id) : undefined) ?? Number.MAX_SAFE_INTEGER;
-      if (!g.has(label)) g.set(label, { items: [], order });
+      if (!g.has(label)) g.set(label, { items: [], order, id: i.category_id || "" });
       g.get(label)!.items.push(i);
     }
     return Array.from(g.entries())
       .sort((a, b) => a[1].order - b[1].order)
-      .map(([label, v]) => [label, v.items] as [string, typeof filtered]);
+      .map(([label, v]) => [v.id, label, v.items] as [string, string, typeof filtered]);
   }, [filtered, nameById, catOrder]);
 
 
@@ -164,6 +164,23 @@ function MenuPage() {
     tree.forEach(walk);
     return m;
   }, [tree, dbItems]);
+
+  const happyHourPriceMap = useMemo(() => {
+    const map = new Map<string, string>();
+    const happy = tree.find((n) => n.name.toLowerCase().includes("happy hour"));
+    if (happy) {
+      happy.children.forEach((child) => {
+        const match = child.name.match(/^\$(\d+)/);
+        if (match) map.set(match[1], child.id);
+      });
+    }
+    return map;
+  }, [tree]);
+
+  function scrollToSection(id: string) {
+    const el = document.getElementById(`menu-section-${id}`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   function setCat(id: string) {
     navigate({ search: (prev: z.infer<typeof menuSchema>) => ({ ...prev, catId: id }) });
@@ -246,17 +263,28 @@ function MenuPage() {
           <div className="relative grid gap-6 p-5 md:p-7 md:grid-cols-[auto_1fr_auto] md:items-center">
             {/* Price tokens */}
             <div className="flex items-center gap-2 md:gap-3">
-              {["6", "9", "12"].map((p, i) => (
-                <div key={p} className="flex items-center gap-2 md:gap-3">
-                  {i > 0 && <span className="text-accent/50 text-xl leading-none">·</span>}
-                  <div className="flex items-baseline rounded-md border border-accent/50 bg-accent/10 px-2.5 py-1.5 md:px-3.5 md:py-2">
-                    <span className="font-mono text-accent text-xs md:text-sm">$</span>
-                    <span className="font-display text-accent text-3xl md:text-5xl leading-none">
-                      {p}
-                    </span>
+              {["6", "9", "12"].map((p, i) => {
+                const catId = happyHourPriceMap.get(p);
+                return (
+                  <div key={p} className="flex items-center gap-2 md:gap-3">
+                    {i > 0 && <span className="text-accent/50 text-xl leading-none">·</span>}
+                    <button
+                      onClick={() => {
+                        if (catId) {
+                          setCat(catId);
+                          setTimeout(() => scrollToSection(catId), 80);
+                        }
+                      }}
+                      className="flex items-baseline rounded-md border border-accent/50 bg-accent/10 px-2.5 py-1.5 md:px-3.5 md:py-2 cursor-pointer hover:bg-accent/20 hover:border-accent transition-colors"
+                    >
+                      <span className="font-mono text-accent text-xs md:text-sm">$</span>
+                      <span className="font-display text-accent text-3xl md:text-5xl leading-none">
+                        {p}
+                      </span>
+                    </button>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Headline */}
@@ -522,8 +550,8 @@ function MenuPage() {
           </p>
         ) : (
           <div className="space-y-16 md:space-y-20">
-            {grouped.map(([section, list]) => (
-              <div key={section}>
+            {grouped.map(([id, section, list]) => (
+              <div key={section} id={id ? `menu-section-${id}` : undefined}>
                 <div className="flex items-baseline justify-between mb-6 md:mb-8 pb-4 border-b border-border">
                   <h2 className="font-display text-3xl md:text-4xl uppercase">{section}</h2>
                   <span className="font-mono text-xs text-muted-foreground tracking-widest">
