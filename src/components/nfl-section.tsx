@@ -49,10 +49,44 @@ function detailLine(g: NflGame) {
   return `KICKOFF ${formatKickoff(g.dateTime)}${g.channel ? ` · ${g.channel}` : ""}`;
 }
 
+const ESPN_ABBR: Record<string, string> = {
+  WAS: "wsh",
+  LAR: "lar",
+  LAC: "lac",
+  LV: "lv",
+  JAX: "jax",
+  NO: "no",
+  NE: "ne",
+  SF: "sf",
+  TB: "tb",
+  GB: "gb",
+  KC: "kc",
+  NYG: "nyg",
+  NYJ: "nyj",
+};
+
+function teamLogo(team: string) {
+  const code = (ESPN_ABBR[team.toUpperCase()] ?? team).toLowerCase();
+  return `https://a.espncdn.com/i/teamlogos/nfl/500/${code}.png`;
+}
+
 function ScoreRow({ team, score, lead }: { team: string; score: number | null; lead: boolean }) {
   return (
-    <div className="flex items-baseline justify-between gap-6">
-      <span className="font-display text-3xl md:text-4xl uppercase leading-none tracking-tight">{team}</span>
+    <div className="flex items-center justify-between gap-6">
+      <span className="flex items-center gap-3 min-w-0">
+        <img
+          src={teamLogo(team)}
+          alt={`${team} logo`}
+          loading="lazy"
+          width={40}
+          height={40}
+          className="size-9 md:size-10 object-contain shrink-0"
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
+          }}
+        />
+        <span className="font-display text-3xl md:text-4xl uppercase leading-none tracking-tight">{team}</span>
+      </span>
       <span
         className={`font-display text-3xl md:text-4xl leading-none tabular-nums ${
           lead ? "text-accent" : "text-foreground"
