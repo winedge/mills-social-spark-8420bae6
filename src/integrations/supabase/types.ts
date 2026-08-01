@@ -420,6 +420,24 @@ export type Database = {
         }
         Relationships: []
       }
+      site_media: {
+        Row: {
+          hero_video_url: string | null
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          hero_video_url?: string | null
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          hero_video_url?: string | null
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           id: number

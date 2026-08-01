@@ -12,6 +12,7 @@ import pulseTrivia from "@/assets/pulse-trivia.jpg";
 import pulseLiveMusic from "@/assets/pulse-live-music.jpg";
 import pulseBrunch from "@/assets/pulse-brunch.jpg";
 import { SiteHeader } from "@/components/site-header";
+import { supabase } from "@/integrations/supabase/client";
 import { openReservation } from "@/components/reservation-modal";
 import { SiteFooter } from "@/components/site-footer";
 import { UfcSection, ufcQueryOptions } from "@/components/ufc-section";
@@ -20,13 +21,13 @@ import { NflSection, nflQueryOptions } from "@/components/nfl-section";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Lovable App" },
+      { title: "Mill's Modern Social - Sports Bar & Kitchen in Tempe, AZ" },
       {
         name: "description",
         content:
           "Mills Social Hub is a modern, user-friendly website for a sports bar in Tempe, Arizona.",
       },
-      { property: "og:title", content: "Lovable App" },
+      { property: "og:title", content: "Mill's Modern Social - Sports Bar & Kitchen in Tempe, AZ" },
       {
         property: "og:description",
         content: "Mills Social Hub is a modern, user-friendly website for a sports bar in Tempe, Arizona.",
@@ -123,7 +124,25 @@ function OpenStatus() {
   );
 }
 
+function useHeroVideo() {
+  const [url, setUrl] = React.useState<string>(heroVideo.url);
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.from("site_media").select("hero_video_url").eq("id", 1).maybeSingle();
+      const path = data?.hero_video_url;
+      if (!path || cancelled) return;
+      if (path.startsWith("http")) { setUrl(path); return; }
+      const { data: signed } = await supabase.storage.from("site-media").createSignedUrl(path, 60 * 60 * 24 * 7);
+      if (!cancelled && signed?.signedUrl) setUrl(signed.signedUrl);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+  return url;
+}
+
 function Home() {
+  const heroSrc = useHeroVideo();
   const dbSpecials = useDailySpecials();
   const specialImgs = [menuBurger, menuWings, menuCocktail];
   const dailySpecials = dbSpecials.length
@@ -156,7 +175,8 @@ function Home() {
       {/* Hero */}
       <section className="relative h-[75vh] min-h-[560px] flex items-center justify-center overflow-hidden">
         <video
-          src={heroVideo.url}
+          src={heroSrc}
+          key={heroSrc}
           poster={heroBar}
           autoPlay
           loop

@@ -1146,6 +1146,73 @@ function SportsSection() {
 
 /* ================= SETTINGS ================= */
 
+function HeroVideoUploader() {
+  const [current, setCurrent] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const load = async () => {
+    const { data } = await supabase.from("site_media").select("hero_video_url").eq("id", 1).maybeSingle();
+    const path = data?.hero_video_url ?? null;
+    setCurrent(path);
+    if (path && !path.startsWith("http")) {
+      const { data: signed } = await supabase.storage.from("site-media").createSignedUrl(path, 60 * 60);
+      setPreview(signed?.signedUrl ?? null);
+    } else setPreview(path);
+  };
+  useEffect(() => { load(); }, []);
+
+  const upload = async (file: File) => {
+    if (!file.type.startsWith("video/")) return setMsg("Please choose a video file.");
+    setBusy(true); setMsg(null);
+    const path = `hero/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+    const { error: upErr } = await supabase.storage.from("site-media").upload(path, file, {
+      cacheControl: "31536000", upsert: false, contentType: file.type,
+    });
+    if (upErr) { setBusy(false); return setMsg(upErr.message); }
+    const { error } = await supabase.from("site_media").upsert({ id: 1, hero_video_url: path, updated_at: new Date().toISOString() });
+    setBusy(false);
+    if (error) return setMsg(error.message);
+    setMsg("Hero video updated.");
+    load();
+  };
+
+  const clear = async () => {
+    setBusy(true);
+    await supabase.from("site_media").upsert({ id: 1, hero_video_url: null, updated_at: new Date().toISOString() });
+    setBusy(false); setMsg("Reverted to the default hero video."); load();
+  };
+
+  return (
+    <div className="border border-border bg-surface/40 p-6 space-y-4">
+      <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        Hero Background Video
+      </span>
+      {preview ? (
+        <video src={preview} muted loop autoPlay playsInline className="w-full max-h-56 object-cover border border-border" />
+      ) : (
+        <p className="text-xs text-muted-foreground">Using the default built-in hero video.</p>
+      )}
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="inline-flex items-center gap-2 px-6 h-11 bg-accent text-primary-foreground font-bold uppercase tracking-widest text-xs cursor-pointer">
+          <input type="file" accept="video/*" className="hidden" disabled={busy}
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
+          {busy ? "Uploading…" : "Upload video"}
+        </label>
+        {current && (
+          <button type="button" onClick={clear} disabled={busy}
+            className="px-5 h-11 border border-border text-xs font-bold uppercase tracking-widest hover:border-accent">
+            Use default
+          </button>
+        )}
+      </div>
+      <p className="text-xs text-muted-foreground">MP4 or WebM, muted loop recommended. Keep it under ~30 MB for fast loading.</p>
+      {msg && <p className="text-xs font-mono uppercase tracking-widest text-accent">{msg}</p>}
+    </div>
+  );
+}
+
 function SettingsSection() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1175,7 +1242,8 @@ function SettingsSection() {
 
   if (loading) return <LoaderBlock />;
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl space-y-6">
+      <HeroVideoUploader />
       <form onSubmit={save} className="space-y-6 border border-border bg-surface/40 p-6">
         <div>
           <label className="block">
