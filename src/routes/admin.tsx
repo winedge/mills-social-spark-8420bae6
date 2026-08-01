@@ -28,7 +28,8 @@ export const Route = createFileRoute("/admin")({
 
 type Section =
   | "overview" | "reservations" | "spaces" | "menu" | "categories"
-  | "party" | "sports" | "ufc" | "specials" | "pulse" | "settings";
+  | "party" | "sports" | "ufc" | "nfl" | "specials" | "pulse"
+  | "messages" | "subscribers" | "contactinfo" | "settings";
 
 type NavItem = { id: Section; label: string; icon: any };
 type NavGroup = { label: string; icon: any; children: NavItem[] };
@@ -61,6 +62,14 @@ const NAV: NavEntry[] = [
     label: "Sports", icon: Trophy, children: [
       { id: "sports", label: "Big Screen Schedule", icon: Trophy },
       { id: "ufc", label: "UFC Fight Nights", icon: Tv },
+      { id: "nfl", label: "NFL 2026", icon: Tv },
+    ],
+  },
+  {
+    label: "Contact", icon: Mail, children: [
+      { id: "messages", label: "Contact Messages", icon: MessageCircle },
+      { id: "subscribers", label: "Newsletter", icon: Mail },
+      { id: "contactinfo", label: "Contact Details", icon: MapPin },
     ],
   },
   { id: "settings", label: "Settings", icon: SettingsIcon },
