@@ -176,6 +176,7 @@ function Home() {
       <section className="relative h-[75vh] min-h-[560px] flex items-center justify-center overflow-hidden">
         <video
           src={heroSrc}
+          key={heroSrc}
           poster={heroBar}
           autoPlay
           loop
