@@ -107,7 +107,7 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
   const main = event.mainEvent;
   const a = main?.fighterA;
   const b = main?.fighterB;
-  const isFinal = event.status.toLowerCase() === "final";
+  const isFinal = norm(event.status) === "final";
   return (
     <article className={`bg-background border p-6 flex flex-col gap-4 group transition-colors ${live ? "border-red-500/40 hover:border-red-500/70" : "border-border hover:border-accent/50"}`}>
       <div className="flex justify-between items-start gap-2">
