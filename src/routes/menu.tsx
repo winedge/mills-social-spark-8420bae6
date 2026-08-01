@@ -522,8 +522,8 @@ function MenuPage() {
           </p>
         ) : (
           <div className="space-y-16 md:space-y-20">
-            {grouped.map(([section, list]) => (
-              <div key={section}>
+            {grouped.map(([id, section, list]) => (
+              <div key={section} id={id ? `menu-section-${id}` : undefined}>
                 <div className="flex items-baseline justify-between mb-6 md:mb-8 pb-4 border-b border-border">
                   <h2 className="font-display text-3xl md:text-4xl uppercase">{section}</h2>
                   <span className="font-mono text-xs text-muted-foreground tracking-widest">
