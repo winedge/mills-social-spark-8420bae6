@@ -237,7 +237,58 @@ function MenuPage() {
         <p className="text-muted-foreground max-w-xl text-pretty">
           Elevated game-day food and craft cocktails. Browse by category or search for your favorite.
         </p>
+
+        {/* Happy Hour emphasis panel */}
+        <div className="mt-8 md:mt-10 relative overflow-hidden rounded-lg border border-accent/40 bg-card/60">
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.07]"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(135deg, currentColor 0 2px, transparent 2px 12px)",
+            }}
+          />
+          <div className="absolute inset-y-0 left-0 w-1 bg-accent" />
+          <div className="relative grid gap-6 p-5 md:p-7 md:grid-cols-[auto_1fr_auto] md:items-center">
+            {/* Price tokens */}
+            <div className="flex items-center gap-2 md:gap-3">
+              {["6", "9", "12"].map((p, i) => (
+                <div key={p} className="flex items-center gap-2 md:gap-3">
+                  {i > 0 && <span className="text-accent/50 text-xl leading-none">·</span>}
+                  <div className="flex items-baseline rounded-md border border-accent/50 bg-accent/10 px-2.5 py-1.5 md:px-3.5 md:py-2">
+                    <span className="font-mono text-accent text-xs md:text-sm">$</span>
+                    <span className="font-display text-accent text-3xl md:text-5xl leading-none">
+                      {p}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Headline */}
+            <div className="min-w-0">
+              <h2 className="font-display uppercase text-2xl md:text-4xl leading-[0.95]">
+                Happy Hour <span className="text-accent">Specials</span>
+              </h2>
+              <p className="font-mono text-[11px] md:text-xs tracking-[0.22em] uppercase text-muted-foreground mt-2">
+                Every day 3PM - 7PM
+                <span className="mx-2 text-accent">//</span>
+                Dine-in only
+              </p>
+            </div>
+
+            {/* New item flag */}
+            <div className="flex items-center gap-3 md:flex-col md:items-end md:gap-1 md:text-right">
+              <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-accent animate-pulse">
+                !!! New !!!
+              </span>
+              <span className="font-display uppercase text-lg md:text-xl leading-none">
+                Loaded Street Fries
+              </span>
+            </div>
+          </div>
+        </div>
       </section>
+
 
       {/* Sticky filter bar */}
       <section className="sticky top-16 z-30 bg-background/95 backdrop-blur-md border-y border-border">
