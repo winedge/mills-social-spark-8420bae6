@@ -210,10 +210,10 @@ export function NflSection() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
           <div>
             <span className="font-mono text-accent text-[11px] tracking-[0.35em] block mb-3 uppercase">
-              On air now
+              2026 Schedule
             </span>
             <h2 className="font-display text-5xl md:text-6xl uppercase leading-none">
-              Live from the scoreboard
+              Upcoming NFL Games 2026
             </h2>
           </div>
           <div className="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase flex items-center gap-2">
