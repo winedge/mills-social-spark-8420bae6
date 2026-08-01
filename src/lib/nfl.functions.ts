@@ -147,7 +147,6 @@ export const getNflGames = createServerFn({ method: "GET" }).handler(async (): P
 
   const now = Date.now();
 
-  const now = Date.now();
 
   const live = games.filter((g) => g.live);
   const upcoming = games
