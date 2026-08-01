@@ -274,7 +274,7 @@ function NextEventCountdown({ event, isLive }: { event: UfcEvent; isLive?: boole
 
 export function UfcSection() {
   const { data, dataUpdatedAt, isFetching } = useSuspenseQuery(ufcQueryOptions);
-  const { data: streamedIds } = useQuery(streamedQueryOptions);
+  const { data: streamedIds, isPending: streamedPending } = useQuery(streamedQueryOptions);
   const allow = new Set(streamedIds ?? []);
   const keep = (e: UfcEvent) => allow.has(e.eventId);
   const live = (data.live ?? []).filter(keep);
