@@ -141,7 +141,7 @@ function MenuPage() {
     const g = new Map<string, { items: typeof filtered; order: number }>();
     for (const i of filtered) {
       const label = (i.category_id && nameById.get(i.category_id)) || i.category || "Other";
-      const order = (i.category_id && catOrder.get(i.category_id)) ?? Number.MAX_SAFE_INTEGER;
+      const order = (i.category_id ? catOrder.get(i.category_id) : undefined) ?? Number.MAX_SAFE_INTEGER;
       if (!g.has(label)) g.set(label, { items: [], order });
       g.get(label)!.items.push(i);
     }
