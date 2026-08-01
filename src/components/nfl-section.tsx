@@ -70,70 +70,130 @@ function teamLogo(team: string) {
   return `https://a.espncdn.com/i/teamlogos/nfl/500/${code}.png`;
 }
 
-function ScoreRow({ team, score, lead }: { team: string; score: number | null; lead: boolean }) {
+const TEAM_COLOR: Record<string, string> = {
+  ARI: "#97233F", ATL: "#A71930", BAL: "#241773", BUF: "#00338D", CAR: "#0085CA",
+  CHI: "#0B162A", CIN: "#FB4F14", CLE: "#311D00", DAL: "#041E42", DEN: "#FB4F14",
+  DET: "#0076B6", GB: "#203731", HOU: "#03202F", IND: "#002C5F", JAX: "#006778",
+  KC: "#E31837", LAC: "#0080C6", LAR: "#003594", LV: "#000000", MIA: "#008E97",
+  MIN: "#4F2683", NE: "#002244", NO: "#D3BC8D", NYG: "#0B2265", NYJ: "#125740",
+  PHI: "#004C54", PIT: "#FFB612", SEA: "#002244", SF: "#AA0000", TB: "#D50A0A",
+  TEN: "#4B92DB", WAS: "#5A1414",
+};
+
+function teamColor(team: string) {
+  return TEAM_COLOR[team.toUpperCase()] ?? "#1f2937";
+}
+
+function TeamPanel({
+  team,
+  score,
+  align,
+}: {
+  team: string;
+  score: number | null;
+  align: "left" | "right";
+}) {
+  const color = teamColor(team);
+  const left = align === "left";
   return (
-    <div className="flex items-center justify-between gap-4">
-      <span className="flex items-center gap-4 min-w-0">
-        <span className="size-16 md:size-[72px] grid place-items-center border border-border bg-surface/50 shrink-0">
-          <img
-            src={teamLogo(team)}
-            alt={`${team} logo`}
-            loading="lazy"
-            width={72}
-            height={72}
-            className="size-12 md:size-14 object-contain"
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
-            }}
-          />
-        </span>
-        <span className="font-display text-4xl md:text-5xl uppercase leading-none tracking-tight truncate">
+    <div
+      className={`relative flex-1 min-w-0 flex items-center gap-4 md:gap-6 px-4 md:px-8 py-6 overflow-hidden ${
+        left ? "flex-row" : "flex-row-reverse"
+      }`}
+      style={{
+        background: `linear-gradient(${left ? "100deg" : "260deg"}, ${color} 0%, ${color}cc 45%, rgba(8,9,12,0.9) 100%)`,
+      }}
+    >
+      <img
+        src={teamLogo(team)}
+        alt={`${team} logo`}
+        loading="lazy"
+        width={160}
+        height={160}
+        className="size-20 md:size-28 object-contain shrink-0 drop-shadow-[0_6px_18px_rgba(0,0,0,0.6)]"
+        onError={(e) => {
+          (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
+        }}
+      />
+      <div className={`min-w-0 flex items-baseline gap-3 ${left ? "" : "flex-row-reverse"}`}>
+        <span className="font-display text-5xl md:text-7xl uppercase leading-none tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
           {team}
         </span>
-      </span>
-      <span
-        className={`font-display text-4xl md:text-5xl leading-none tabular-nums ${
-          lead ? "text-accent" : "text-foreground"
-        }`}
-      >
-        {score === null ? "-" : score}
-      </span>
+        {score !== null && (
+          <span className="font-display text-4xl md:text-5xl leading-none tabular-nums text-white/90">
+            {score}
+          </span>
+        )}
+      </div>
     </div>
   );
+}
+
+function kickoffParts(game: NflGame) {
+  if (!game.dateTime) return { day: "TBD", time: "" };
+  const d = new Date(game.dateTime.endsWith("Z") ? game.dateTime : game.dateTime + "Z");
+  if (Number.isNaN(d.getTime())) return { day: "TBD", time: "" };
+  const opts = { timeZone: "America/Phoenix" } as const;
+  return {
+    day: d.toLocaleString("en-US", { ...opts, weekday: "long" }).toUpperCase(),
+    time: d
+      .toLocaleString("en-US", { ...opts, hour: "numeric", minute: "2-digit" })
+      .replace(" ", "")
+      .toUpperCase(),
+  };
 }
 
 function GameCell({ game }: { game: NflGame }) {
   const started = game.live || game.final;
   const away = started ? game.awayScore : null;
   const home = started ? game.homeScore : null;
-  return (
-    <div className="relative h-full px-6 py-7 md:px-8 flex flex-col gap-6 group hover:bg-surface/30 transition-colors">
-      <span className="absolute left-0 top-0 h-full w-[3px] bg-accent/60 group-hover:bg-accent transition-colors" />
+  const { day, time } = kickoffParts(game);
 
-      <div className="flex items-center justify-between gap-3">
-        <span className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground uppercase">
-          NFL · {statusLabel(game)}
-        </span>
-        {game.live && (
-          <span className="flex items-center gap-1.5 border border-red-500/40 bg-red-500/10 px-2 py-0.5">
-            <span className="size-1.5 rounded-full bg-red-500 animate-pulse" />
-            <span className="font-mono text-[9px] tracking-widest text-red-500 uppercase">Live</span>
+  return (
+    <article className="relative border border-border bg-[#08090c] overflow-hidden">
+      <div className="flex items-stretch">
+        <TeamPanel team={game.awayTeam} score={away} align="left" />
+
+        {/* Center badge */}
+        <div className="relative z-10 shrink-0 w-24 md:w-40 bg-[#08090c] border-x border-white/10 flex flex-col items-center justify-center gap-1 px-2 py-4 text-center">
+          <span className="font-mono text-[9px] md:text-[10px] tracking-[0.3em] text-accent uppercase">
+            {game.live ? "LIVE" : game.final ? "FINAL" : `WK ${game.week ?? "-"}`}
           </span>
+          <span className="font-display text-2xl md:text-4xl uppercase leading-none text-white">VS</span>
+          {game.channel && (
+            <span className="font-mono text-[9px] md:text-[10px] tracking-[0.2em] text-muted-foreground uppercase truncate max-w-full">
+              {game.channel}
+            </span>
+          )}
+        </div>
+
+        <TeamPanel team={game.homeTeam} score={home} align="right" />
+      </div>
+
+      {/* Info bar */}
+      <div className="border-t border-white/10 bg-black/60 px-4 py-2.5 flex items-center justify-center gap-3 font-mono text-[10px] md:text-[11px] tracking-[0.25em] text-white/80 uppercase">
+        {game.live ? (
+          <>
+            <span className="size-1.5 rounded-full bg-red-500 animate-pulse" />
+            <span>{detailLine(game)}</span>
+          </>
+        ) : game.final ? (
+          <span>FINAL</span>
+        ) : (
+          <>
+            <span>{day}</span>
+            <span className="text-accent">|</span>
+            <span>
+              {time}
+              <span className="text-muted-foreground lowercase"> mst</span>
+            </span>
+          </>
         )}
       </div>
-
-      <div className="space-y-4">
-        <ScoreRow team={game.awayTeam} score={away} lead={away !== null && home !== null && away > home} />
-        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-        <ScoreRow team={game.homeTeam} score={home} lead={away !== null && home !== null && home > away} />
-      </div>
-
-      <div className="mt-auto pt-4 border-t border-border/60 font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase">
-        {detailLine(game)}
-      </div>
-    </div>
+    </article>
   );
 }
+
 
 
 export function NflSection() {
