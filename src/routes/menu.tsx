@@ -138,16 +138,16 @@ function MenuPage() {
   }, [tree]);
 
   const grouped = useMemo(() => {
-    const g = new Map<string, { items: typeof filtered; order: number }>();
+    const g = new Map<string, { items: typeof filtered; order: number; id: string }>();
     for (const i of filtered) {
       const label = (i.category_id && nameById.get(i.category_id)) || i.category || "Other";
       const order = (i.category_id ? catOrder.get(i.category_id) : undefined) ?? Number.MAX_SAFE_INTEGER;
-      if (!g.has(label)) g.set(label, { items: [], order });
+      if (!g.has(label)) g.set(label, { items: [], order, id: i.category_id || "" });
       g.get(label)!.items.push(i);
     }
     return Array.from(g.entries())
       .sort((a, b) => a[1].order - b[1].order)
-      .map(([label, v]) => [label, v.items] as [string, typeof filtered]);
+      .map(([label, v]) => [v.id, label, v.items] as [string, string, typeof filtered]);
   }, [filtered, nameById, catOrder]);
 
 
