@@ -283,38 +283,10 @@ function Home() {
 
 
       {/* Scoreboard */}
-      <section id="sports" className="py-24 px-6 border-t border-border">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-end justify-between flex-wrap gap-4 mb-12">
-            <div>
-              <span className="font-mono text-accent text-xs tracking-[0.3em] block mb-3">ON AIR NOW</span>
-              <h3 className="font-display text-5xl uppercase">Live from the scoreboard</h3>
-            </div>
-            <span className="font-mono text-xs text-muted-foreground">UPDATES EVERY 60s</span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-border">
-            {scoreboard.map((g) => (
-              <div key={g.league} className="bg-background p-8 flex flex-col justify-between min-h-52">
-                <div className="flex justify-between items-start">
-                  <span className="font-mono text-[10px] text-muted-foreground tracking-widest">{g.league}</span>
-                  {g.live && <span className="size-2 bg-red-500 rounded-full animate-pulse" />}
-                </div>
-                <div className="space-y-2 my-6">
-                  <div className="flex justify-between font-display text-3xl uppercase">
-                    <span>{g.a}</span>
-                    <span className={g.live ? "text-accent" : ""}>{g.aScore}</span>
-                  </div>
-                  <div className="flex justify-between font-display text-3xl uppercase">
-                    <span>{g.b}</span>
-                    <span>{g.bScore}</span>
-                  </div>
-                </div>
-                <div className="font-mono text-[10px] text-muted-foreground tracking-widest">{g.status}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <div id="sports">
+        <NflSection />
+      </div>
+
 
       <UfcSection />
 
