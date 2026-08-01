@@ -122,10 +122,19 @@ export const getNflGames = createServerFn({ method: "GET" }).handler(async (): P
     return { configured: false, season, live: [], upcoming: [], recent: [] };
   }
 
-  const { withSportsCache } = await import("./sports-cache.server");
+  const { withSportsCache, readSportsCache } = await import("./sports-cache.server");
+  const cacheKey = `nfl:${season}`;
+
+  // Refresh often while a game is in progress, sparingly otherwise (API quota).
+  const cachedNow = await readSportsCache(cacheKey);
+  const hasLive = Array.isArray(cachedNow?.payload)
+    ? (cachedNow!.payload as NflGame[]).some((g) => g?.live)
+    : false;
+  const ttl = hasLive ? 60_000 : 900_000;
+
   const { data: games, stale } = await withSportsCache<NflGame[]>(
-    `nfl:${season}`,
-    120_000,
+    cacheKey,
+    ttl,
     async () => {
       const raw = await fetchSeason(season, apiKey);
       if (!raw) return null;
@@ -133,6 +142,7 @@ export const getNflGames = createServerFn({ method: "GET" }).handler(async (): P
       return mapped.length ? mapped : null;
     },
   );
+
 
   if (!games) {
     return {
