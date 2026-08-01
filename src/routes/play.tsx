@@ -16,10 +16,10 @@ import arcade4 from "@/assets/arcade-4.jpg.asset.json";
 export const Route = createFileRoute("/play")({
   head: () => ({
     meta: [
-      { title: "Play — Pool, Darts, Board Games & Arcade | Mills Modern Social" },
+      { title: "Play - Pool, Darts, Board Games & Arcade | Mills Modern Social" },
       { name: "description", content: "The game floor at Mills Modern Social in Tempe: multiple pool tables, dart lanes, a curated board game library, and a full arcade section." },
-      { property: "og:title", content: "Play the House — Mills Modern Social" },
-      { property: "og:description", content: "Pool, darts, board games, and arcade cabinets — every night." },
+      { property: "og:title", content: "Play the House - Mills Modern Social" },
+      { property: "og:description", content: "Pool, darts, board games, and arcade cabinets - every night." },
       { property: "og:image", content: playHero.url },
     ],
   }),
@@ -79,7 +79,7 @@ function PlayHero() {
           </h1>
           <p className="text-foreground/70 max-w-xl text-pretty text-base md:text-lg mb-8">
             Four game zones under one roof. Rack a game of nine ball, throw for the bull,
-            dice with strangers, or pump quarters into a neon cabinet — all with food and
+            dice with strangers, or pump quarters into a neon cabinet - all with food and
             drinks delivered to you.
           </p>
 
@@ -122,7 +122,7 @@ function PlayHero() {
   );
 }
 
-/* ---------- POOL — tournament blue felt, black rails, chalk ---------- */
+/* ---------- POOL - tournament blue felt, black rails, chalk ---------- */
 function PoolSection() {
   const balls = [
     { n: 1, color: "bg-yellow-400", text: "text-black" },
@@ -231,7 +231,7 @@ function PoolSection() {
   );
 }
 
-/* ---------- DARTS — bullseye rings, red/green/cream ---------- */
+/* ---------- DARTS - bullseye rings, red/green/cream ---------- */
 function DartsSection() {
   return (
     <section
@@ -284,7 +284,7 @@ function DartsSection() {
           </h2>
           <p className="text-red-950/70 text-lg mb-8 text-pretty max-w-lg">
             Four electronic soft-tip lanes for quick games with friends and two steel-tip
-            boards for the sharpshooters. Tuesday night league starts 7PM — walk-ons welcome.
+            boards for the sharpshooters. Tuesday night league starts 7PM - walk-ons welcome.
           </p>
 
           {/* Score-style stats */}
@@ -310,7 +310,7 @@ function DartsSection() {
   );
 }
 
-/* ---------- BOARD GAMES — warm wood, cards, dice ---------- */
+/* ---------- BOARD GAMES - warm wood, cards, dice ---------- */
 function BoardSection() {
   const games = [
     "Catan", "Codenames", "Ticket to Ride", "Wingspan", "Bananagrams",
@@ -346,7 +346,7 @@ function BoardSection() {
               <span className="text-amber-400 italic">dice.</span>
             </h2>
             <p className="text-amber-100/70 text-lg mb-8 text-pretty max-w-lg">
-              A shelf of 60+ curated titles — from party favorites to euro-strategy heavy
+              A shelf of 60+ curated titles - from party favorites to euro-strategy heavy
               hitters. Free to play with any food or drink order. Just ask, we'll bring
               the box and the rules card.
             </p>
@@ -428,7 +428,7 @@ function BoardSection() {
   );
 }
 
-/* ---------- ARCADE — simple cabinet slideshow ---------- */
+/* ---------- ARCADE - simple cabinet slideshow ---------- */
 function ArcadeSection() {
   const slides = [
     { img: arcade1.url, name: "Pac-Man", tag: "Classic Maze" },
@@ -459,7 +459,7 @@ function ArcadeSection() {
             The <span className="text-accent">Arcade</span>
           </h2>
           <p className="text-muted-foreground text-lg text-pretty max-w-xl mx-auto">
-            A rotating lineup of classic cabinets. Bring quarters — or don't, they're on us
+            A rotating lineup of classic cabinets. Bring quarters - or don't, they're on us
             during happy hour.
           </p>
         </div>
@@ -564,7 +564,7 @@ function HouseRules() {
             Book the <span className="text-accent">whole game floor</span>
           </h3>
           <p className="text-muted-foreground mb-8 text-pretty max-w-xl mx-auto">
-            Birthdays, bachelor parties, corporate nights — take over the pool tables, darts,
+            Birthdays, bachelor parties, corporate nights - take over the pool tables, darts,
             and arcade for your crew.
           </p>
           <Link

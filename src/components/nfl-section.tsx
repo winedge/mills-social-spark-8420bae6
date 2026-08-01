@@ -58,7 +58,7 @@ function ScoreRow({ team, score, lead }: { team: string; score: number | null; l
           lead ? "text-accent" : "text-foreground"
         }`}
       >
-        {score === null ? "—" : score}
+        {score === null ? "-" : score}
       </span>
     </div>
   );
@@ -121,7 +121,7 @@ export function NflSection() {
 
         {data.configured && featured.length === 0 && (
           <div className="border border-border p-8 font-mono text-xs text-muted-foreground text-center uppercase tracking-widest">
-            No NFL games on the board yet — check back soon.
+            No NFL games on the board yet - check back soon.
           </div>
         )}
 

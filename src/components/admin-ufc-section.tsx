@@ -64,7 +64,7 @@ export function AdminUfcSection() {
 
       {!configured && (
         <div className="border border-accent/40 bg-accent/5 p-4 font-mono text-xs text-muted-foreground">
-          UFC feed not configured — add the SportsDataIO MMA API key to load events.
+          UFC feed not configured - add the SportsDataIO MMA API key to load events.
         </div>
       )}
 

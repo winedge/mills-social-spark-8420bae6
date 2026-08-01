@@ -14,7 +14,7 @@ export const Route = createFileRoute("/contact")({
       {
         name: "description",
         content:
-          "Find Mill's Modern Social on Mill Ave in Tempe — hours, phone, directions, and a direct line to our team for bookings and private events.",
+          "Find Mill's Modern Social on Mill Ave in Tempe - hours, phone, directions, and a direct line to our team for bookings and private events.",
       },
       { property: "og:title", content: "Contact Mill's Modern Social" },
       {
@@ -81,7 +81,7 @@ function ContactPage() {
             Say <span className="text-accent">hello.</span>
           </h1>
           <p className="text-muted-foreground max-w-2xl text-pretty text-lg">
-            Questions about a booking, a private event, or which screen your game is on? Drop us a line —
+            Questions about a booking, a private event, or which screen your game is on? Drop us a line -
             we answer fast.
           </p>
         </div>
@@ -119,7 +119,7 @@ function ContactPage() {
                   <Check className="size-8 text-accent" strokeWidth={3} />
                 </div>
                 <h3 className="font-display text-2xl uppercase mb-2">Message sent</h3>
-                <p className="text-sm text-muted-foreground">Thanks — we'll be in touch shortly.</p>
+                <p className="text-sm text-muted-foreground">Thanks - we'll be in touch shortly.</p>
               </div>
             ) : (
               <form onSubmit={submit} className="space-y-4">

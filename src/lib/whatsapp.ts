@@ -26,7 +26,7 @@ export type SpaceBooking = {
 
 export function formatReservationMessage(r: TableBooking): string {
   return [
-    "🍽️ *New Table Reservation — Mill's Modern Social*",
+    "🍽️ *New Table Reservation - Mill's Modern Social*",
     "",
     `👤 *Name:* ${r.name}`,
     `📞 *Phone:* ${r.phone}`,
@@ -42,7 +42,7 @@ export function formatReservationMessage(r: TableBooking): string {
 
 export function formatSpaceMessage(r: SpaceBooking): string {
   return [
-    "🎉 *New Space Reservation — Mill's Modern Social*",
+    "🎉 *New Space Reservation - Mill's Modern Social*",
     "",
     `👤 *Name:* ${r.name}`,
     `📞 *Phone:* ${r.phone}`,

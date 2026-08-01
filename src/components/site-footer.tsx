@@ -93,7 +93,7 @@ export function SiteFooter() {
           <div>
             <h6 className="font-display text-3xl uppercase mb-4">Join the circle</h6>
             <p className="text-sm text-muted-foreground mb-8">
-              Big games, watch parties, and private events — straight to your inbox.
+              Big games, watch parties, and private events - straight to your inbox.
             </p>
             <NewsletterForm />
           </div>

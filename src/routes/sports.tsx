@@ -9,9 +9,9 @@ import { useSportsSchedule } from "@/lib/content";
 export const Route = createFileRoute("/sports")({
   head: () => ({
     meta: [
-      { title: "Sports — NFL, UFC, Boxing, MLB & FIFA 2026 | Mills Modern Social" },
-      { name: "description", content: "Live NFL scoreboard, every UFC and boxing PPV, every MLB game, and full FIFA World Cup 2026 coverage — live at Mills Modern Social in Tempe." },
-      { property: "og:title", content: "Every game, every night — Mills Modern Social" },
+      { title: "Sports - NFL, UFC, Boxing, MLB & FIFA 2026 | Mills Modern Social" },
+      { name: "description", content: "Live NFL scoreboard, every UFC and boxing PPV, every MLB game, and full FIFA World Cup 2026 coverage - live at Mills Modern Social in Tempe." },
+      { property: "og:title", content: "Every game, every night - Mills Modern Social" },
       { property: "og:description", content: "NFL, UFC, boxing, MLB, and FIFA 2026 on 40+ screens in Tempe." },
     ],
   }),
@@ -28,7 +28,7 @@ const pillars = [
     icon: Zap,
     title: "UFC + Boxing",
     tag: "EVERY PPV · SOUND ON",
-    blurb: "Main-event screen with stadium audio, every UFC card and major boxing PPV — no cover, no seat charge.",
+    blurb: "Main-event screen with stadium audio, every UFC card and major boxing PPV - no cover, no seat charge.",
   },
   {
     icon: Circle,
@@ -69,7 +69,7 @@ function SportsPage() {
           </h1>
           <p className="text-muted-foreground max-w-2xl text-pretty text-lg">
             UFC and boxing PPVs on the big screen, every MLB game on demand, and full FIFA World
-            Cup 2026 coverage — from group-stage kickoffs to the final in New Jersey.
+            Cup 2026 coverage - from group-stage kickoffs to the final in New Jersey.
           </p>
         </div>
       </section>
@@ -104,7 +104,7 @@ function SportsPage() {
               <h2 className="font-display text-5xl uppercase">This <span className="text-accent">week</span></h2>
             </div>
             <p className="font-mono text-[10px] text-muted-foreground tracking-widest max-w-xs text-right">
-              WE'LL PUT ANY GAME ON REQUEST — JUST ASK THE BAR.
+              WE'LL PUT ANY GAME ON REQUEST - JUST ASK THE BAR.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-border border border-border">
@@ -134,7 +134,7 @@ function SportsPage() {
             Reserve a table for <span className="text-accent">game day</span>
           </h3>
           <p className="text-muted-foreground mb-8 text-pretty">
-            Big fight, playoff game, or World Cup match — lock in a booth in front of the
+            Big fight, playoff game, or World Cup match - lock in a booth in front of the
             screen you want. Group bookings get bottle service and reserved audio.
           </p>
           <Link

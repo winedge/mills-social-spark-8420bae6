@@ -38,7 +38,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
           </div>
         )}
         <div className="w-full px-4 md:px-8 h-20 md:h-28 flex md:grid md:grid-cols-[1fr_auto_1fr] items-center justify-between gap-4 md:gap-8">
-          <Link to="/" className="flex items-center min-w-0 md:justify-self-start" aria-label="Mills Modern Social — Home">
+          <Link to="/" className="flex items-center min-w-0 md:justify-self-start" aria-label="Mills Modern Social - Home">
             <img
               src={millsLogo.url}
               alt="Mill's Modern Social"

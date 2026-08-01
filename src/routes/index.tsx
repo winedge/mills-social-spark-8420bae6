@@ -44,7 +44,7 @@ const fallbackSpecials = [
     day: "MONDAY",
     badge: "1/2 OFF",
     title: "Burger Night",
-    desc: "Every Mill Burger and Tempe Smash — half price all night.",
+    desc: "Every Mill Burger and Tempe Smash - half price all night.",
     price: "from $8",
   },
   {
@@ -74,7 +74,7 @@ const fallbackSchedule = [
 
 const scoreboard = [
   { league: "NCAAF · LIVE", a: "ASU", aScore: "24", b: "OREGON", bScore: "21", status: "4TH QTR · 08:12", live: true },
-  { league: "NBA · TONIGHT", a: "SUNS", aScore: "—", b: "LAKERS", bScore: "—", status: "TIP-OFF 7:30 PM MST", live: false },
+  { league: "NBA · TONIGHT", a: "SUNS", aScore: "-", b: "LAKERS", bScore: "-", status: "TIP-OFF 7:30 PM MST", live: false },
   { league: "MLB · FINAL", a: "D-BACKS", aScore: "8", b: "DODGERS", bScore: "2", status: "FINAL", live: false },
 ];
 

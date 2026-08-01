@@ -19,7 +19,7 @@ import { getAnalytics, type AnalyticsStats } from "@/lib/analytics.functions";
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Admin — Mill's Modern Social" },
+      { title: "Admin - Mill's Modern Social" },
       { name: "description", content: "Admin panel." },
       { name: "robots", content: "noindex, nofollow" },
     ],
@@ -662,7 +662,7 @@ function MenuSection() {
         <SearchInput value={q} onChange={setQ} placeholder="Search menu…" />
         <Select value={catFilter} onChange={setCatFilter} options={[
           { value: "all", label: "All categories" },
-          ...flat.map((c) => ({ value: c.id, label: `${"— ".repeat(c.depth)}${c.name}` })),
+          ...flat.map((c) => ({ value: c.id, label: `${"- ".repeat(c.depth)}${c.name}` })),
         ]} />
         <button onClick={() => setEditing({
           id: "", name: "", description: "", price: "", calories: null,
@@ -691,11 +691,11 @@ function MenuSection() {
                 <tr key={i.id} className="border-t border-border hover:bg-muted/20">
                   <td className="px-4 py-3 font-medium">{i.name}</td>
                   <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">
-                    {(i.category_id && catNameById.get(i.category_id)) || i.category || "—"}
+                    {(i.category_id && catNameById.get(i.category_id)) || i.category || "-"}
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell">{i.price}</td>
-                  <td className="px-4 py-3 hidden lg:table-cell text-muted-foreground">{i.calories ?? "—"}</td>
-                  <td className="px-4 py-3 hidden lg:table-cell text-muted-foreground">{i.tag ?? "—"}</td>
+                  <td className="px-4 py-3 hidden lg:table-cell text-muted-foreground">{i.calories ?? "-"}</td>
+                  <td className="px-4 py-3 hidden lg:table-cell text-muted-foreground">{i.tag ?? "-"}</td>
                   <td className="px-4 py-3">
                     <ToggleActive checked={i.active} onChange={async (v) => {
                       await supabase.from("menu_items").update({ active: v }).eq("id", i.id); refresh();
@@ -797,7 +797,7 @@ function MenuEditor({ row, categories, onClose, onSaved }: { row: MenuRow; categ
         </div>
         <div className="grid grid-cols-2 gap-3">
           <SelectField name="category_id" label="Category" value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })}
-            options={[{ value: "", label: "— None —" }, ...categories.map((c) => ({ value: c.id, label: `${"— ".repeat(c.depth)}${c.name}` }))]} />
+            options={[{ value: "", label: "- None -" }, ...categories.map((c) => ({ value: c.id, label: `${"- ".repeat(c.depth)}${c.name}` }))]} />
           <SelectField name="tag" label="Tag" value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value })} options={[
             { value: "", label: "None" }, { value: "New", label: "New" },
             { value: "Chef's Pick", label: "Chef's Pick" }, { value: "Spicy", label: "Spicy" }, { value: "Local", label: "Local" },
@@ -883,8 +883,8 @@ function CategoriesSection() {
             <Input name="name" label="Name" defaultValue={editing.name ?? ""} required />
             <Input name="slug" label="Slug (optional)" defaultValue={editing.slug ?? ""} />
             <SelectField name="parent_id" label="Parent" defaultValue={editing.parent_id ?? ""}
-              options={[{ value: "", label: "— Top level —" },
-                ...flat.filter((c) => c.id !== editing.id).map((c) => ({ value: c.id, label: `${"— ".repeat(c.depth)}${c.name}` }))]} />
+              options={[{ value: "", label: "- Top level -" },
+                ...flat.filter((c) => c.id !== editing.id).map((c) => ({ value: c.id, label: `${"- ".repeat(c.depth)}${c.name}` }))]} />
             <div className="grid grid-cols-2 gap-3">
               <Input name="sort_order" label="Sort order" type="number" defaultValue={editing.sort_order ?? 0} />
               <label className="flex items-center gap-2 h-10">
@@ -1198,7 +1198,7 @@ function SettingsSection() {
               placeholder="admin@millsmodern.social" className="w-full bg-background border border-border h-11 px-3 text-sm focus:border-accent outline-none" />
           </label>
           <p className="text-xs text-muted-foreground mt-2">
-            Private — only admins can read this. Used as the internal reservations contact.
+            Private - only admins can read this. Used as the internal reservations contact.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -1501,7 +1501,7 @@ function BookingTable<T extends { id: string; name: string; phone: string; email
       if (res.sent) setMsg(`Confirmation sent to ${r.name} (${r.phone}).`);
       else if (res.fallbackUrl) {
         window.open(res.fallbackUrl, "_blank", "noopener,noreferrer");
-        setMsg("Automatic sending isn't configured yet — opened WhatsApp instead.");
+        setMsg("Automatic sending isn't configured yet - opened WhatsApp instead.");
       }
     } catch (e: any) {
       setMsg(e?.message ?? "Couldn't send confirmation.");
@@ -1619,7 +1619,7 @@ function ContactInfoSection() {
     const { id, ...rest } = row;
     const { error } = await (supabase as any).from("contact_info").update(rest).eq("id", 1);
     setBusy(false);
-    setMsg(error ? error.message : "Saved — the footer and contact page are updated.");
+    setMsg(error ? error.message : "Saved - the footer and contact page are updated.");
     setTimeout(() => setMsg(null), 5000);
   };
 
@@ -1713,7 +1713,7 @@ function MessagesSection() {
                     <p className="text-xs text-muted-foreground">{r.email}</p>
                     {r.phone && <p className="text-xs text-muted-foreground">{r.phone}</p>}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">{r.subject || "—"}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{r.subject || "-"}</td>
                   <td className="px-4 py-3 max-w-[320px] whitespace-pre-wrap text-foreground/80">{r.message}</td>
                   <td className="px-4 py-3">
                     <span className={`font-mono text-[10px] px-2 py-1 tracking-widest uppercase ${r.status === "new" ? "bg-accent text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{r.status}</span>
