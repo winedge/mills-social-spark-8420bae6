@@ -140,28 +140,28 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
   const b = main?.fighterB;
   const isFinal = norm(event.status) === "final";
   return (
-    <article className={`bg-background border p-6 flex flex-col gap-4 group transition-colors ${live ? "border-red-500/40 hover:border-red-500/70" : "border-border hover:border-accent/50"}`}>
-      <div className="flex justify-between items-start gap-2">
+    <article className={`h-full bg-background border p-4 sm:p-6 flex flex-col gap-4 group transition-colors ${live ? "border-red-500/40 hover:border-red-500/70" : "border-border hover:border-accent/50"}`}>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
         <div className="min-w-0">
-          <div className="font-display text-lg uppercase truncate">{event.name}</div>
-          <div className="font-mono text-[10px] text-accent tracking-widest mt-1">
+          <div className="font-display text-base sm:text-lg uppercase truncate">{event.name}</div>
+          <div className="font-mono text-[10px] text-accent tracking-widest mt-1 truncate">
             {main?.weightClass || "UFC"} · MAIN EVENT
           </div>
         </div>
         {live ? (
-          <span className="flex items-center gap-1.5 font-mono text-[10px] text-red-500 tracking-widest">
+          <span className="shrink-0 flex items-center gap-1.5 font-mono text-[10px] text-red-500 tracking-widest">
             <span className="size-2 bg-red-500 rounded-full animate-pulse" /> LIVE
           </span>
         ) : (
-          <span className="font-mono text-[10px] text-muted-foreground tracking-widest whitespace-nowrap">
+          <span className="shrink-0 font-mono text-[10px] text-muted-foreground tracking-widest text-right max-w-[42%] sm:max-w-none sm:whitespace-nowrap">
             {isFinal ? "FINAL" : formatFightDate(event.dateTime)}
           </span>
         )}
       </div>
 
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 my-2">
-        <div className="text-right">
-          <div className={`font-display text-xl uppercase leading-tight ${a?.winner ? "text-accent" : ""}`}>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-4 my-1 sm:my-2 min-h-[72px]">
+        <div className="text-right min-w-0">
+          <div className={`font-display text-base sm:text-xl uppercase leading-tight break-words ${a?.winner ? "text-accent" : ""}`}>
             {a?.name || "TBD"}
           </div>
           {a && (a.wins !== null || a.losses !== null) && (
@@ -170,9 +170,9 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
             </div>
           )}
         </div>
-        <div className="font-display text-accent text-lg">VS</div>
-        <div className="text-left">
-          <div className={`font-display text-xl uppercase leading-tight ${b?.winner ? "text-accent" : ""}`}>
+        <div className="font-display text-accent text-base sm:text-lg shrink-0">VS</div>
+        <div className="text-left min-w-0">
+          <div className={`font-display text-base sm:text-xl uppercase leading-tight break-words ${b?.winner ? "text-accent" : ""}`}>
             {b?.name || "TBD"}
           </div>
           {b && (b.wins !== null || b.losses !== null) && (
@@ -183,9 +183,11 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
         </div>
       </div>
 
-      {live || isFinal ? <LiveResults event={event} /> : <UndercardPreview event={event} />}
+      <div className="flex-1 min-w-0">
+        {live || isFinal ? <LiveResults event={event} /> : <UndercardPreview event={event} />}
+      </div>
 
-      <div className="font-mono text-[10px] text-muted-foreground tracking-widest border-t border-border pt-3 flex justify-between mt-auto">
+      <div className="font-mono text-[10px] text-muted-foreground tracking-widest border-t border-border pt-3 flex flex-wrap gap-x-3 gap-y-1 justify-between mt-auto">
         <span>
           {main?.resultType
             ? `${main.resultType.toUpperCase()} · R${main.resultRound ?? "-"}`
