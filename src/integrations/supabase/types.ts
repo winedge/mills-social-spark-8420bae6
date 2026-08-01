@@ -498,6 +498,24 @@ export type Database = {
         }
         Relationships: []
       }
+      sports_cache: {
+        Row: {
+          cache_key: string
+          payload: Json
+          updated_at: string
+        }
+        Insert: {
+          cache_key: string
+          payload: Json
+          updated_at?: string
+        }
+        Update: {
+          cache_key?: string
+          payload?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sports_schedule: {
         Row: {
           active: boolean

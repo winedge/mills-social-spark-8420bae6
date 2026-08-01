@@ -198,11 +198,13 @@ function GameCell({ game }: { game: NflGame }) {
 
 export function NflSection() {
   const { data, isFetching } = useSuspenseQuery(nflQueryOptions);
-  const { data: streamedIds } = useQuery(streamedNflQueryOptions);
+  const { data: streamedIds, isPending: streamedPending } = useQuery(streamedNflQueryOptions);
   const allow = new Set(streamedIds ?? []);
 
   const pool = [...data.live, ...data.upcoming, ...data.recent];
   const featured = pool.filter((g) => allow.has(g.gameId));
+  const loading = streamedPending;
+
 
   return (
     <section className="border-y border-border bg-background py-20 px-6">
@@ -228,11 +230,23 @@ export function NflSection() {
           </div>
         )}
 
-        {data.configured && featured.length === 0 && (
-          <div className="border border-border p-8 font-mono text-xs text-muted-foreground text-center uppercase tracking-widest">
-            No NFL games on the board yet - check back soon.
+        {data.configured && loading && featured.length === 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-40 border border-border bg-surface/60 animate-pulse" />
+            ))}
           </div>
         )}
+
+        {data.configured && !loading && featured.length === 0 && (
+          <div className="border border-border p-8 font-mono text-xs text-muted-foreground text-center uppercase tracking-widest">
+            {data.error
+              ? "Live NFL data is temporarily unavailable - check back shortly."
+              : "No NFL games on the board yet - check back soon."}
+          </div>
+        )}
+
+
 
         {featured.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

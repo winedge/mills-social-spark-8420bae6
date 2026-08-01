@@ -154,34 +154,44 @@ function mapEvent(raw: RawEvent): UfcEvent {
   };
 }
 
+export type UfcFeed = {
+  upcoming: UfcEvent[];
+  live: UfcEvent[];
+  recent: UfcEvent[];
+  configured: boolean;
+  stale?: boolean;
+  error?: string;
+};
 
-export const getUfcFights = createServerFn({ method: "GET" }).handler(async () => {
+export const getUfcFights = createServerFn({ method: "GET" }).handler(async (): Promise<UfcFeed> => {
   const apiKey = process.env.SPORTSDATAIO_API_KEY;
   if (!apiKey) {
-    return {
-      upcoming: [] as UfcEvent[],
-      live: [] as UfcEvent[],
-      recent: [] as UfcEvent[],
-      configured: false as const,
-    };
+    return { upcoming: [], live: [], recent: [], configured: false };
   }
 
   const season = new Date().getUTCFullYear();
+  const { withSportsCache, readSportsCache } = await import("./sports-cache.server");
+  const cacheKey = `ufc:${season}`;
 
-  try {
+  // Refresh often while a card is in progress, sparingly otherwise (API quota).
+  const cachedNow = await readSportsCache(cacheKey);
+  const hasLive = Array.isArray((cachedNow?.payload as { live?: unknown[] })?.live)
+    ? ((cachedNow!.payload as { live: unknown[] }).live.length > 0)
+    : false;
+  const ttl = hasLive ? 60_000 : 900_000;
+
+  const { data, stale } = await withSportsCache<{
+    upcoming: UfcEvent[];
+    live: UfcEvent[];
+    recent: UfcEvent[];
+  }>(cacheKey, ttl, async () => {
+
     const schedRes = await fetch(`${BASE}/Schedule/UFC/${season}?key=${apiKey}`, {
       headers: { Accept: "application/json" },
     });
-    if (!schedRes.ok) {
-      return {
-        upcoming: [],
-        live: [],
-        recent: [],
-        configured: true as const,
-        error: `SportsDataIO ${schedRes.status}`,
-      };
-    }
+    if (!schedRes.ok) return null;
     const schedule = (await schedRes.json()) as RawEvent[];
+    if (!Array.isArray(schedule) || schedule.length === 0) return null;
     const now = Date.now();
 
     const withTs = schedule.map((e) => ({ e, ts: parseTs(e.DateTime ?? e.Day ?? null) }));
@@ -207,28 +217,31 @@ export const getUfcFights = createServerFn({ method: "GET" }).handler(async () =
       .sort((a, b) => b.ts! - a.ts!)
       .slice(0, 3);
 
-    const details = await Promise.all(
-      [...liveRaw, ...upcomingRaw, ...recentRaw].map(({ e }) => fetchEventDetail(e.EventId, apiKey)),
-    );
+    const sources = [...liveRaw, ...upcomingRaw, ...recentRaw];
+    const details = await Promise.all(sources.map(({ e }) => fetchEventDetail(e.EventId, apiKey)));
 
-    const events = details
-      .map((raw, i) => {
-        const source = [...liveRaw, ...upcomingRaw, ...recentRaw][i].e;
-        return raw ? mapEvent({ ...source, ...raw }) : mapEvent(source);
-      });
+    const events = details.map((raw, i) => {
+      const source = sources[i].e;
+      return raw ? mapEvent({ ...source, ...raw }) : mapEvent(source);
+    });
 
-    const live = events.slice(0, liveRaw.length);
-    const upcoming = events.slice(liveRaw.length, liveRaw.length + upcomingRaw.length);
-    const recent = events.slice(liveRaw.length + upcomingRaw.length);
+    return {
+      live: events.slice(0, liveRaw.length),
+      upcoming: events.slice(liveRaw.length, liveRaw.length + upcomingRaw.length),
+      recent: events.slice(liveRaw.length + upcomingRaw.length),
+    };
+  });
 
-    return { upcoming, live, recent, configured: true as const };
-  } catch (err) {
+  if (!data) {
     return {
       upcoming: [],
       live: [],
       recent: [],
-      configured: true as const,
-      error: (err as Error).message,
+      configured: true,
+      error: "UFC feed temporarily unavailable.",
     };
   }
+
+  return { ...data, configured: true, stale };
+
 });

@@ -92,6 +92,8 @@ async function fetchSeason(season: string, apiKey: string): Promise<RawGame[] | 
       const res = await fetch(`${BASE}/${path}?key=${apiKey}`, {
         headers: { Accept: "application/json" },
       });
+      // Quota exhausted / unauthorized: further shapes would waste more calls.
+      if (res.status === 401 || res.status === 403 || res.status === 429) return null;
       if (!res.ok) continue;
       const json = (await res.json()) as RawGame[];
       if (Array.isArray(json) && json.length) return json;
@@ -108,6 +110,7 @@ export type NflFeed = {
   live: NflGame[];
   upcoming: NflGame[];
   recent: NflGame[];
+  stale?: boolean;
   error?: string;
 };
 
@@ -119,8 +122,29 @@ export const getNflGames = createServerFn({ method: "GET" }).handler(async (): P
     return { configured: false, season, live: [], upcoming: [], recent: [] };
   }
 
-  const raw = await fetchSeason(season, apiKey);
-  if (!raw) {
+  const { withSportsCache, readSportsCache } = await import("./sports-cache.server");
+  const cacheKey = `nfl:${season}`;
+
+  // Refresh often while a game is in progress, sparingly otherwise (API quota).
+  const cachedNow = await readSportsCache(cacheKey);
+  const hasLive = Array.isArray(cachedNow?.payload)
+    ? (cachedNow!.payload as NflGame[]).some((g) => g?.live)
+    : false;
+  const ttl = hasLive ? 60_000 : 900_000;
+
+  const { data: games, stale } = await withSportsCache<NflGame[]>(
+    cacheKey,
+    ttl,
+    async () => {
+      const raw = await fetchSeason(season, apiKey);
+      if (!raw) return null;
+      const mapped = raw.map(mapGame).filter((g): g is NflGame => g !== null);
+      return mapped.length ? mapped : null;
+    },
+  );
+
+
+  if (!games) {
     return {
       configured: true,
       season,
@@ -131,8 +155,8 @@ export const getNflGames = createServerFn({ method: "GET" }).handler(async (): P
     };
   }
 
-  const games = raw.map(mapGame).filter((g): g is NflGame => g !== null);
   const now = Date.now();
+
 
   const live = games.filter((g) => g.live);
   const upcoming = games
@@ -149,5 +173,5 @@ export const getNflGames = createServerFn({ method: "GET" }).handler(async (): P
     .map(({ g }) => g)
     .slice(0, 12);
 
-  return { configured: true, season, live, upcoming: upcoming.slice(0, 400), recent };
+  return { configured: true, season, live, upcoming: upcoming.slice(0, 400), recent, stale };
 });
