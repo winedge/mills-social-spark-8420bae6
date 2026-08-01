@@ -6,8 +6,6 @@ export const nflQueryOptions = queryOptions({
   queryKey: ["nfl", "games"],
   queryFn: () => getNflGames(),
   staleTime: 60_000,
-  refetchInterval: 60_000,
-  refetchIntervalInBackground: false,
 });
 
 const streamedNflQueryOptions = queryOptions({
