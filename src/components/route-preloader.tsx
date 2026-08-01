@@ -50,22 +50,29 @@ export function RoutePreloader() {
     };
   }, []);
 
-  // Show on route change.
+  // Show only on a real route change (not on hydration or same-path replaces).
+  const prevPath = useRef<string | null>(null);
   useEffect(() => {
     if (!mounted) return;
+    if (prevPath.current === null) {
+      prevPath.current = pathname;
+      return;
+    }
+    if (prevPath.current === pathname) return;
+    prevPath.current = pathname;
     showNow();
     hideWhenReady();
   }, [pathname, mounted]);
 
-  // Extend while router is actively pending.
+  // Extend only while it's already visible; never re-open on background pending.
   useEffect(() => {
     if (!mounted) return;
     if (isPending) {
-      showNow();
+      if (visible) showNow();
     } else {
       hideWhenReady();
     }
-  }, [isPending, mounted]);
+  }, [isPending, mounted, visible]);
 
   if (!mounted || !visible) return null;
 

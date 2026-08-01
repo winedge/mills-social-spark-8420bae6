@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { UfcSection, ufcQueryOptions } from "@/components/ufc-section";
 import { NflSection, nflQueryOptions } from "@/components/nfl-section";
 import { useSportsSchedule } from "@/lib/content";
+import sportsBarBg from "@/assets/sports-bar-bg.png.asset.json";
 
 export const Route = createFileRoute("/sports")({
   head: () => ({
@@ -58,6 +59,14 @@ function SportsPage() {
 
       {/* Hero */}
       <section className="relative py-24 md:py-32 px-6 border-b border-border overflow-hidden">
+        <img
+          src={sportsBarBg.url}
+          alt="Screens above the bar at Mill's Modern Social"
+          className="absolute inset-0 size-full object-cover"
+          loading="eager"
+        />
+        <div className="absolute inset-0 bg-background/80" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background/40" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(56,189,248,0.15),transparent_55%),radial-gradient(circle_at_70%_70%,rgba(56,189,248,0.08),transparent_55%)]" />
         <div className="max-w-7xl mx-auto relative">
           <span className="font-mono text-accent text-xs tracking-[0.3em] block mb-4">
