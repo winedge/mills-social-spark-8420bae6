@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Trophy, Circle, Zap } from "lucide-react";
+import { Shield, Circle, Zap } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { UfcSection, ufcQueryOptions } from "@/components/ufc-section";
@@ -9,10 +9,10 @@ import { useSportsSchedule } from "@/lib/content";
 export const Route = createFileRoute("/sports")({
   head: () => ({
     meta: [
-      { title: "Sports - NFL, UFC, Boxing, MLB & FIFA 2026 | Mills Modern Social" },
-      { name: "description", content: "Live NFL scoreboard, every UFC and boxing PPV, every MLB game, and full FIFA World Cup 2026 coverage - live at Mills Modern Social in Tempe." },
+      { title: "Sports - NFL, UFC, Boxing, MLB & NFL 2026 | Mills Modern Social" },
+      { name: "description", content: "Live NFL scoreboard, every UFC and boxing PPV, every MLB game, and full NFL 2026 season coverage - live at Mills Modern Social in Tempe." },
       { property: "og:title", content: "Every game, every night - Mills Modern Social" },
-      { property: "og:description", content: "NFL, UFC, boxing, MLB, and FIFA 2026 on 40+ screens in Tempe." },
+      { property: "og:description", content: "NFL, UFC, boxing, MLB, and NFL 2026 on 40+ screens in Tempe." },
     ],
   }),
   loader: ({ context }) =>
@@ -37,10 +37,10 @@ const pillars = [
     blurb: "D-backs first, then every out-of-market matchup on dedicated screens. Ask for your team, we'll put it on.",
   },
   {
-    icon: Trophy,
-    title: "FIFA World Cup 2026",
-    tag: "FULL TOURNAMENT COVERAGE",
-    blurb: "Group stage watch parties, opening early for kickoffs, and knockout-round giveaways all the way to the final.",
+    icon: Shield,
+    title: "NFL 2026",
+    tag: "EVERY GAME · EVERY SUNDAY",
+    blurb: "Every kickoff, every touchdown, every playoff moment on 40+ screens - from opening weekend through the Super Bowl.",
   },
 ];
 
@@ -68,8 +68,8 @@ function SportsPage() {
             <span className="text-accent">every night.</span>
           </h1>
           <p className="text-muted-foreground max-w-2xl text-pretty text-lg">
-            UFC and boxing PPVs on the big screen, every MLB game on demand, and full FIFA World
-            Cup 2026 coverage - from group-stage kickoffs to the final in New Jersey.
+            UFC and boxing PPVs on the big screen, every MLB game on demand, and full NFL 2026
+            coverage - from opening weekend through the Super Bowl.
           </p>
         </div>
       </section>
@@ -134,7 +134,7 @@ function SportsPage() {
             Reserve a table for <span className="text-accent">game day</span>
           </h3>
           <p className="text-muted-foreground mb-8 text-pretty">
-            Big fight, playoff game, or World Cup match - lock in a booth in front of the
+            Big fight, playoff game, or NFL Sunday - lock in a booth in front of the
             screen you want. Group bookings get bottle service and reserved audio.
           </p>
           <Link
