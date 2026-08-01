@@ -153,31 +153,48 @@ export type DbWeeklyPulse = {
   active: boolean;
 };
 
-export function useDailySpecials() {
+export function useDailySpecialsState() {
   const [items, setItems] = useState<DbDailySpecial[]>([]);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     supabase
       .from("daily_specials")
       .select("*")
       .eq("active", true)
       .order("sort_order")
-      .then(({ data }) => setItems((data ?? []) as DbDailySpecial[]));
+      .then(({ data }) => {
+        setItems((data ?? []) as DbDailySpecial[]);
+        setLoading(false);
+      });
   }, []);
-  return items;
+  return { items, loading };
 }
 
-export function useWeeklyPulse() {
+export function useDailySpecials() {
+  return useDailySpecialsState().items;
+}
+
+export function useWeeklyPulseState() {
   const [items, setItems] = useState<DbWeeklyPulse[]>([]);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     supabase
       .from("weekly_pulse")
       .select("*")
       .eq("active", true)
       .order("sort_order")
-      .then(({ data }) => setItems((data ?? []) as DbWeeklyPulse[]));
+      .then(({ data }) => {
+        setItems((data ?? []) as DbWeeklyPulse[]);
+        setLoading(false);
+      });
   }, []);
-  return items;
+  return { items, loading };
 }
+
+export function useWeeklyPulse() {
+  return useWeeklyPulseState().items;
+}
+
 
 export type DbContactInfo = {
   id: number;

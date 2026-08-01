@@ -6,7 +6,13 @@ import heroVideo from "@/assets/hero-loop.mp4.asset.json";
 import menuBurger from "@/assets/menu-burger.jpg";
 import menuCocktail from "@/assets/menu-cocktail.jpg";
 import menuWings from "@/assets/menu-wings.jpg";
-import { useDailySpecials, useWeeklyPulse } from "@/lib/content";
+import { useDailySpecialsState, useWeeklyPulseState } from "@/lib/content";
+import {
+  DailySpecialsSkeleton,
+  WeeklyPulseSkeleton,
+  NflSectionSkeleton,
+  UfcSectionSkeleton,
+} from "@/components/skeletons";
 import pulseHappyHour from "@/assets/pulse-happy-hour.jpg";
 import pulseTrivia from "@/assets/pulse-trivia.jpg";
 import pulseLiveMusic from "@/assets/pulse-live-music.jpg";
@@ -143,7 +149,7 @@ function useHeroVideo() {
 
 function Home() {
   const heroSrc = useHeroVideo();
-  const dbSpecials = useDailySpecials();
+  const { items: dbSpecials, loading: specialsLoading } = useDailySpecialsState();
   const specialImgs = [menuBurger, menuWings, menuCocktail];
   const dailySpecials = dbSpecials.length
     ? dbSpecials.map((s, i) => ({
@@ -156,7 +162,7 @@ function Home() {
       }))
     : fallbackSpecials;
 
-  const dbPulse = useWeeklyPulse();
+  const { items: dbPulse, loading: pulseLoading } = useWeeklyPulseState();
   const pulseImgs = [pulseHappyHour, pulseTrivia, pulseLiveMusic, pulseBrunch];
   const schedule = dbPulse.length
     ? dbPulse.map((s, i) => ({
@@ -304,11 +310,14 @@ function Home() {
 
       {/* Scoreboard */}
       <div id="sports">
-        <NflSection />
+        <React.Suspense fallback={<NflSectionSkeleton />}>
+          <NflSection />
+        </React.Suspense>
       </div>
 
-
-      <UfcSection />
+      <React.Suspense fallback={<UfcSectionSkeleton />}>
+        <UfcSection />
+      </React.Suspense>
 
       {/* Daily Specials */}
       <section id="specials" className="py-24 px-6 border-t border-border">
@@ -334,6 +343,7 @@ function Home() {
             </Link>
           </div>
 
+          {specialsLoading ? <DailySpecialsSkeleton /> : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {dailySpecials.map((s) => (
               <article key={s.day} className="group relative">
@@ -365,6 +375,7 @@ function Home() {
               </article>
             ))}
           </div>
+          )}
         </div>
       </section>
 
@@ -377,6 +388,7 @@ function Home() {
               Weekly <span className="text-accent">pulse</span>
             </h3>
           </div>
+          {pulseLoading ? <WeeklyPulseSkeleton /> : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-border border border-border">
             {schedule.map((s) => (
               <div key={s.title} className="bg-background flex flex-col group overflow-hidden">
@@ -405,6 +417,7 @@ function Home() {
               </div>
             ))}
           </div>
+          )}
         </div>
       </section>
 
