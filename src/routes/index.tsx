@@ -134,7 +134,7 @@ function OpenStatus() {
 }
 
 function useHeroVideo() {
-  const [url, setUrl] = React.useState<string>(heroVideo.url);
+  const [url, setUrl] = React.useState<string>(DEFAULT_HERO_VIDEO);
   React.useEffect(() => {
     let cancelled = false;
     (async () => {
