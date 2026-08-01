@@ -329,7 +329,12 @@ export function UfcSection() {
           AUTO-REFRESH · EVERY 60s{updated ? ` · LAST UPDATE ${updated} MST` : ""}
         </div>
 
-        {nextEvent && <NextEventCountdown event={nextEvent} />}
+        {nextEvent && (
+          <NextEventCountdown
+            event={nextEvent}
+            isLive={live.some((l) => l.eventId === nextEvent.eventId)}
+          />
+        )}
 
         {!data.configured && (
           <div className="border border-accent/40 bg-accent/5 p-6 font-mono text-xs text-muted-foreground">
