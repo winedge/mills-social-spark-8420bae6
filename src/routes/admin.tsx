@@ -1569,3 +1569,232 @@ function Th({ children, align }: { children: React.ReactNode; align?: "right" })
   );
 }
 
+
+/* ================= CONTACT INFO ================= */
+
+type ContactInfoRow = {
+  id: number;
+  address_line: string;
+  hours_weekday: string;
+  hours_weekend: string;
+  phone: string;
+  email: string;
+  instagram_url: string;
+  x_url: string;
+  tiktok_url: string;
+  map_embed_url: string;
+};
+
+function ContactInfoSection() {
+  const [row, setRow] = useState<ContactInfoRow | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    (supabase as any).from("contact_info").select("*").eq("id", 1).maybeSingle()
+      .then(({ data }: { data: ContactInfoRow | null }) => setRow(data));
+  }, []);
+
+  if (!row) return <div className="p-10 grid place-items-center"><Loader2 className="size-5 animate-spin text-accent" /></div>;
+
+  const set = (k: keyof ContactInfoRow, v: string) => setRow({ ...row, [k]: v });
+
+  const save = async (e: FormEvent) => {
+    e.preventDefault();
+    setBusy(true); setMsg(null);
+    const { id, ...rest } = row;
+    const { error } = await (supabase as any).from("contact_info").update(rest).eq("id", 1);
+    setBusy(false);
+    setMsg(error ? error.message : "Saved — the footer and contact page are updated.");
+    setTimeout(() => setMsg(null), 5000);
+  };
+
+  return (
+    <form onSubmit={save} className="max-w-2xl space-y-4 border border-border bg-surface/40 p-6">
+      <p className="text-sm text-muted-foreground">
+        These details power the footer ("Come hang") and the contact page.
+      </p>
+      <Input label="Address" value={row.address_line} onChange={(e) => set("address_line", e.target.value)} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Input label="Hours (Sun–Thu)" value={row.hours_weekday} onChange={(e) => set("hours_weekday", e.target.value)} />
+        <Input label="Hours (Fri–Sat)" value={row.hours_weekend} onChange={(e) => set("hours_weekend", e.target.value)} />
+        <Input label="Phone" value={row.phone} onChange={(e) => set("phone", e.target.value)} />
+        <Input label="Public email" value={row.email} onChange={(e) => set("email", e.target.value)} />
+        <Input label="Instagram URL" value={row.instagram_url} onChange={(e) => set("instagram_url", e.target.value)} />
+        <Input label="X / Twitter URL" value={row.x_url} onChange={(e) => set("x_url", e.target.value)} />
+        <Input label="TikTok URL" value={row.tiktok_url} onChange={(e) => set("tiktok_url", e.target.value)} />
+      </div>
+      <Textarea label="Google Maps embed URL" rows={3} value={row.map_embed_url} onChange={(e) => set("map_embed_url", e.target.value)} />
+      {msg && <p className="font-mono text-[11px] uppercase tracking-widest text-accent">{msg}</p>}
+      <button disabled={busy} className="inline-flex items-center gap-2 px-5 h-10 bg-accent text-primary-foreground text-xs font-bold uppercase tracking-widest disabled:opacity-60">
+        <Save className="size-3.5" /> {busy ? "Saving…" : "Save contact details"}
+      </button>
+    </form>
+  );
+}
+
+/* ================= CONTACT MESSAGES ================= */
+
+type MessageRow = {
+  id: string; name: string; email: string; phone: string;
+  subject: string; message: string; status: string; created_at: string;
+};
+
+function MessagesSection() {
+  const [rows, setRows] = useState<MessageRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [q, setQ] = useState("");
+  const [status, setStatus] = useState("all");
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const { data } = await (supabase as any).from("contact_messages").select("*").order("created_at", { ascending: false });
+    setRows((data ?? []) as MessageRow[]);
+    setLoading(false);
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const mark = async (id: string) => {
+    await (supabase as any).from("contact_messages").update({ status: "handled" }).eq("id", id);
+    setRows((r) => r.map((x) => (x.id === id ? { ...x, status: "handled" } : x)));
+  };
+  const remove = async (id: string) => {
+    if (!confirm("Delete this message?")) return;
+    await (supabase as any).from("contact_messages").delete().eq("id", id);
+    setRows((r) => r.filter((x) => x.id !== id));
+  };
+
+  const filtered = rows.filter((r) => {
+    if (status !== "all" && r.status !== status) return false;
+    const t = q.trim().toLowerCase();
+    if (!t) return true;
+    return `${r.name} ${r.email} ${r.subject} ${r.message}`.toLowerCase().includes(t);
+  });
+
+  if (loading) return <div className="p-10 grid place-items-center"><Loader2 className="size-5 animate-spin text-accent" /></div>;
+
+  return (
+    <div className="space-y-4">
+      <FilterBar>
+        <SearchInput value={q} onChange={setQ} placeholder="Search name, email or message…" />
+        <Select value={status} onChange={setStatus} options={[
+          { value: "all", label: "All statuses" },
+          { value: "new", label: "New" },
+          { value: "handled", label: "Handled" },
+        ]} />
+      </FilterBar>
+      {filtered.length === 0 ? <Empty label="No messages yet" /> : (
+        <div className="border border-border bg-surface/40 overflow-x-auto">
+          <table className="w-full min-w-[820px] text-sm">
+            <thead>
+              <tr className="border-b border-border bg-background/40">
+                <Th>From</Th><Th>Subject</Th><Th>Message</Th><Th>Status</Th><Th>Received</Th><Th align="right">Actions</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((r) => (
+                <tr key={r.id} className="border-b border-border/60 last:border-b-0 hover:bg-muted/20 align-top">
+                  <td className="px-4 py-3">
+                    <p className="font-bold uppercase tracking-wide">{r.name}</p>
+                    <p className="text-xs text-muted-foreground">{r.email}</p>
+                    {r.phone && <p className="text-xs text-muted-foreground">{r.phone}</p>}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">{r.subject || "—"}</td>
+                  <td className="px-4 py-3 max-w-[320px] whitespace-pre-wrap text-foreground/80">{r.message}</td>
+                  <td className="px-4 py-3">
+                    <span className={`font-mono text-[10px] px-2 py-1 tracking-widest uppercase ${r.status === "new" ? "bg-accent text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{r.status}</span>
+                  </td>
+                  <td className="px-4 py-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">
+                    {new Date(r.created_at).toLocaleString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-2">
+                      <a href={`mailto:${r.email}`} className="inline-flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-widest border border-border hover:border-accent hover:text-accent">
+                        <Mail className="size-3" /> Reply
+                      </a>
+                      {r.status === "new" && (
+                        <button onClick={() => mark(r.id)} className="inline-flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-widest border border-border hover:border-accent hover:text-accent">
+                          <Check className="size-3" /> Handled
+                        </button>
+                      )}
+                      <button onClick={() => remove(r.id)} className="inline-flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-widest border border-border hover:border-red-500 hover:text-red-500">
+                        <Trash2 className="size-3" /> Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ================= NEWSLETTER SUBSCRIBERS ================= */
+
+type SubscriberRow = { id: string; email: string; source: string; created_at: string };
+
+function SubscribersSection() {
+  const [rows, setRows] = useState<SubscriberRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [q, setQ] = useState("");
+
+  useEffect(() => {
+    (supabase as any).from("newsletter_subscribers").select("*").order("created_at", { ascending: false })
+      .then(({ data }: { data: SubscriberRow[] | null }) => { setRows(data ?? []); setLoading(false); });
+  }, []);
+
+  const remove = async (id: string) => {
+    if (!confirm("Remove this subscriber?")) return;
+    await (supabase as any).from("newsletter_subscribers").delete().eq("id", id);
+    setRows((r) => r.filter((x) => x.id !== id));
+  };
+
+  const copyAll = () => {
+    navigator.clipboard?.writeText(rows.map((r) => r.email).join(", "));
+  };
+
+  const filtered = rows.filter((r) => r.email.toLowerCase().includes(q.trim().toLowerCase()));
+
+  if (loading) return <div className="p-10 grid place-items-center"><Loader2 className="size-5 animate-spin text-accent" /></div>;
+
+  return (
+    <div className="space-y-4">
+      <FilterBar>
+        <SearchInput value={q} onChange={setQ} placeholder="Search email…" />
+        <button onClick={copyAll} className="px-4 h-10 border border-border text-[10px] font-bold uppercase tracking-widest hover:border-accent">
+          Copy all ({rows.length})
+        </button>
+      </FilterBar>
+      {filtered.length === 0 ? <Empty label="No subscribers yet" /> : (
+        <div className="border border-border bg-surface/40 overflow-x-auto">
+          <table className="w-full min-w-[520px] text-sm">
+            <thead>
+              <tr className="border-b border-border bg-background/40">
+                <Th>Email</Th><Th>Source</Th><Th>Joined</Th><Th align="right">Actions</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((r) => (
+                <tr key={r.id} className="border-b border-border/60 last:border-b-0 hover:bg-muted/20">
+                  <td className="px-4 py-3">{r.email}</td>
+                  <td className="px-4 py-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{r.source}</td>
+                  <td className="px-4 py-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">
+                    {new Date(r.created_at).toLocaleString()}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <button onClick={() => remove(r.id)} className="inline-flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-widest border border-border hover:border-red-500 hover:text-red-500">
+                      <Trash2 className="size-3" /> Remove
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
