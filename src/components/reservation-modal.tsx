@@ -123,12 +123,9 @@ export function ReservationModal() {
 
       {/* Panel */}
       <div
-        className={`relative w-full max-w-lg bg-surface border border-border shadow-2xl transition-all duration-500 ease-out ${
-          mounted && open
-            ? "opacity-100 translate-y-0 scale-100"
-            : "opacity-0 translate-y-6 scale-95"
+        className={`relative w-full max-w-lg bg-surface border border-border shadow-2xl will-change-transform ${
+          mounted && open ? "res-panel-in" : "res-panel-out"
         }`}
-        style={{ transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)" }}
       >
         {/* Header */}
         <div className="flex items-start justify-between p-6 border-b border-border">
