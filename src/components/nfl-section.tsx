@@ -72,23 +72,27 @@ function teamLogo(team: string) {
 
 function ScoreRow({ team, score, lead }: { team: string; score: number | null; lead: boolean }) {
   return (
-    <div className="flex items-center justify-between gap-6">
-      <span className="flex items-center gap-3 min-w-0">
-        <img
-          src={teamLogo(team)}
-          alt={`${team} logo`}
-          loading="lazy"
-          width={40}
-          height={40}
-          className="size-9 md:size-10 object-contain shrink-0"
-          onError={(e) => {
-            (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
-          }}
-        />
-        <span className="font-display text-3xl md:text-4xl uppercase leading-none tracking-tight">{team}</span>
+    <div className="flex items-center justify-between gap-4">
+      <span className="flex items-center gap-4 min-w-0">
+        <span className="size-16 md:size-[72px] grid place-items-center border border-border bg-surface/50 shrink-0">
+          <img
+            src={teamLogo(team)}
+            alt={`${team} logo`}
+            loading="lazy"
+            width={72}
+            height={72}
+            className="size-12 md:size-14 object-contain"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
+            }}
+          />
+        </span>
+        <span className="font-display text-4xl md:text-5xl uppercase leading-none tracking-tight truncate">
+          {team}
+        </span>
       </span>
       <span
-        className={`font-display text-3xl md:text-4xl leading-none tabular-nums ${
+        className={`font-display text-4xl md:text-5xl leading-none tabular-nums ${
           lead ? "text-accent" : "text-foreground"
         }`}
       >
@@ -103,23 +107,34 @@ function GameCell({ game }: { game: NflGame }) {
   const away = started ? game.awayScore : null;
   const home = started ? game.homeScore : null;
   return (
-    <div className="px-6 py-8 md:px-10 flex flex-col gap-5">
-      <div className="flex items-start justify-between gap-3">
+    <div className="relative h-full px-6 py-7 md:px-8 flex flex-col gap-6 group hover:bg-surface/30 transition-colors">
+      <span className="absolute left-0 top-0 h-full w-[3px] bg-accent/60 group-hover:bg-accent transition-colors" />
+
+      <div className="flex items-center justify-between gap-3">
         <span className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground uppercase">
           NFL · {statusLabel(game)}
         </span>
-        {game.live && <span className="size-2 rounded-full bg-red-500 animate-pulse mt-1" />}
+        {game.live && (
+          <span className="flex items-center gap-1.5 border border-red-500/40 bg-red-500/10 px-2 py-0.5">
+            <span className="size-1.5 rounded-full bg-red-500 animate-pulse" />
+            <span className="font-mono text-[9px] tracking-widest text-red-500 uppercase">Live</span>
+          </span>
+        )}
       </div>
-      <div className="space-y-3">
+
+      <div className="space-y-4">
         <ScoreRow team={game.awayTeam} score={away} lead={away !== null && home !== null && away > home} />
+        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
         <ScoreRow team={game.homeTeam} score={home} lead={away !== null && home !== null && home > away} />
       </div>
-      <div className="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase">
+
+      <div className="mt-auto pt-4 border-t border-border/60 font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase">
         {detailLine(game)}
       </div>
     </div>
   );
 }
+
 
 export function NflSection() {
   const { data, isFetching } = useSuspenseQuery(nflQueryOptions);
