@@ -155,13 +155,13 @@ function GameCell({ game }: { game: NflGame }) {
         <TeamPanel team={game.awayTeam} score={away} align="left" />
 
         {/* Center badge */}
-        <div className="relative z-10 shrink-0 w-24 md:w-40 bg-[#08090c] border-x border-white/10 flex flex-col items-center justify-center gap-1 px-2 py-4 text-center">
-          <span className="font-mono text-[9px] md:text-[10px] tracking-[0.3em] text-accent uppercase">
+        <div className="relative z-10 shrink-0 w-16 md:w-24 lg:w-16 bg-[#08090c] border-x border-white/10 flex flex-col items-center justify-center gap-0.5 px-1 py-3 text-center">
+          <span className="font-mono text-[8px] md:text-[9px] lg:text-[8px] tracking-[0.25em] text-accent uppercase">
             {game.live ? "LIVE" : game.final ? "FINAL" : `WK ${game.week ?? "-"}`}
           </span>
-          <span className="font-display text-2xl md:text-4xl uppercase leading-none text-white">VS</span>
+          <span className="font-display text-xl md:text-3xl lg:text-xl uppercase leading-none text-white">VS</span>
           {game.channel && (
-            <span className="font-mono text-[9px] md:text-[10px] tracking-[0.2em] text-muted-foreground uppercase truncate max-w-full">
+            <span className="font-mono text-[8px] md:text-[9px] lg:text-[8px] tracking-[0.15em] text-muted-foreground uppercase truncate max-w-full">
               {game.channel}
             </span>
           )}
@@ -171,7 +171,7 @@ function GameCell({ game }: { game: NflGame }) {
       </div>
 
       {/* Info bar */}
-      <div className="border-t border-white/10 bg-black/60 px-4 py-2.5 flex items-center justify-center gap-3 font-mono text-[10px] md:text-[11px] tracking-[0.25em] text-white/80 uppercase">
+      <div className="border-t border-white/10 bg-black/60 px-3 py-2 flex items-center justify-center gap-2 font-mono text-[9px] md:text-[10px] lg:text-[9px] tracking-[0.2em] text-white/80 uppercase">
         {game.live ? (
           <>
             <span className="size-1.5 rounded-full bg-red-500 animate-pulse" />
@@ -181,7 +181,7 @@ function GameCell({ game }: { game: NflGame }) {
           <span>FINAL</span>
         ) : (
           <>
-            <span>{day}</span>
+            <span className="truncate">{day}</span>
             <span className="text-accent">|</span>
             <span>
               {time}
