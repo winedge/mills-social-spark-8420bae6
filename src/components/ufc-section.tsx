@@ -37,13 +37,66 @@ function formatFightDate(iso: string | null) {
     .toUpperCase();
 }
 
+function fightWinnerLabel(f: import("@/lib/ufc.functions").UfcFight) {
+  const w = f.fighterA?.winner ? f.fighterA : f.fighterB?.winner ? f.fighterB : null;
+  if (!w) return null;
+  const how = f.resultType ? f.resultType.toUpperCase() : "WIN";
+  const rd = f.resultRound ? ` · R${f.resultRound}` : "";
+  return `${w.name.toUpperCase()} · ${how}${rd}`;
+}
+
+function LiveResults({ event }: { event: UfcEvent }) {
+  const order = [...event.fights].sort((a, b) => (b.order ?? 0) - (a.order ?? 0));
+  const inProgress = order.find((f) => (f.status || "").toLowerCase() === "inprogress");
+  const finished = order.filter(
+    (f) => (f.status || "").toLowerCase() === "final" && (f.fighterA?.winner || f.fighterB?.winner),
+  );
+  if (!inProgress && finished.length === 0) return null;
+  return (
+    <div className="border-t border-border pt-3 flex flex-col gap-2">
+      <div className="font-mono text-[10px] text-red-500 tracking-widest flex items-center gap-1.5">
+        <span className="size-1.5 bg-red-500 rounded-full animate-pulse" /> LIVE RESULTS
+      </div>
+      {inProgress && (
+        <div className="bg-red-500/10 border border-red-500/30 px-3 py-2">
+          <div className="font-mono text-[9px] text-red-400 tracking-widest mb-0.5">IN THE OCTAGON</div>
+          <div className="font-display text-sm uppercase leading-tight">
+            {inProgress.fighterA?.name || "TBD"} <span className="text-accent">VS</span>{" "}
+            {inProgress.fighterB?.name || "TBD"}
+          </div>
+          {inProgress.weightClass && (
+            <div className="font-mono text-[9px] text-muted-foreground mt-0.5">
+              {inProgress.weightClass.toUpperCase()}
+            </div>
+          )}
+        </div>
+      )}
+      {finished.slice(0, 4).map((f) => (
+        <div key={f.fightId} className="flex items-baseline justify-between gap-3">
+          <span className="font-display text-xs uppercase text-accent truncate">
+            {fightWinnerLabel(f)}
+          </span>
+          <span className="font-mono text-[9px] text-muted-foreground whitespace-nowrap">
+            {f.weightClass ? f.weightClass.toUpperCase() : "FINAL"}
+          </span>
+        </div>
+      ))}
+      {finished.length > 4 && (
+        <div className="font-mono text-[9px] text-muted-foreground tracking-widest">
+          +{finished.length - 4} MORE BOUTS DECIDED
+        </div>
+      )}
+    </div>
+  );
+}
+
 function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
   const main = event.mainEvent;
   const a = main?.fighterA;
   const b = main?.fighterB;
   const isFinal = event.status.toLowerCase() === "final";
   return (
-    <article className="bg-background border border-border p-6 flex flex-col gap-4 group hover:border-accent/50 transition-colors">
+    <article className={`bg-background border p-6 flex flex-col gap-4 group transition-colors ${live ? "border-red-500/40 hover:border-red-500/70" : "border-border hover:border-accent/50"}`}>
       <div className="flex justify-between items-start gap-2">
         <div className="min-w-0">
           <div className="font-display text-lg uppercase truncate">{event.name}</div>
@@ -86,7 +139,9 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
         </div>
       </div>
 
-      <div className="font-mono text-[10px] text-muted-foreground tracking-widest border-t border-border pt-3 flex justify-between">
+      {(live || isFinal) && <LiveResults event={event} />}
+
+      <div className="font-mono text-[10px] text-muted-foreground tracking-widest border-t border-border pt-3 flex justify-between mt-auto">
         <span>
           {main?.resultType
             ? `${main.resultType.toUpperCase()} · R${main.resultRound ?? "-"}`
@@ -97,6 +152,7 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
     </article>
   );
 }
+
 
 function useCountdown(iso: string | null) {
   const target = iso ? new Date(iso.endsWith("Z") ? iso : iso + "Z").getTime() : null;
