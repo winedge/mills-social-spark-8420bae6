@@ -5,7 +5,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { UfcSection, ufcQueryOptions } from "@/components/ufc-section";
 import { NflSection, nflQueryOptions } from "@/components/nfl-section";
 import { useSportsSchedule } from "@/lib/content";
-import sportsBarBg from "@/assets/sports-bar-bg.png.asset.json";
+import sportsBarBg from "@/assets/sports-bar-bg.png";
 
 export const Route = createFileRoute("/sports")({
   head: () => ({
@@ -60,7 +60,7 @@ function SportsPage() {
       {/* Hero */}
       <section className="relative py-24 md:py-32 px-6 border-b border-border overflow-hidden">
         <img
-          src={sportsBarBg.url}
+          src={sportsBarBg}
           alt="Screens above the bar at Mill's Modern Social"
           className="absolute inset-0 size-full object-cover"
           loading="eager"

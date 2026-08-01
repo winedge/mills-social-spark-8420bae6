@@ -3,15 +3,15 @@ import { useEffect, useState } from "react";
 import { Target, Dices, Gamepad2, CircleDot, Trophy, Clock, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import playHero from "@/assets/play-hero.jpg.asset.json";
-import poolImg from "@/assets/play-pool.jpg.asset.json";
-import dartsImg from "@/assets/play-darts.jpg.asset.json";
-import boardImg from "@/assets/play-boardgames.jpg.asset.json";
-import arcadeImg from "@/assets/play-arcade.jpg.asset.json";
-import arcade1 from "@/assets/arcade-1.jpg.asset.json";
-import arcade2 from "@/assets/arcade-2.jpg.asset.json";
-import arcade3 from "@/assets/arcade-3.jpg.asset.json";
-import arcade4 from "@/assets/arcade-4.jpg.asset.json";
+import playHero from "@/assets/play-hero.jpg";
+import poolImg from "@/assets/play-pool.jpg";
+import dartsImg from "@/assets/play-darts.jpg";
+import boardImg from "@/assets/play-boardgames.jpg";
+import arcadeImg from "@/assets/play-arcade.jpg";
+import arcade1 from "@/assets/arcade-1.jpg";
+import arcade2 from "@/assets/arcade-2.jpg";
+import arcade3 from "@/assets/arcade-3.jpg";
+import arcade4 from "@/assets/arcade-4.jpg";
 
 export const Route = createFileRoute("/play")({
   head: () => ({
