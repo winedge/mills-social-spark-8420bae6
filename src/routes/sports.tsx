@@ -68,8 +68,8 @@ function SportsPage() {
             <span className="text-accent">every night.</span>
           </h1>
           <p className="text-muted-foreground max-w-2xl text-pretty text-lg">
-            UFC and boxing PPVs on the big screen, every MLB game on demand, and full FIFA World
-            Cup 2026 coverage - from group-stage kickoffs to the final in New Jersey.
+            UFC and boxing PPVs on the big screen, every MLB game on demand, and full NFL 2026
+            coverage - from opening weekend through the Super Bowl.
           </p>
         </div>
       </section>
