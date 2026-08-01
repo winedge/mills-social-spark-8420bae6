@@ -198,11 +198,13 @@ function GameCell({ game }: { game: NflGame }) {
 
 export function NflSection() {
   const { data, isFetching } = useSuspenseQuery(nflQueryOptions);
-  const { data: streamedIds } = useQuery(streamedNflQueryOptions);
+  const { data: streamedIds, isPending: streamedPending } = useQuery(streamedNflQueryOptions);
   const allow = new Set(streamedIds ?? []);
 
   const pool = [...data.live, ...data.upcoming, ...data.recent];
   const featured = pool.filter((g) => allow.has(g.gameId));
+  const loading = streamedPending;
+
 
   return (
     <section className="border-y border-border bg-background py-20 px-6">
