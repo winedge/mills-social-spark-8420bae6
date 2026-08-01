@@ -310,11 +310,14 @@ function Home() {
 
       {/* Scoreboard */}
       <div id="sports">
-        <NflSection />
+        <React.Suspense fallback={<NflSectionSkeleton />}>
+          <NflSection />
+        </React.Suspense>
       </div>
 
-
-      <UfcSection />
+      <React.Suspense fallback={<UfcSectionSkeleton />}>
+        <UfcSection />
+      </React.Suspense>
 
       {/* Daily Specials */}
       <section id="specials" className="py-24 px-6 border-t border-border">
