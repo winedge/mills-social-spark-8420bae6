@@ -97,7 +97,7 @@ function TeamPanel({
   const left = align === "left";
   return (
     <div
-      className={`relative flex-1 min-w-0 flex items-center gap-4 md:gap-6 px-4 md:px-8 py-6 overflow-hidden ${
+      className={`relative flex-1 min-w-0 flex items-center gap-2 md:gap-3 lg:gap-2 px-2 md:px-3 lg:px-3 py-4 md:py-5 lg:py-3 overflow-hidden ${
         left ? "flex-row" : "flex-row-reverse"
       }`}
       style={{
@@ -110,17 +110,17 @@ function TeamPanel({
         loading="lazy"
         width={160}
         height={160}
-        className="size-20 md:size-28 object-contain shrink-0 drop-shadow-[0_6px_18px_rgba(0,0,0,0.6)]"
+        className="size-14 md:size-20 lg:size-14 object-contain shrink-0 drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]"
         onError={(e) => {
           (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
         }}
       />
-      <div className={`min-w-0 flex items-baseline gap-3 ${left ? "" : "flex-row-reverse"}`}>
-        <span className="font-display text-5xl md:text-7xl uppercase leading-none tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
+      <div className={`min-w-0 flex items-baseline gap-2 ${left ? "" : "flex-row-reverse"}`}>
+        <span className="font-display text-3xl md:text-5xl lg:text-3xl uppercase leading-none tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
           {team}
         </span>
         {score !== null && (
-          <span className="font-display text-4xl md:text-5xl leading-none tabular-nums text-white/90">
+          <span className="font-display text-2xl md:text-4xl lg:text-2xl leading-none tabular-nums text-white/90">
             {score}
           </span>
         )}
