@@ -19,6 +19,7 @@ const navLinks = [
   { to: "/sports", label: "Sports" },
   { to: "/play", label: "Play" },
   { to: "/party", label: "Party" },
+  { to: "/contact", label: "Contact" },
 ] as const;
 
 export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {

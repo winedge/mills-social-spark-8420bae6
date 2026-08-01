@@ -123,12 +123,9 @@ export function ReservationModal() {
 
       {/* Panel */}
       <div
-        className={`relative w-full max-w-lg bg-surface border border-border shadow-2xl transition-all duration-500 ease-out ${
-          mounted && open
-            ? "opacity-100 translate-y-0 scale-100"
-            : "opacity-0 translate-y-6 scale-95"
+        className={`relative w-full max-w-lg bg-surface border border-border shadow-2xl will-change-transform ${
+          mounted && open ? "res-panel-in" : "res-panel-out"
         }`}
-        style={{ transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)" }}
       >
         {/* Header */}
         <div className="flex items-start justify-between p-6 border-b border-border">
@@ -167,7 +164,7 @@ export function ReservationModal() {
               </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4 res-stagger">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field icon={<User className="size-4" />} label="Full Name">
                   <input
@@ -262,6 +259,36 @@ export function ReservationModal() {
         .input-base:focus {
           border-color: hsl(var(--accent));
           box-shadow: 0 0 0 3px rgba(56,189,248,0.15);
+        }
+        @keyframes resPanelIn {
+          0%   { opacity: 0; transform: translateY(34px) scale(0.94); filter: blur(6px); }
+          55%  { opacity: 1; transform: translateY(-6px) scale(1.012); filter: blur(0); }
+          100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+        @keyframes resFieldIn {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .res-panel-in {
+          animation: resPanelIn 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .res-panel-out {
+          opacity: 0;
+          transform: translateY(24px) scale(0.95);
+          transition: opacity 220ms ease, transform 260ms cubic-bezier(0.4, 0, 1, 1);
+        }
+        .res-stagger > * {
+          animation: resFieldIn 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .res-stagger > *:nth-child(1) { animation-delay: 120ms; }
+        .res-stagger > *:nth-child(2) { animation-delay: 175ms; }
+        .res-stagger > *:nth-child(3) { animation-delay: 230ms; }
+        .res-stagger > *:nth-child(4) { animation-delay: 285ms; }
+        .res-stagger > *:nth-child(5) { animation-delay: 340ms; }
+        .res-stagger > *:nth-child(6) { animation-delay: 395ms; }
+        .res-stagger > *:nth-child(7) { animation-delay: 450ms; }
+        @media (prefers-reduced-motion: reduce) {
+          .res-panel-in, .res-stagger > * { animation: none; }
         }
       `}</style>
     </div>

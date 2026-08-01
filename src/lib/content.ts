@@ -178,3 +178,29 @@ export function useWeeklyPulse() {
   }, []);
   return items;
 }
+
+export type DbContactInfo = {
+  id: number;
+  address_line: string;
+  hours_weekday: string;
+  hours_weekend: string;
+  phone: string;
+  email: string;
+  instagram_url: string;
+  x_url: string;
+  tiktok_url: string;
+  map_embed_url: string;
+};
+
+export function useContactInfo() {
+  const [info, setInfo] = useState<DbContactInfo | null>(null);
+  useEffect(() => {
+    (supabase as any)
+      .from("contact_info")
+      .select("*")
+      .eq("id", 1)
+      .maybeSingle()
+      .then(({ data }: { data: DbContactInfo | null }) => setInfo(data));
+  }, []);
+  return info;
+}

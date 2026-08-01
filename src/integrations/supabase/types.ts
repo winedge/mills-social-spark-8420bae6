@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      contact_info: {
+        Row: {
+          address_line: string
+          email: string
+          hours_weekday: string
+          hours_weekend: string
+          id: number
+          instagram_url: string
+          map_embed_url: string
+          phone: string
+          tiktok_url: string
+          updated_at: string
+          x_url: string
+        }
+        Insert: {
+          address_line?: string
+          email?: string
+          hours_weekday?: string
+          hours_weekend?: string
+          id?: number
+          instagram_url?: string
+          map_embed_url?: string
+          phone?: string
+          tiktok_url?: string
+          updated_at?: string
+          x_url?: string
+        }
+        Update: {
+          address_line?: string
+          email?: string
+          hours_weekday?: string
+          hours_weekend?: string
+          id?: number
+          instagram_url?: string
+          map_embed_url?: string
+          phone?: string
+          tiktok_url?: string
+          updated_at?: string
+          x_url?: string
+        }
+        Relationships: []
+      }
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string
+          status: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          phone?: string
+          status?: string
+          subject?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string
+          status?: string
+          subject?: string
+        }
+        Relationships: []
+      }
       daily_specials: {
         Row: {
           active: boolean
@@ -149,6 +224,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      newsletter_subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          source?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          source?: string
+        }
+        Relationships: []
+      }
+      nfl_streamed_games: {
+        Row: {
+          created_at: string
+          date_time: string | null
+          game_id: number
+          id: string
+          label: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date_time?: string | null
+          game_id: number
+          id?: string
+          label?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date_time?: string | null
+          game_id?: number
+          id?: string
+          label?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       page_views: {
         Row: {

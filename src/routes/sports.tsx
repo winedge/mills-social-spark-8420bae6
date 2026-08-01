@@ -3,18 +3,23 @@ import { Trophy, Circle, Zap } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { UfcSection, ufcQueryOptions } from "@/components/ufc-section";
+import { NflSection, nflQueryOptions } from "@/components/nfl-section";
 import { useSportsSchedule } from "@/lib/content";
 
 export const Route = createFileRoute("/sports")({
   head: () => ({
     meta: [
-      { title: "Sports — UFC, Boxing, MLB & FIFA 2026 | Mills Modern Social" },
-      { name: "description", content: "Every UFC and boxing PPV, every MLB game, and full FIFA World Cup 2026 coverage — live at Mills Modern Social in Tempe." },
+      { title: "Sports — NFL, UFC, Boxing, MLB & FIFA 2026 | Mills Modern Social" },
+      { name: "description", content: "Live NFL scoreboard, every UFC and boxing PPV, every MLB game, and full FIFA World Cup 2026 coverage — live at Mills Modern Social in Tempe." },
       { property: "og:title", content: "Every game, every night — Mills Modern Social" },
-      { property: "og:description", content: "UFC, boxing, MLB, and FIFA 2026 on 40+ screens in Tempe." },
+      { property: "og:description", content: "NFL, UFC, boxing, MLB, and FIFA 2026 on 40+ screens in Tempe." },
     ],
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(ufcQueryOptions),
+  loader: ({ context }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData(ufcQueryOptions),
+      context.queryClient.ensureQueryData(nflQueryOptions),
+    ]),
   component: SportsPage,
 });
 
@@ -118,6 +123,8 @@ function SportsPage() {
       </section>
 
       {/* Live UFC feed */}
+      <NflSection />
+
       <UfcSection />
 
       {/* Game day reservation */}
