@@ -6,8 +6,6 @@ export const nflQueryOptions = queryOptions({
   queryKey: ["nfl", "games"],
   queryFn: () => getNflGames(),
   staleTime: 60_000,
-  refetchInterval: 60_000,
-  refetchIntervalInBackground: false,
 });
 
 const streamedNflQueryOptions = queryOptions({
@@ -197,7 +195,7 @@ function GameCell({ game }: { game: NflGame }) {
 
 
 export function NflSection() {
-  const { data, isFetching } = useSuspenseQuery(nflQueryOptions);
+  const { data } = useSuspenseQuery(nflQueryOptions);
   const { data: streamedIds, isPending: streamedPending } = useQuery(streamedNflQueryOptions);
   const allow = new Set(streamedIds ?? []);
 
@@ -217,10 +215,6 @@ export function NflSection() {
             <h2 className="font-display text-5xl md:text-6xl uppercase leading-none">
               Upcoming NFL Games 2026
             </h2>
-          </div>
-          <div className="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase flex items-center gap-2">
-            <span className={`size-1.5 rounded-full ${isFetching ? "bg-accent animate-pulse" : "bg-accent/50"}`} />
-            Updates every 60s
           </div>
         </div>
 
