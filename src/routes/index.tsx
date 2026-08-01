@@ -343,6 +343,7 @@ function Home() {
             </Link>
           </div>
 
+          {specialsLoading ? <DailySpecialsSkeleton /> : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {dailySpecials.map((s) => (
               <article key={s.day} className="group relative">
