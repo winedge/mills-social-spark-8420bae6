@@ -195,7 +195,7 @@ function GameCell({ game }: { game: NflGame }) {
 
 
 export function NflSection() {
-  const { data, isFetching } = useSuspenseQuery(nflQueryOptions);
+  const { data } = useSuspenseQuery(nflQueryOptions);
   const { data: streamedIds, isPending: streamedPending } = useQuery(streamedNflQueryOptions);
   const allow = new Set(streamedIds ?? []);
 
