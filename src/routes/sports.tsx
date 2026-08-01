@@ -123,6 +123,8 @@ function SportsPage() {
       </section>
 
       {/* Live UFC feed */}
+      <NflSection />
+
       <UfcSection />
 
       {/* Game day reservation */}
