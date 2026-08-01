@@ -241,7 +241,7 @@ function MenuPage() {
 
       {/* Sticky filter bar */}
       <section className="sticky top-16 z-30 bg-background/95 backdrop-blur-md border-y border-border">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center gap-2">
+        <div className="md:hidden max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center gap-2">
           <div className="relative flex-1 min-w-0">
             <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
