@@ -69,6 +69,10 @@ type RawEvent = {
 
 const BASE = "https://api.sportsdata.io/v3/mma/scores/json";
 
+export function normStatus(v: string | null | undefined): string {
+  return String(v ?? "").toLowerCase().replace(/[^a-z]/g, "");
+}
+
 function cleanStr(v: string | null | undefined): string | null {
   if (!v) return null;
   const s = String(v).trim();
@@ -144,7 +148,7 @@ function mapEvent(raw: RawEvent): UfcEvent {
     shortName: raw.ShortName || raw.Name || "UFC",
     dateTime: raw.DateTime ?? null,
     status,
-    live: status.toLowerCase() === "inprogress",
+    live: normStatus(status) === "inprogress",
     mainEvent,
     fights,
   };
@@ -185,19 +189,20 @@ export const getUfcFights = createServerFn({ method: "GET" }).handler(async () =
     const upcomingRaw = withTs
       .filter(
         ({ e, ts }) =>
-          (e.Status || "").toLowerCase() !== "final" &&
-          (e.Status || "").toLowerCase() !== "canceled" &&
+          normStatus(e.Status) !== "final" &&
+          normStatus(e.Status) !== "canceled" &&
+          normStatus(e.Status) !== "inprogress" &&
           ts !== null &&
           ts >= now - 1000 * 60 * 60 * 12,
       )
       .sort((a, b) => (a.ts! - b.ts!))
       .slice(0, 6);
 
-    const liveRaw = withTs.filter(({ e }) => (e.Status || "").toLowerCase() === "inprogress");
+    const liveRaw = withTs.filter(({ e }) => normStatus(e.Status) === "inprogress");
 
     const recentRaw = withTs
       .filter(
-        ({ e, ts }) => (e.Status || "").toLowerCase() === "final" && ts !== null && now - ts < 1000 * 60 * 60 * 24 * 30,
+        ({ e, ts }) => normStatus(e.Status) === "final" && ts !== null && now - ts < 1000 * 60 * 60 * 24 * 30,
       )
       .sort((a, b) => b.ts! - a.ts!)
       .slice(0, 3);
