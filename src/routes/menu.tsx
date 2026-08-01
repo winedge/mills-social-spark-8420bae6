@@ -263,17 +263,28 @@ function MenuPage() {
           <div className="relative grid gap-6 p-5 md:p-7 md:grid-cols-[auto_1fr_auto] md:items-center">
             {/* Price tokens */}
             <div className="flex items-center gap-2 md:gap-3">
-              {["6", "9", "12"].map((p, i) => (
-                <div key={p} className="flex items-center gap-2 md:gap-3">
-                  {i > 0 && <span className="text-accent/50 text-xl leading-none">·</span>}
-                  <div className="flex items-baseline rounded-md border border-accent/50 bg-accent/10 px-2.5 py-1.5 md:px-3.5 md:py-2">
-                    <span className="font-mono text-accent text-xs md:text-sm">$</span>
-                    <span className="font-display text-accent text-3xl md:text-5xl leading-none">
-                      {p}
-                    </span>
+              {["6", "9", "12"].map((p, i) => {
+                const catId = happyHourPriceMap.get(p);
+                return (
+                  <div key={p} className="flex items-center gap-2 md:gap-3">
+                    {i > 0 && <span className="text-accent/50 text-xl leading-none">·</span>}
+                    <button
+                      onClick={() => {
+                        if (catId) {
+                          setCat(catId);
+                          setTimeout(() => scrollToSection(catId), 80);
+                        }
+                      }}
+                      className="flex items-baseline rounded-md border border-accent/50 bg-accent/10 px-2.5 py-1.5 md:px-3.5 md:py-2 cursor-pointer hover:bg-accent/20 hover:border-accent transition-colors"
+                    >
+                      <span className="font-mono text-accent text-xs md:text-sm">$</span>
+                      <span className="font-display text-accent text-3xl md:text-5xl leading-none">
+                        {p}
+                      </span>
+                    </button>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Headline */}
