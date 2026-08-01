@@ -37,21 +37,34 @@ function formatFightDate(iso: string | null) {
     .toUpperCase();
 }
 
-function fightWinnerLabel(f: import("@/lib/ufc.functions").UfcFight) {
+type Fight = UfcEvent["fights"][number];
+
+function norm(v: string | null | undefined) {
+  return String(v ?? "").toLowerCase().replace(/[^a-z]/g, "");
+}
+
+function decided(f: Fight) {
+  return Boolean(f.fighterA?.winner || f.fighterB?.winner) || norm(f.status) === "final";
+}
+
+function fightWinnerLabel(f: Fight) {
   const w = f.fighterA?.winner ? f.fighterA : f.fighterB?.winner ? f.fighterB : null;
+  const loser = f.fighterA?.winner ? f.fighterB : f.fighterA;
   if (!w) return null;
-  const how = f.resultType ? f.resultType.toUpperCase() : "WIN";
-  const rd = f.resultRound ? ` · R${f.resultRound}` : "";
-  return `${w.name.toUpperCase()} · ${how}${rd}`;
+  const how = f.resultType ? f.resultType.toUpperCase() : f.resultRound ? "FINISH" : "DEC";
+  const rd = f.resultRound ? ` R${f.resultRound}` : "";
+  return `${w.name.toUpperCase()} def. ${(loser?.name || "TBD").toUpperCase()} · ${how}${rd}`;
 }
 
 function LiveResults({ event }: { event: UfcEvent }) {
-  const order = [...event.fights].sort((a, b) => (b.order ?? 0) - (a.order ?? 0));
-  const inProgress = order.find((f) => (f.status || "").toLowerCase() === "inprogress");
-  const finished = order.filter(
-    (f) => (f.status || "").toLowerCase() === "final" && (f.fighterA?.winner || f.fighterB?.winner),
-  );
+  const byOrder = [...event.fights].sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+  const finished = byOrder.filter(decided);
+  const pending = byOrder.filter((f) => !decided(f) && f.fighterA && f.fighterB);
+  // Cards run from the highest bout order (prelims) down to order 1 (main event),
+  // so the next undecided bout is the one with the highest order.
+  const inProgress = pending.length ? pending[pending.length - 1] : null;
   if (!inProgress && finished.length === 0) return null;
+
   return (
     <div className="border-t border-border pt-3 flex flex-col gap-2">
       <div className="font-mono text-[10px] text-red-500 tracking-widest flex items-center gap-1.5">
