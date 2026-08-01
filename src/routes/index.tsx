@@ -77,11 +77,6 @@ const fallbackSchedule = [
   { days: "SAT–SUN", title: "GAME DAY BRUNCH", copy: "Open early for kickoff. Bottomless mimosas & sliders.", accent: true, img: pulseBrunch },
 ];
 
-const scoreboard = [
-  { league: "NCAAF · LIVE", a: "ASU", aScore: "24", b: "OREGON", bScore: "21", status: "4TH QTR · 08:12", live: true },
-  { league: "NBA · TONIGHT", a: "SUNS", aScore: "-", b: "LAKERS", bScore: "-", status: "TIP-OFF 7:30 PM MST", live: false },
-  { league: "MLB · FINAL", a: "D-BACKS", aScore: "8", b: "DODGERS", bScore: "2", status: "FINAL", live: false },
-];
 
 
 function OpenStatus() {
