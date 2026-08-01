@@ -3,6 +3,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 
 import heroBar from "@/assets/hero-bar.jpg";
 import heroVideo from "@/assets/hero-loop.mp4.asset.json";
+
+/** Absolute so the default hero video also resolves on self-hosted domains. */
+const DEFAULT_HERO_VIDEO = `https://mills-social-spark.lovable.app${heroVideo.url}`;
 import menuBurger from "@/assets/menu-burger.jpg";
 import menuCocktail from "@/assets/menu-cocktail.jpg";
 import menuWings from "@/assets/menu-wings.jpg";
@@ -131,7 +134,7 @@ function OpenStatus() {
 }
 
 function useHeroVideo() {
-  const [url, setUrl] = React.useState<string>(heroVideo.url);
+  const [url, setUrl] = React.useState<string>(DEFAULT_HERO_VIDEO);
   React.useEffect(() => {
     let cancelled = false;
     (async () => {

@@ -3,15 +3,15 @@ import { useEffect, useState } from "react";
 import { Target, Dices, Gamepad2, CircleDot, Trophy, Clock, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import playHero from "@/assets/play-hero.jpg.asset.json";
-import poolImg from "@/assets/play-pool.jpg.asset.json";
-import dartsImg from "@/assets/play-darts.jpg.asset.json";
-import boardImg from "@/assets/play-boardgames.jpg.asset.json";
-import arcadeImg from "@/assets/play-arcade.jpg.asset.json";
-import arcade1 from "@/assets/arcade-1.jpg.asset.json";
-import arcade2 from "@/assets/arcade-2.jpg.asset.json";
-import arcade3 from "@/assets/arcade-3.jpg.asset.json";
-import arcade4 from "@/assets/arcade-4.jpg.asset.json";
+import playHero from "@/assets/play-hero.jpg";
+import poolImg from "@/assets/play-pool.jpg";
+import dartsImg from "@/assets/play-darts.jpg";
+import boardImg from "@/assets/play-boardgames.jpg";
+import arcadeImg from "@/assets/play-arcade.jpg";
+import arcade1 from "@/assets/arcade-1.jpg";
+import arcade2 from "@/assets/arcade-2.jpg";
+import arcade3 from "@/assets/arcade-3.jpg";
+import arcade4 from "@/assets/arcade-4.jpg";
 
 export const Route = createFileRoute("/play")({
   head: () => ({
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/play")({
       { name: "description", content: "The game floor at Mills Modern Social in Tempe: multiple pool tables, dart lanes, a curated board game library, and a full arcade section." },
       { property: "og:title", content: "Play the House - Mills Modern Social" },
       { property: "og:description", content: "Pool, darts, board games, and arcade cabinets - every night." },
-      { property: "og:image", content: playHero.url },
+      { property: "og:image", content: playHero },
     ],
   }),
   component: PlayPage,
@@ -56,7 +56,7 @@ function PlayHero() {
     <section className="relative min-h-[75vh] md:min-h-[80vh] flex items-end border-b border-border overflow-hidden">
       {/* Background image */}
       <img
-        src={playHero.url}
+        src={playHero}
         alt="Mills Modern Social game floor with pool tables, dart boards, and arcade cabinets"
         width={1920}
         height={1080}
@@ -208,7 +208,7 @@ function PoolSection() {
         <div className="relative">
           <div className="relative border-[10px] border-[#1a1a1a] shadow-2xl rounded-sm overflow-hidden">
             <img
-              src={poolImg.url}
+              src={poolImg}
               alt="Diamond pool tables with tournament blue felt"
               loading="lazy"
               width={1280}
@@ -259,7 +259,7 @@ function DartsSection() {
           <div className="absolute inset-0 -m-6 rounded-full border-2 border-dashed border-red-700/40 pointer-events-none" />
           <div className="relative shadow-2xl">
             <img
-              src={dartsImg.url}
+              src={dartsImg}
               alt="Three darts in the bullseye"
               loading="lazy"
               width={1280}
@@ -389,7 +389,7 @@ function BoardSection() {
           <div>
             <div className="relative rounded-sm overflow-hidden shadow-2xl mb-4 border-2 border-amber-900/60">
               <img
-                src={boardImg.url}
+                src={boardImg}
                 alt="Board game pieces on a warm wooden table"
                 loading="lazy"
                 width={1280}
@@ -431,10 +431,10 @@ function BoardSection() {
 /* ---------- ARCADE - simple cabinet slideshow ---------- */
 function ArcadeSection() {
   const slides = [
-    { img: arcade1.url, name: "Pac-Man", tag: "Classic Maze" },
-    { img: arcade2.url, name: "Golden Tee", tag: "Trackball Golf" },
-    { img: arcade3.url, name: "Big Buck Hunter", tag: "Light Gun" },
-    { img: arcade4.url, name: "Skee-Ball", tag: "Ticket Redemption" },
+    { img: arcade1, name: "Pac-Man", tag: "Classic Maze" },
+    { img: arcade2, name: "Golden Tee", tag: "Trackball Golf" },
+    { img: arcade3, name: "Big Buck Hunter", tag: "Light Gun" },
+    { img: arcade4, name: "Skee-Ball", tag: "Ticket Redemption" },
   ];
   const [i, setI] = useState(0);
   const n = slides.length;
