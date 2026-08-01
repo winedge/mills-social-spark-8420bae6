@@ -216,10 +216,6 @@ export function NflSection() {
               Upcoming NFL Games 2026
             </h2>
           </div>
-          <div className="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase flex items-center gap-2">
-            <span className={`size-1.5 rounded-full ${isFetching ? "bg-accent animate-pulse" : "bg-accent/50"}`} />
-            Updates every 60s
-          </div>
         </div>
 
         {!data.configured && (
