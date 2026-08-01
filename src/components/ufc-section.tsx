@@ -103,6 +103,37 @@ function LiveResults({ event }: { event: UfcEvent }) {
   );
 }
 
+function UndercardPreview({ event }: { event: UfcEvent }) {
+  const byOrder = [...event.fights].sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+  const bouts = byOrder
+    .slice(1)
+    .filter((f) => f.fighterA?.name && f.fighterB?.name)
+    .slice(0, 4);
+  if (bouts.length === 0) return null;
+  return (
+    <div className="border-t border-border pt-3 flex flex-col gap-2">
+      <div className="font-mono text-[10px] text-muted-foreground tracking-widest">
+        ALSO ON THE CARD
+      </div>
+      {bouts.map((f) => (
+        <div key={f.fightId} className="flex items-baseline justify-between gap-3">
+          <span className="font-display text-xs uppercase truncate">
+            {f.fighterA?.name} <span className="text-accent">vs</span> {f.fighterB?.name}
+          </span>
+          <span className="font-mono text-[9px] text-muted-foreground whitespace-nowrap">
+            {f.weightClass ? f.weightClass.toUpperCase() : `R${f.rounds ?? 3}`}
+          </span>
+        </div>
+      ))}
+      {byOrder.length - 1 > bouts.length && (
+        <div className="font-mono text-[9px] text-muted-foreground tracking-widest">
+          +{byOrder.length - 1 - bouts.length} MORE BOUTS
+        </div>
+      )}
+    </div>
+  );
+}
+
 function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
   const main = event.mainEvent;
   const a = main?.fighterA;
