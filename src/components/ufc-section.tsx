@@ -344,11 +344,22 @@ export function UfcSection() {
           </div>
         )}
 
-        {data.configured && featured.length === 0 && (
-          <div className="border border-border p-8 font-mono text-xs text-muted-foreground text-center">
-            No fight nights announced yet. Check back soon for the next card showing at Mills.
+        {data.configured && streamedPending && featured.length === 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-56 border border-border bg-background/60 animate-pulse" />
+            ))}
           </div>
         )}
+
+        {data.configured && !streamedPending && featured.length === 0 && (
+          <div className="border border-border p-8 font-mono text-xs text-muted-foreground text-center">
+            {(data as { error?: string }).error
+              ? "Live fight data is temporarily unavailable - check back shortly."
+              : "No fight nights announced yet. Check back soon for the next card showing at Mills."}
+          </div>
+        )}
+
 
         {featured.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
