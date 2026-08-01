@@ -416,6 +416,10 @@ function MenuPage() {
         </div>
       </section>
 
+      <DailySpecialsStrip />
+
+
+
       {/* Menu list */}
       <section className="px-4 md:px-6 py-12 md:py-16 max-w-7xl mx-auto">
         {grouped.length === 0 ? (
