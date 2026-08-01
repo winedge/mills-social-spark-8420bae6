@@ -9,10 +9,10 @@ import { useSportsSchedule } from "@/lib/content";
 export const Route = createFileRoute("/sports")({
   head: () => ({
     meta: [
-      { title: "Sports - NFL, UFC, Boxing, MLB & FIFA 2026 | Mills Modern Social" },
-      { name: "description", content: "Live NFL scoreboard, every UFC and boxing PPV, every MLB game, and full FIFA World Cup 2026 coverage - live at Mills Modern Social in Tempe." },
+      { title: "Sports - NFL, UFC, Boxing, MLB & NFL 2026 | Mills Modern Social" },
+      { name: "description", content: "Live NFL scoreboard, every UFC and boxing PPV, every MLB game, and full NFL 2026 season coverage - live at Mills Modern Social in Tempe." },
       { property: "og:title", content: "Every game, every night - Mills Modern Social" },
-      { property: "og:description", content: "NFL, UFC, boxing, MLB, and FIFA 2026 on 40+ screens in Tempe." },
+      { property: "og:description", content: "NFL, UFC, boxing, MLB, and NFL 2026 on 40+ screens in Tempe." },
     ],
   }),
   loader: ({ context }) =>
