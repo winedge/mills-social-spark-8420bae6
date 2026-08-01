@@ -149,7 +149,7 @@ function useHeroVideo() {
 
 function Home() {
   const heroSrc = useHeroVideo();
-  const dbSpecials = useDailySpecials();
+  const { items: dbSpecials, loading: specialsLoading } = useDailySpecialsState();
   const specialImgs = [menuBurger, menuWings, menuCocktail];
   const dailySpecials = dbSpecials.length
     ? dbSpecials.map((s, i) => ({
@@ -162,7 +162,7 @@ function Home() {
       }))
     : fallbackSpecials;
 
-  const dbPulse = useWeeklyPulse();
+  const { items: dbPulse, loading: pulseLoading } = useWeeklyPulseState();
   const pulseImgs = [pulseHappyHour, pulseTrivia, pulseLiveMusic, pulseBrunch];
   const schedule = dbPulse.length
     ? dbPulse.map((s, i) => ({
