@@ -126,15 +126,30 @@ function MenuPage() {
     });
   }, [dbItems, selectedIds, query, activeCal]);
 
+  const catOrder = useMemo(() => {
+    const m = new Map<string, number>();
+    let i = 0;
+    const walk = (n: TreeNode) => {
+      m.set(n.id, i++);
+      n.children.forEach(walk);
+    };
+    tree.forEach(walk);
+    return m;
+  }, [tree]);
+
   const grouped = useMemo(() => {
-    const g = new Map<string, typeof filtered>();
+    const g = new Map<string, { items: typeof filtered; order: number }>();
     for (const i of filtered) {
       const label = (i.category_id && nameById.get(i.category_id)) || i.category || "Other";
-      if (!g.has(label)) g.set(label, []);
-      g.get(label)!.push(i);
+      const order = (i.category_id ? catOrder.get(i.category_id) : undefined) ?? Number.MAX_SAFE_INTEGER;
+      if (!g.has(label)) g.set(label, { items: [], order });
+      g.get(label)!.items.push(i);
     }
-    return Array.from(g.entries());
-  }, [filtered, nameById]);
+    return Array.from(g.entries())
+      .sort((a, b) => a[1].order - b[1].order)
+      .map(([label, v]) => [label, v.items] as [string, typeof filtered]);
+  }, [filtered, nameById, catOrder]);
+
 
   const counts = useMemo(() => {
     const m = new Map<string, number>();
