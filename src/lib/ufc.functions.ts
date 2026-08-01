@@ -170,13 +170,22 @@ export const getUfcFights = createServerFn({ method: "GET" }).handler(async (): 
   }
 
   const season = new Date().getUTCFullYear();
-  const { withSportsCache } = await import("./sports-cache.server");
+  const { withSportsCache, readSportsCache } = await import("./sports-cache.server");
+  const cacheKey = `ufc:${season}`;
+
+  // Refresh often while a card is in progress, sparingly otherwise (API quota).
+  const cachedNow = await readSportsCache(cacheKey);
+  const hasLive = Array.isArray((cachedNow?.payload as { live?: unknown[] })?.live)
+    ? ((cachedNow!.payload as { live: unknown[] }).live.length > 0)
+    : false;
+  const ttl = hasLive ? 60_000 : 900_000;
 
   const { data, stale } = await withSportsCache<{
     upcoming: UfcEvent[];
     live: UfcEvent[];
     recent: UfcEvent[];
-  }>(`ufc:${season}`, 120_000, async () => {
+  }>(cacheKey, ttl, async () => {
+
     const schedRes = await fetch(`${BASE}/Schedule/UFC/${season}?key=${apiKey}`, {
       headers: { Accept: "application/json" },
     });
