@@ -37,10 +37,10 @@ const pillars = [
     blurb: "D-backs first, then every out-of-market matchup on dedicated screens. Ask for your team, we'll put it on.",
   },
   {
-    icon: Trophy,
-    title: "FIFA World Cup 2026",
-    tag: "FULL TOURNAMENT COVERAGE",
-    blurb: "Group stage watch parties, opening early for kickoffs, and knockout-round giveaways all the way to the final.",
+    icon: Shield,
+    title: "NFL 2026",
+    tag: "EVERY GAME · EVERY SUNDAY",
+    blurb: "Every kickoff, every touchdown, every playoff moment on 40+ screens - from opening weekend through the Super Bowl.",
   },
 ];
 
