@@ -16,9 +16,9 @@ import { usePartySpaces, usePartyShows } from "@/lib/content";
 export const Route = createFileRoute("/party")({
   head: () => ({
     meta: [
-      { title: "Party & Live Events — Mills Modern Social Tempe" },
+      { title: "Party & Live Events - Mills Modern Social Tempe" },
       { name: "description", content: "Live concerts, DJ nights, and private parties at Mills Modern Social in Tempe. Reserve a space or catch the next show." },
-      { property: "og:title", content: "Live Events & Private Parties — Mills Modern Social" },
+      { property: "og:title", content: "Live Events & Private Parties - Mills Modern Social" },
       { property: "og:description", content: "Stage lights, live music, and unforgettable nights in Tempe, AZ." },
     ],
   }),
@@ -115,7 +115,7 @@ function PartyPage() {
       <SiteHeader />
       <Toaster />
 
-      {/* Hero — concert vibe with LightRays */}
+      {/* Hero - concert vibe with LightRays */}
       <section className="relative min-h-[85vh] flex items-center border-b border-border overflow-hidden bg-black">
         {/* Concert photo backdrop */}
         <div className="absolute inset-0">
@@ -154,7 +154,7 @@ function PartyPage() {
           </h1>
           <p className="text-white/80 max-w-2xl text-pretty text-lg md:text-xl mb-8">
             Live bands. DJ sets. Sold-out birthdays. Whether you're catching a show or
-            throwing one — Mills is where Tempe turns it up.
+            throwing one - Mills is where Tempe turns it up.
           </p>
           <div className="flex flex-wrap gap-3">
             <a href="#reserve" className="px-8 h-12 inline-flex items-center bg-accent text-primary-foreground font-bold uppercase tracking-widest text-sm hover:scale-105 transition-transform">
@@ -226,8 +226,8 @@ function PartyPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { icon: Mic2, title: "Live Concerts", desc: "Local and touring acts on our full stage with pro lights and sound." },
-              { icon: Disc3, title: "DJ Nights", desc: "Resident and guest DJs — house, hip-hop, Top 40, throwbacks." },
-              { icon: PartyPopper, title: "Private Parties", desc: "Birthdays, bachelor(ette), corporate, watch parties — booked your way." },
+              { icon: Disc3, title: "DJ Nights", desc: "Resident and guest DJs - house, hip-hop, Top 40, throwbacks." },
+              { icon: PartyPopper, title: "Private Parties", desc: "Birthdays, bachelor(ette), corporate, watch parties - booked your way." },
             ].map((c) => {
               const Icon = c.icon;
               return (

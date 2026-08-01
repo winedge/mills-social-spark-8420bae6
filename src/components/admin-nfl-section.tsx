@@ -106,7 +106,7 @@ export function AdminNflSection() {
 
       {!configured && (
         <div className="border border-accent/40 bg-accent/5 p-4 font-mono text-xs text-muted-foreground">
-          NFL feed not configured — add the SportsDataIO NFL API key to load games.
+          NFL feed not configured - add the SportsDataIO NFL API key to load games.
         </div>
       )}
       {error && (
@@ -139,7 +139,7 @@ export function AdminNflSection() {
                 const on = selected.has(g.gameId);
                 return (
                   <tr key={g.gameId} className="border-t border-border">
-                    <td className="px-4 py-3 font-mono text-xs">{g.week ?? "—"}</td>
+                    <td className="px-4 py-3 font-mono text-xs">{g.week ?? "-"}</td>
                     <td className="px-4 py-3 font-medium whitespace-nowrap">
                       {g.awayTeam} @ {g.homeTeam}
                     </td>
@@ -147,7 +147,7 @@ export function AdminNflSection() {
                       {formatKickoff(g.dateTime)}
                     </td>
                     <td className="px-4 py-3 font-mono text-xs tabular-nums">
-                      {g.live || g.final ? `${g.awayScore ?? 0} – ${g.homeScore ?? 0}` : "—"}
+                      {g.live || g.final ? `${g.awayScore ?? 0} – ${g.homeScore ?? 0}` : "-"}
                     </td>
                     <td className="px-4 py-3">
                       <span

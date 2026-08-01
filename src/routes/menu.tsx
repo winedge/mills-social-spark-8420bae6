@@ -35,9 +35,9 @@ export const Route = createFileRoute("/menu")({
   validateSearch: zodValidator(menuSchema),
   head: () => ({
     meta: [
-      { title: "Menu — Mills Modern Social" },
-      { name: "description", content: "The full Mills Modern Social menu — starters, wings, burgers, shareables, craft cocktails and Arizona drafts in Tempe, AZ." },
-      { property: "og:title", content: "Menu — Mills Modern Social" },
+      { title: "Menu - Mills Modern Social" },
+      { name: "description", content: "The full Mills Modern Social menu - starters, wings, burgers, shareables, craft cocktails and Arizona drafts in Tempe, AZ." },
+      { property: "og:title", content: "Menu - Mills Modern Social" },
       { property: "og:description", content: "Elevated bar food, craft cocktails, and local Arizona drafts." },
     ],
   }),

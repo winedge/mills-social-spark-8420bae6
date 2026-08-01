@@ -20,7 +20,7 @@ async function getAdminNumber(): Promise<string> {
 }
 
 /**
- * Meta WhatsApp Cloud API — free tier covers service conversations.
+ * Meta WhatsApp Cloud API - free tier covers service conversations.
  * Requires WHATSAPP_TOKEN + WHATSAPP_PHONE_NUMBER_ID secrets.
  */
 async function sendViaCloudApi(to: string, body: string): Promise<boolean> {
@@ -55,7 +55,7 @@ async function sendViaCloudApi(to: string, body: string): Promise<boolean> {
 }
 
 /**
- * CallMeBot — free relay, but only to numbers that have opted in with the bot.
+ * CallMeBot - free relay, but only to numbers that have opted in with the bot.
  * Used as a fallback for the ADMIN notification only.
  */
 async function sendViaCallMeBot(to: string, body: string): Promise<boolean> {

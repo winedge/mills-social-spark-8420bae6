@@ -188,7 +188,7 @@ export function UfcSection() {
               UFC <span className="text-accent">fight nights</span>
             </h3>
             <p className="text-muted-foreground text-pretty">
-              Every card, every main event — live at Mills. Grab a booth, order a
+              Every card, every main event - live at Mills. Grab a booth, order a
               round, and watch the octagon on the loudest screens in Tempe.
             </p>
           </div>
