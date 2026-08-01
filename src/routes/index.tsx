@@ -388,6 +388,7 @@ function Home() {
               Weekly <span className="text-accent">pulse</span>
             </h3>
           </div>
+          {pulseLoading ? <WeeklyPulseSkeleton /> : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-border border border-border">
             {schedule.map((s) => (
               <div key={s.title} className="bg-background flex flex-col group overflow-hidden">
