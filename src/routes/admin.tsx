@@ -9,7 +9,7 @@ import {
   MessageCircle, Search, ChevronRight, Sparkles, FolderTree, Eye, Activity,
   TrendingUp, Tv, CalendarClock,
 } from "lucide-react";
-import logo from "@/assets/mills-logo.png.asset.json";
+import logo from "@/assets/mills-logo.png";
 import { estimateCalories } from "@/lib/menu-ai.functions";
 import { sendCustomerConfirmation } from "@/lib/notify.functions";
 import { AdminUfcSection } from "@/components/admin-ufc-section";
@@ -132,7 +132,7 @@ function AdminLogin() {
   return (
     <div className="min-h-screen bg-background text-foreground grid place-items-center px-4">
       <div className="w-full max-w-md border border-border bg-surface p-8">
-        <img src={logo.url} alt="Mill's" className="h-14 mx-auto mb-6" />
+        <img src={logo} alt="Mill's" className="h-14 mx-auto mb-6" />
         <div className="flex items-center gap-2 mb-4 justify-center">
           <Shield className="size-4 text-accent" />
           <p className="font-mono text-[10px] tracking-[0.3em] text-accent uppercase">Admin Access</p>
@@ -176,7 +176,7 @@ function Dashboard({ email }: { email: string }) {
       {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-surface border-r border-border transform transition-transform lg:translate-x-0 ${navOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="p-6 border-b border-border flex items-center justify-between">
-          <img src={logo.url} alt="Mill's" className="h-10" />
+          <img src={logo} alt="Mill's" className="h-10" />
           <button className="lg:hidden" onClick={() => setNavOpen(false)}><X className="size-5" /></button>
         </div>
         <nav className="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-11rem)]">
