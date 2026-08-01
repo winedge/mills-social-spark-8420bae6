@@ -165,6 +165,23 @@ function MenuPage() {
     return m;
   }, [tree, dbItems]);
 
+  const happyHourPriceMap = useMemo(() => {
+    const map = new Map<string, string>();
+    const happy = tree.find((n) => n.name.toLowerCase().includes("happy hour"));
+    if (happy) {
+      happy.children.forEach((child) => {
+        const match = child.name.match(/^\$(\d+)/);
+        if (match) map.set(match[1], child.id);
+      });
+    }
+    return map;
+  }, [tree]);
+
+  function scrollToSection(id: string) {
+    const el = document.getElementById(`menu-section-${id}`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   function setCat(id: string) {
     navigate({ search: (prev: z.infer<typeof menuSchema>) => ({ ...prev, catId: id }) });
   }
