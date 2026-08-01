@@ -92,6 +92,8 @@ async function fetchSeason(season: string, apiKey: string): Promise<RawGame[] | 
       const res = await fetch(`${BASE}/${path}?key=${apiKey}`, {
         headers: { Accept: "application/json" },
       });
+      // Quota exhausted / unauthorized: further shapes would waste more calls.
+      if (res.status === 401 || res.status === 403 || res.status === 429) return null;
       if (!res.ok) continue;
       const json = (await res.json()) as RawGame[];
       if (Array.isArray(json) && json.length) return json;
@@ -108,6 +110,7 @@ export type NflFeed = {
   live: NflGame[];
   upcoming: NflGame[];
   recent: NflGame[];
+  stale?: boolean;
   error?: string;
 };
 
@@ -119,8 +122,19 @@ export const getNflGames = createServerFn({ method: "GET" }).handler(async (): P
     return { configured: false, season, live: [], upcoming: [], recent: [] };
   }
 
-  const raw = await fetchSeason(season, apiKey);
-  if (!raw) {
+  const { withSportsCache } = await import("./sports-cache.server");
+  const { data: games, stale } = await withSportsCache<NflGame[]>(
+    `nfl:${season}`,
+    120_000,
+    async () => {
+      const raw = await fetchSeason(season, apiKey);
+      if (!raw) return null;
+      const mapped = raw.map(mapGame).filter((g): g is NflGame => g !== null);
+      return mapped.length ? mapped : null;
+    },
+  );
+
+  if (!games) {
     return {
       configured: true,
       season,
@@ -131,7 +145,8 @@ export const getNflGames = createServerFn({ method: "GET" }).handler(async (): P
     };
   }
 
-  const games = raw.map(mapGame).filter((g): g is NflGame => g !== null);
+  const now = Date.now();
+
   const now = Date.now();
 
   const live = games.filter((g) => g.live);
