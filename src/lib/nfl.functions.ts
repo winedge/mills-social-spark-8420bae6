@@ -149,5 +149,5 @@ export const getNflGames = createServerFn({ method: "GET" }).handler(async (): P
     .map(({ g }) => g)
     .slice(0, 12);
 
-  return { configured: true, season, live, upcoming: upcoming.slice(0, 60), recent };
+  return { configured: true, season, live, upcoming: upcoming.slice(0, 400), recent };
 });
