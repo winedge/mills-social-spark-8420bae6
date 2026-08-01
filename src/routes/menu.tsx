@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { Search, SlidersHorizontal, X, ChevronRight } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { useMenuItems, useMenuCategories, type DbMenuCategory } from "@/lib/content";
+import { useMenuItems, useMenuCategories, useDailySpecials, type DbMenuCategory } from "@/lib/content";
 import {
   Sheet,
   SheetContent,
@@ -482,5 +482,37 @@ function MenuPage() {
 
       <SiteFooter />
     </div>
+  );
+}
+
+function DailySpecialsStrip() {
+  const specials = useDailySpecials();
+  if (specials.length === 0) return null;
+  return (
+    <section className="border-b border-border bg-card/40">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-14">
+        <div className="flex items-baseline justify-between mb-6 pb-4 border-b border-border">
+          <h2 className="font-display text-3xl md:text-4xl uppercase">Daily Specials</h2>
+          <span className="font-mono text-[10px] tracking-widest text-muted-foreground">EVERY WEEK</span>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {specials.map((s) => (
+            <article key={s.id} className="group border border-border bg-background p-5 hover:border-accent/60 transition-colors">
+              <div className="flex items-center justify-between mb-3">
+                <span className="font-mono text-[10px] tracking-widest text-accent uppercase">{s.day}</span>
+                {s.badge && (
+                  <span className="font-mono text-[10px] tracking-widest border border-border px-2 py-0.5 text-muted-foreground uppercase">
+                    {s.badge}
+                  </span>
+                )}
+              </div>
+              <h3 className="font-display text-xl uppercase mb-1.5">{s.title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-4">{s.description}</p>
+              <div className="font-mono text-accent text-lg">{s.price}</div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
