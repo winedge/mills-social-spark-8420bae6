@@ -15,6 +15,7 @@ import { SiteHeader } from "@/components/site-header";
 import { openReservation } from "@/components/reservation-modal";
 import { SiteFooter } from "@/components/site-footer";
 import { UfcSection, ufcQueryOptions } from "@/components/ufc-section";
+import { NflSection, nflQueryOptions } from "@/components/nfl-section";
 
 export const Route = createFileRoute("/")({
   head: () => ({
