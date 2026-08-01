@@ -240,13 +240,8 @@ function MenuPage() {
 
         {/* Happy Hour emphasis panel */}
         <div className="mt-8 md:mt-10 relative overflow-hidden rounded-lg border border-accent/40 bg-card/60">
-          <div
-            className="pointer-events-none absolute inset-0 opacity-[0.07]"
-            style={{
-              backgroundImage:
-                "repeating-linear-gradient(135deg, currentColor 0 2px, transparent 2px 12px)",
-            }}
-          />
+          <div className="pointer-events-none absolute -left-20 -top-24 h-64 w-64 rounded-full bg-accent/[0.08] blur-3xl" />
+          <div className="pointer-events-none absolute -right-20 -bottom-24 h-64 w-64 rounded-full bg-accent/[0.05] blur-3xl" />
           <div className="absolute inset-y-0 left-0 w-1 bg-accent" />
           <div className="relative grid gap-6 p-5 md:p-7 md:grid-cols-[auto_1fr_auto] md:items-center">
             {/* Price tokens */}
