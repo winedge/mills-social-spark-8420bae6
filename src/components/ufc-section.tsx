@@ -183,7 +183,7 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
         </div>
       </div>
 
-      {(live || isFinal) && <LiveResults event={event} />}
+      {live || isFinal ? <LiveResults event={event} /> : <UndercardPreview event={event} />}
 
       <div className="font-mono text-[10px] text-muted-foreground tracking-widest border-t border-border pt-3 flex justify-between mt-auto">
         <span>
