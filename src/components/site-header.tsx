@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import millsLogo from "@/assets/mills-logo.png.asset.json";
+import millsLogo from "@/assets/mills-logo.png";
 import { openReservation } from "@/components/reservation-modal";
 
 const tickerItems = [
@@ -40,7 +40,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
         <div className="w-full px-4 md:px-8 h-20 md:h-28 flex md:grid md:grid-cols-[1fr_auto_1fr] items-center justify-between gap-4 md:gap-8">
           <Link to="/" className="flex items-center min-w-0 md:justify-self-start" aria-label="Mills Modern Social - Home">
             <img
-              src={millsLogo.url}
+              src={millsLogo}
               alt="Mill's Modern Social"
               width={260}
               height={60}
