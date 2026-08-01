@@ -375,6 +375,7 @@ function Home() {
               </article>
             ))}
           </div>
+          )}
         </div>
       </section>
 
