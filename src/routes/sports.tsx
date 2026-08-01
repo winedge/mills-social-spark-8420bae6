@@ -134,7 +134,7 @@ function SportsPage() {
             Reserve a table for <span className="text-accent">game day</span>
           </h3>
           <p className="text-muted-foreground mb-8 text-pretty">
-            Big fight, playoff game, or World Cup match - lock in a booth in front of the
+            Big fight, playoff game, or NFL Sunday - lock in a booth in front of the
             screen you want. Group bookings get bottle service and reserved audio.
           </p>
           <Link
