@@ -398,27 +398,41 @@ function ChallengeOverlay({
       const ph = phaseRef.current;
 
       /* ---- physics ---- */
-      s.tiltVel = (s.tilt - s.prevTilt) / Math.max(dt, 0.001);
-      s.prevTilt = s.tilt;
+      // critically-damped smoothing of raw sensor/drag input -> removes jitter
+      const follow = 1 - Math.exp(-dt * 5.5);
+      s.tilt += (s.targetTilt - s.tilt) * follow;
       s.shake = Math.max(0, s.shake - dt * 1.2);
 
-      // wave propagation along surface
+      // low-passed angular velocity so a single noisy sample can't spike jerk
+      const rawVel = (s.tilt - s.prevTilt) / Math.max(dt, 0.001);
+      s.tiltVel += (rawVel - s.tiltVel) * (1 - Math.exp(-dt * 8));
+      s.prevTilt = s.tilt;
+
+      // wave propagation along surface (fixed sub-steps for stability)
       const jerk = Math.min(3, Math.abs(s.tiltVel));
-      for (let i = 0; i < POINTS; i++) {
-        const l = s.waveY[(i - 1 + POINTS) % POINTS];
-        const r = s.waveY[(i + 1) % POINTS];
-        const acc = (l + r - 2 * s.waveY[i]) * 34 - s.waveY[i] * 6;
-        s.waveV[i] = (s.waveV[i] + acc * dt) * 0.985;
-        s.waveY[i] += s.waveV[i] * dt;
-      }
-      if (jerk > 1.2 || s.shake > 0.2) {
-        const amp = (jerk * 1.6 + s.shake * 14) * dt;
-        const dir = Math.sign(s.tiltVel) || 1;
-        for (let i = 0; i < 6; i++) {
-          const idx = dir > 0 ? POINTS - 1 - i : i;
-          s.waveV[idx] += amp * 22;
+      const steps = Math.min(3, Math.max(1, Math.round(dt / 0.0167)));
+      const sdt = dt / steps;
+      for (let n = 0; n < steps; n++) {
+        let prev = s.waveY[POINTS - 1];
+        const first = s.waveY[0];
+        for (let i = 0; i < POINTS; i++) {
+          const cur = s.waveY[i];
+          const next = i === POINTS - 1 ? first : s.waveY[i + 1];
+          const acc = (prev + next - 2 * cur) * 34 - cur * 6;
+          s.waveV[i] = (s.waveV[i] + acc * sdt) * 0.982;
+          s.waveY[i] = cur + s.waveV[i] * sdt;
+          prev = cur;
         }
       }
+      if (jerk > 1.6 || s.shake > 0.25) {
+        const amp = (jerk * 1.2 + s.shake * 12) * dt;
+        const dir = Math.sign(s.tiltVel) || 1;
+        for (let i = 0; i < 5; i++) {
+          const idx = dir > 0 ? POINTS - 1 - i : i;
+          s.waveV[idx] += amp * 18;
+        }
+      }
+
 
       if (ph === "playing") {
         s.elapsed = (now - s.start) / 1000;
