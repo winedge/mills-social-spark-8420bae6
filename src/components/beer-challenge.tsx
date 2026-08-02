@@ -316,16 +316,18 @@ function ChallengeOverlay({
     if (!el) return;
     const getX = (e: PointerEvent) => e.clientX;
     const down = (e: PointerEvent) => {
-      dragRef.current = { active: true, x: getX(e), tilt: simRef.current.tilt };
+      dragRef.current = { active: true, x: getX(e), tilt: simRef.current.targetTilt };
       el.setPointerCapture(e.pointerId);
     };
     const move = (e: PointerEvent) => {
       const d = dragRef.current;
       if (!d?.active) return;
       const dx = getX(e) - d.x;
-      const target = d.tilt + (dx / Math.max(120, window.innerWidth * 0.4)) * (Math.PI / 2);
-      simRef.current.tilt = Math.max(-1.8, Math.min(1.8, target));
+      // lower sensitivity: full drag across ~70% of the screen = 90deg
+      const target = d.tilt + (dx / Math.max(200, window.innerWidth * 0.7)) * (Math.PI / 2);
+      simRef.current.targetTilt = Math.max(-1.5, Math.min(1.5, target));
     };
+
     const up = () => {
       if (dragRef.current) dragRef.current.active = false;
     };
