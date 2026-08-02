@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Beer, Copy, Check, X, Trophy } from "lucide-react";
+import { Beer, Copy, Check, X, Trophy, Settings2 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
 
-type Phase = "intro" | "ready" | "playing" | "result";
+type Phase = "intro" | "calibrate" | "ready" | "playing" | "result";
 
 type Reward = {
   title: string;
@@ -15,6 +15,32 @@ type Reward = {
 };
 
 const STORAGE_KEY = "mms-beer-challenge-reward";
+const TILT_KEY = "mms-beer-tilt-setup";
+
+type TiltSetup = { zeroG: number; zeroB: number; sens: number };
+const DEFAULT_TILT: TiltSetup = { zeroG: 0, zeroB: 45, sens: 1 };
+
+function loadTilt(): TiltSetup | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(TILT_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw) as Partial<TiltSetup>;
+    if (typeof p.zeroG !== "number" || typeof p.zeroB !== "number") return null;
+    return { zeroG: p.zeroG, zeroB: p.zeroB, sens: typeof p.sens === "number" ? p.sens : 1 };
+  } catch {
+    return null;
+  }
+}
+
+function saveTilt(t: TiltSetup) {
+  try {
+    localStorage.setItem(TILT_KEY, JSON.stringify(t));
+  } catch {
+    /* noop */
+  }
+}
+
 
 function rewardFor(eff: number): Reward {
   if (eff >= 0.95) return { title: "Perfect Pour", emoji: "🏆", code: "CHEERS30", off: "30% OFF" };
@@ -276,15 +302,36 @@ function ChallengeOverlay({
   const [hud, setHud] = useState({ time: 0, level: 1, spill: 0, drink: 0 });
   const [result, setResult] = useState<{ eff: number; time: number; spill: number; reward: Reward } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [sens, setSens] = useState(1);
+  const [showSens, setShowSens] = useState(false);
+  const [calCount, setCalCount] = useState(3);
+  const [liveTilt, setLiveTilt] = useState(0);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const simRef = useRef<Sim>(makeSim());
   const phaseRef = useRef<Phase>("intro");
   const rafRef = useRef<number>(0);
   const dragRef = useRef<{ active: boolean; x: number; tilt: number } | null>(null);
+  const tiltRef = useRef<TiltSetup>(DEFAULT_TILT);
+  const rawRef = useRef<{ g: number; b: number }>({ g: 0, b: 45 });
   const audio = useAudio();
 
   phaseRef.current = phase;
+
+  /* restore saved calibration + sensitivity */
+  useEffect(() => {
+    const saved = loadTilt();
+    if (saved) {
+      tiltRef.current = saved;
+      setSens(saved.sens);
+    }
+  }, []);
+
+  /* keep sensitivity in the ref + persisted */
+  useEffect(() => {
+    tiltRef.current = { ...tiltRef.current, sens };
+    saveTilt(tiltRef.current);
+  }, [sens]);
 
   /* lock scroll */
   useEffect(() => {
@@ -299,18 +346,26 @@ function ChallengeOverlay({
   const requestMotion = useCallback(async () => {
     audio.startAmbience();
     const DOE = (window as any).DeviceOrientationEvent;
+    let ok: boolean;
     if (DOE && typeof DOE.requestPermission === "function") {
       try {
         const res = await DOE.requestPermission();
-        setMotionOk(res === "granted");
+        ok = res === "granted";
       } catch {
-        setMotionOk(false);
+        ok = false;
       }
     } else {
-      setMotionOk(typeof window !== "undefined" && "DeviceOrientationEvent" in window);
+      ok = typeof window !== "undefined" && "DeviceOrientationEvent" in window;
     }
-    setPhase("ready");
+    setMotionOk(ok);
+    // one-time calibration: only when the gyro works and we've never calibrated
+    setPhase(ok && !loadTilt() ? "calibrate" : "ready");
   }, [audio]);
+
+  const startCalibration = useCallback(() => {
+    setCalCount(3);
+    setPhase("calibrate");
+  }, []);
 
   /* orientation listener */
   useEffect(() => {
@@ -318,8 +373,11 @@ function ChallengeOverlay({
     const handler = (e: DeviceOrientationEvent) => {
       const gamma = e.gamma ?? 0; // left/right tilt, -90..90
       const beta = e.beta ?? 0; // front/back tilt
-      // gentler mapping: gamma dominates, beta adds a light contribution
-      let deg = gamma * 0.62 + (beta - 45) * 0.16;
+      rawRef.current = { g: gamma, b: beta };
+
+      const cal = tiltRef.current;
+      // neutral pose subtracted, then scaled by the player's sensitivity
+      let deg = ((gamma - cal.zeroG) * 0.62 + (beta - cal.zeroB) * 0.16) * cal.sens;
       // dead zone around neutral so tiny hand jitter does nothing
       if (Math.abs(deg) < 4) deg = 0;
       else deg = deg - Math.sign(deg) * 4;
@@ -330,6 +388,51 @@ function ChallengeOverlay({
     window.addEventListener("deviceorientation", handler, true);
     return () => window.removeEventListener("deviceorientation", handler, true);
   }, [motionOk]);
+
+  /* calibration countdown: average the pose over the last second */
+  useEffect(() => {
+    if (phase !== "calibrate") return;
+    let g = 0;
+    let b = 0;
+    let n = 0;
+    const sample = window.setInterval(() => {
+      g += rawRef.current.g;
+      b += rawRef.current.b;
+      n++;
+    }, 60);
+    const tick = window.setInterval(() => {
+      setCalCount((c) => {
+        if (c <= 1) {
+          window.clearInterval(tick);
+          window.clearInterval(sample);
+          const zeroG = n ? g / n : 0;
+          const zeroB = n ? b / n : 45;
+          tiltRef.current = { zeroG, zeroB, sens: tiltRef.current.sens };
+          saveTilt(tiltRef.current);
+          simRef.current.targetTilt = 0;
+          simRef.current.tilt = 0;
+          setPhase("ready");
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+    return () => {
+      window.clearInterval(tick);
+      window.clearInterval(sample);
+    };
+  }, [phase]);
+
+  /* live tilt readout for the calibration / sensitivity UI */
+  useEffect(() => {
+    if (phase !== "ready" && !showSens) return;
+    const id = window.setInterval(
+      () => setLiveTilt((simRef.current.tilt * 180) / Math.PI),
+      120,
+    );
+    return () => window.clearInterval(id);
+  }, [phase, showSens]);
+
 
   /* touch / mouse fallback */
   useEffect(() => {
@@ -600,6 +703,27 @@ function ChallengeOverlay({
         </div>
       )}
 
+      {/* CALIBRATE */}
+      {phase === "calibrate" && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-end gap-4 px-6 pb-16 text-center">
+          <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
+            Calibrating gyroscope
+          </p>
+          <h3 className="font-display text-3xl uppercase leading-none tracking-tight">
+            Hold your phone how you'd hold a pint
+          </h3>
+          <p className="max-w-xs text-sm text-muted-foreground">
+            Stay still - this pose becomes your level, no-spill neutral.
+          </p>
+          <div
+            className="mt-2 flex h-24 w-24 items-center justify-center rounded-full border-2 border-accent/60 font-display text-5xl text-accent"
+            style={{ boxShadow: "0 0 45px rgba(56,189,248,0.35)" }}
+          >
+            {calCount}
+          </div>
+        </div>
+      )}
+
       {/* READY */}
       {phase === "ready" && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-end gap-4 px-6 pb-16 text-center">
@@ -609,9 +733,22 @@ function ChallengeOverlay({
           <h3 className="font-display text-3xl uppercase leading-none tracking-tight">
             Glass is full
           </h3>
+
+          <div className="w-full max-w-xs rounded-xl border border-white/10 bg-black/50 p-4 backdrop-blur">
+            <SensSlider sens={sens} setSens={setSens} liveTilt={liveTilt} />
+            {motionOk && (
+              <button
+                onClick={startCalibration}
+                className="mt-3 w-full rounded-full border border-border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground"
+              >
+                Recalibrate neutral
+              </button>
+            )}
+          </div>
+
           <button
             onClick={start}
-            className="mt-2 rounded-full bg-accent px-14 py-4 font-display text-lg uppercase tracking-[0.3em] text-background"
+            className="mt-1 rounded-full bg-accent px-14 py-4 font-display text-lg uppercase tracking-[0.3em] text-background"
             style={{ boxShadow: "0 0 50px rgba(56,189,248,0.45)" }}
           >
             Start
@@ -621,15 +758,46 @@ function ChallengeOverlay({
 
       {/* HUD */}
       {phase === "playing" && (
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-2 px-4 pt-4 font-mono text-[10px] uppercase tracking-[0.2em]"
-          style={{ paddingRight: 64 }}
-        >
-          <HudChip label="Time" value={`${hud.time.toFixed(1)}s`} />
-          <HudChip label="Beer" value={`${Math.round(hud.level * 100)}%`} />
-          <HudChip label="Spill" value={`${Math.round(hud.spill * 100)}%`} tone="warn" />
-        </div>
+        <>
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-2 px-4 pt-4 font-mono text-[10px] uppercase tracking-[0.2em]"
+            style={{ paddingRight: 64 }}
+          >
+            <HudChip label="Time" value={`${hud.time.toFixed(1)}s`} />
+            <HudChip label="Beer" value={`${Math.round(hud.level * 100)}%`} />
+            <HudChip label="Spill" value={`${Math.round(hud.spill * 100)}%`} tone="warn" />
+          </div>
+
+          <button
+            onClick={() => setShowSens((v) => !v)}
+            aria-label="Tilt sensitivity"
+            className="absolute bottom-6 left-4 z-30 rounded-full border border-white/20 bg-black/50 p-2.5 text-foreground backdrop-blur"
+          >
+            <Settings2 size={18} />
+          </button>
+
+          {showSens && (
+            <div className="absolute bottom-20 left-4 z-30 w-64 rounded-xl border border-white/10 bg-black/70 p-4 backdrop-blur animate-chip-in">
+              <SensSlider sens={sens} setSens={setSens} liveTilt={liveTilt} />
+              <button
+                onClick={() => {
+                  tiltRef.current = {
+                    ...tiltRef.current,
+                    zeroG: rawRef.current.g,
+                    zeroB: rawRef.current.b,
+                  };
+                  saveTilt(tiltRef.current);
+                  setShowSens(false);
+                }}
+                className="mt-3 w-full rounded-full border border-border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground"
+              >
+                Set current pose as level
+              </button>
+            </div>
+          )}
+        </>
       )}
+
 
       {/* RESULT */}
       {phase === "result" && result && (
@@ -683,6 +851,45 @@ function ChallengeOverlay({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function SensSlider({
+  sens,
+  setSens,
+  liveTilt,
+}: {
+  sens: number;
+  setSens: (v: number) => void;
+  liveTilt: number;
+}) {
+  return (
+    <div className="text-left">
+      <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+        <span>Tilt sensitivity</span>
+        <span className="text-accent">{sens.toFixed(2)}x</span>
+      </div>
+      <input
+        type="range"
+        min={0.4}
+        max={2}
+        step={0.05}
+        value={sens}
+        onChange={(e) => setSens(Number(e.target.value))}
+        aria-label="Tilt sensitivity"
+        className="mt-2 w-full accent-[#38bdf8]"
+      />
+      {/* live tilt readout so the player can verify the feel */}
+      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+        <div
+          className="h-full rounded-full bg-accent transition-[width] duration-100"
+          style={{ width: `${Math.min(100, (Math.abs(liveTilt) / 85) * 100)}%` }}
+        />
+      </div>
+      <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+        Live tilt {Math.round(liveTilt)}°
+      </div>
     </div>
   );
 }
