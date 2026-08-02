@@ -855,6 +855,45 @@ function ChallengeOverlay({
   );
 }
 
+function SensSlider({
+  sens,
+  setSens,
+  liveTilt,
+}: {
+  sens: number;
+  setSens: (v: number) => void;
+  liveTilt: number;
+}) {
+  return (
+    <div className="text-left">
+      <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+        <span>Tilt sensitivity</span>
+        <span className="text-accent">{sens.toFixed(2)}x</span>
+      </div>
+      <input
+        type="range"
+        min={0.4}
+        max={2}
+        step={0.05}
+        value={sens}
+        onChange={(e) => setSens(Number(e.target.value))}
+        aria-label="Tilt sensitivity"
+        className="mt-2 w-full accent-[#38bdf8]"
+      />
+      {/* live tilt readout so the player can verify the feel */}
+      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+        <div
+          className="h-full rounded-full bg-accent transition-[width] duration-100"
+          style={{ width: `${Math.min(100, (Math.abs(liveTilt) / 85) * 100)}%` }}
+        />
+      </div>
+      <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+        Live tilt {Math.round(liveTilt)}°
+      </div>
+    </div>
+  );
+}
+
 function HudChip({ label, value, tone }: { label: string; value: string; tone?: "warn" }) {
   return (
     <div className="rounded-lg border border-white/10 bg-black/50 px-3 py-2 backdrop-blur">
