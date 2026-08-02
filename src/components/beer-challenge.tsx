@@ -140,10 +140,67 @@ function useAudio() {
     });
   }, []);
 
+  /** Throaty "glug" of a swallow - pitch drops as the glass empties. */
+  const glug = useCallback((level = 1) => {
+    const c = ctx();
+    if (!c) return;
+    const t = c.currentTime;
+    const o = c.createOscillator();
+    const g = c.createGain();
+    const filt = c.createBiquadFilter();
+    filt.type = "lowpass";
+    filt.frequency.value = 700;
+    o.type = "sine";
+    // lower pitch when the glass is fuller = deeper gulp
+    const base = 110 + (1 - level) * 90;
+    o.frequency.setValueAtTime(base * 1.5, t);
+    o.frequency.exponentialRampToValueAtTime(base, t + 0.11);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.13, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+    o.connect(filt).connect(g).connect(c.destination);
+    o.start(t);
+    o.stop(t + 0.2);
+  }, []);
+
+  /** Short "ugh" grunt when beer goes on the floor. */
+  const grunt = useCallback(() => {
+    const c = ctx();
+    if (!c) return;
+    const t = c.currentTime;
+    const o = c.createOscillator();
+    const g = c.createGain();
+    const filt = c.createBiquadFilter();
+    filt.type = "bandpass";
+    filt.frequency.value = 320;
+    filt.Q.value = 3;
+    o.type = "sawtooth";
+    o.frequency.setValueAtTime(160, t);
+    o.frequency.exponentialRampToValueAtTime(95, t + 0.28);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.1, t + 0.04);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
+    o.connect(filt).connect(g).connect(c.destination);
+    o.start(t);
+    o.stop(t + 0.34);
+  }, []);
+
   useEffect(() => () => stopAmbience(), [stopAmbience]);
 
-  return { startAmbience, stopAmbience, splash, cheers };
+  return { startAmbience, stopAmbience, splash, cheers, glug, grunt };
 }
+
+/** Subtle vibration - silently ignored on devices without the API. */
+function haptic(pattern: number | number[]) {
+  try {
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      navigator.vibrate(pattern);
+    }
+  } catch {
+    /* noop */
+  }
+}
+
 
 /* ------------------------------------------------------------------ */
 /*  Simulation state (kept in refs, driven by rAF)                     */
@@ -514,6 +571,10 @@ function ChallengeOverlay({
     let last = performance.now();
     let hudAcc = 0;
     let introT = 0;
+    let glugAcc = 0; // time spent drinking since last gulp cue
+    let gruntCd = 0; // cooldown so grunts don't machine-gun
+    let hapticCd = 0; // cooldown for spill buzz
+
 
     const loop = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
@@ -568,7 +629,10 @@ function ChallengeOverlay({
       if (ph === "playing") {
         s.elapsed = (now - s.start) / 1000;
         const absTilt = Math.abs(s.tilt);
+
         const deg = (absTilt * 180) / Math.PI;
+        gruntCd = Math.max(0, gruntCd - dt);
+        hapticCd = Math.max(0, hapticCd - dt);
 
         if (deg > 50 && s.level > 0) {
           const steep = Math.min(1, (deg - 50) / 40);
@@ -580,6 +644,16 @@ function ChallengeOverlay({
           s.drank += drankPart;
           s.spilled += spillPart;
           if (spillPart > 0.002) spawnSplash(s, 3);
+
+          // gulp cue: faster swallows the steeper you tilt
+          glugAcc += dt * (0.7 + steep);
+          if (glugAcc > 0.42) {
+            glugAcc = 0;
+            audio.glug(s.level);
+            haptic(6);
+          }
+        } else {
+          glugAcc = Math.min(glugAcc, 0.3);
         }
 
         // sloshing waves crest over the rim -> spill, even at a safe angle
@@ -592,11 +666,20 @@ function ChallengeOverlay({
           if (loss > 0.0015) {
             spawnSplash(s, 6);
             audio.splash(loss * 200);
+            if (hapticCd <= 0) {
+              hapticCd = 0.18;
+              haptic(loss > 0.006 ? [14, 30, 20] : 10);
+            }
+            if (loss > 0.005 && gruntCd <= 0) {
+              gruntCd = 1.4;
+              audio.grunt();
+            }
           }
         }
 
 
         s.foamOverflow = Math.max(0, s.foamOverflow - dt * 0.6);
+
 
         if (s.level <= 0.001) {
           s.level = 0;
