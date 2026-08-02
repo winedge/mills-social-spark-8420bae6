@@ -566,7 +566,7 @@ function ChallengeOverlay({
 
       {/* HUD */}
       {phase === "playing" && (
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-2 px-4 pt-4 pr-16 font-mono text-[10px] uppercase tracking-[0.2em]">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-2 px-4 pt-16 font-mono text-[10px] uppercase tracking-[0.2em]">
           <HudChip label="Time" value={`${hud.time.toFixed(1)}s`} />
           <HudChip label="Beer" value={`${Math.round(hud.level * 100)}%`} />
           <HudChip label="Spilled" value={`${Math.round(hud.spill * 100)}%`} tone="warn" />
