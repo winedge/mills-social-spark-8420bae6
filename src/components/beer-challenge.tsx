@@ -15,6 +15,32 @@ type Reward = {
 };
 
 const STORAGE_KEY = "mms-beer-challenge-reward";
+const TILT_KEY = "mms-beer-tilt-setup";
+
+type TiltSetup = { zeroG: number; zeroB: number; sens: number };
+const DEFAULT_TILT: TiltSetup = { zeroG: 0, zeroB: 45, sens: 1 };
+
+function loadTilt(): TiltSetup | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(TILT_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw) as Partial<TiltSetup>;
+    if (typeof p.zeroG !== "number" || typeof p.zeroB !== "number") return null;
+    return { zeroG: p.zeroG, zeroB: p.zeroB, sens: typeof p.sens === "number" ? p.sens : 1 };
+  } catch {
+    return null;
+  }
+}
+
+function saveTilt(t: TiltSetup) {
+  try {
+    localStorage.setItem(TILT_KEY, JSON.stringify(t));
+  } catch {
+    /* noop */
+  }
+}
+
 
 function rewardFor(eff: number): Reward {
   if (eff >= 0.95) return { title: "Perfect Pour", emoji: "🏆", code: "CHEERS30", off: "30% OFF" };
