@@ -520,7 +520,7 @@ function ChallengeOverlay({
           onClose();
         }}
         aria-label="Close challenge"
-        className="absolute right-4 top-4 z-30 rounded-full border border-white/20 bg-black/40 p-2.5 text-foreground backdrop-blur transition-colors hover:bg-white/10"
+        className="absolute bottom-6 right-4 z-30 rounded-full border border-white/20 bg-black/40 p-2.5 text-foreground backdrop-blur transition-colors hover:bg-white/10"
       >
         <X size={18} />
       </button>
