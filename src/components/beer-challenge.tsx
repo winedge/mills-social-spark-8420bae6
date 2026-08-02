@@ -779,18 +779,30 @@ function draw(
 
   const surfPointX = (i: number) => gx + (gw * i) / (POINTS - 1);
   const surfPointY = (i: number) => {
-    const t = i / (POINTS - 1) - 0.5;
-    return surfaceY + t * gw * slope + s.waveY[i] * 40;
+    const u = i / (POINTS - 1);
+    return surfaceY + (u - 0.5) * gw * slope + waveAt(s, u) * 46;
+  };
+  // smooth the sparse sample set with midpoint quadratics (cheap spline)
+  const strokeSurface = (dy: number) => {
+    ctx.moveTo(surfPointX(0), surfPointY(0) + dy);
+    for (let i = 1; i < POINTS - 1; i++) {
+      const cx = surfPointX(i);
+      const cy = surfPointY(i) + dy;
+      const mx = (cx + surfPointX(i + 1)) / 2;
+      const my = (cy + surfPointY(i + 1) + dy) / 2;
+      ctx.quadraticCurveTo(cx, cy, mx, my);
+    }
+    ctx.lineTo(surfPointX(POINTS - 1), surfPointY(POINTS - 1) + dy);
   };
 
   ctx.beginPath();
-  ctx.moveTo(gx, surfPointY(0));
-  for (let i = 1; i < POINTS; i++) ctx.lineTo(surfPointX(i), surfPointY(i));
+  strokeSurface(0);
   ctx.lineTo(gx + gw, gy + gh + 40);
   ctx.lineTo(gx, gy + gh + 40);
   ctx.closePath();
   ctx.fillStyle = beerGrad;
   ctx.fill();
+
 
   // bubbles inside beer
   ctx.fillStyle = "rgba(255,255,255,0.55)";
