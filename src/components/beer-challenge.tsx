@@ -297,10 +297,15 @@ function ChallengeOverlay({
     const handler = (e: DeviceOrientationEvent) => {
       const gamma = e.gamma ?? 0; // left/right tilt, -90..90
       const beta = e.beta ?? 0; // front/back tilt
-      // combine: mostly gamma, beta contributes past vertical
-      const deg = Math.max(-100, Math.min(100, gamma + (beta - 45) * 0.35));
-      simRef.current.tilt = (deg * Math.PI) / 180;
+      // gentler mapping: gamma dominates, beta adds a light contribution
+      let deg = gamma * 0.62 + (beta - 45) * 0.16;
+      // dead zone around neutral so tiny hand jitter does nothing
+      if (Math.abs(deg) < 4) deg = 0;
+      else deg = deg - Math.sign(deg) * 4;
+      deg = Math.max(-85, Math.min(85, deg));
+      simRef.current.targetTilt = (deg * Math.PI) / 180;
     };
+
     window.addEventListener("deviceorientation", handler, true);
     return () => window.removeEventListener("deviceorientation", handler, true);
   }, [motionOk]);
