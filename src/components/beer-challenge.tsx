@@ -576,7 +576,8 @@ function ChallengeOverlay({
       {/* RESULT */}
       {phase === "result" && result && (
         <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/70 px-5 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl border border-accent/30 bg-surface/90 p-6 text-center animate-chip-in">
+          <Confetti />
+          <div className="relative w-full max-w-sm rounded-2xl border border-accent/30 bg-surface/90 p-6 text-center animate-chip-in">
             <div className="text-4xl">{result.reward.emoji}</div>
             <h3 className="mt-2 font-display text-3xl uppercase tracking-tight text-accent">
               {result.reward.title}
