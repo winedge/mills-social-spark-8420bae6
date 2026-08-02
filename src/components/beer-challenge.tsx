@@ -5,7 +5,7 @@ import { Beer, Copy, Check, X, Trophy } from "lucide-react";
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
 
-type Phase = "intro" | "ready" | "playing" | "result";
+type Phase = "intro" | "calibrate" | "ready" | "playing" | "result";
 
 type Reward = {
   title: string;
