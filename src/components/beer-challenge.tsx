@@ -479,9 +479,10 @@ function ChallengeOverlay({
           if (spillPart > 0.002) spawnSplash(s, 3);
         }
 
-        // jerky / shaky movement spills regardless of angle
-        if ((jerk > 2.2 || s.shake > 0.45) && s.level > 0) {
-          const loss = Math.min(s.level, (jerk * 0.004 + s.shake * 0.015) * dt * 6);
+        // sloshing waves crest over the rim -> spill, even at a safe angle
+        if ((jerk > 2.2 || s.shake > 0.45 || s.waveEnergy > 0.62) && s.level > 0) {
+          const crest = Math.max(0, s.waveEnergy - 0.62) * 0.02;
+          const loss = Math.min(s.level, (jerk * 0.004 + s.shake * 0.015 + crest) * dt * 6);
           s.level -= loss;
           s.spilled += loss;
           s.foamOverflow = Math.min(1, s.foamOverflow + loss * 6);
@@ -490,6 +491,7 @@ function ChallengeOverlay({
             audio.splash(loss * 200);
           }
         }
+
 
         s.foamOverflow = Math.max(0, s.foamOverflow - dt * 0.6);
 
