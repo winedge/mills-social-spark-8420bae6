@@ -123,7 +123,13 @@ function useAudio() {
 /*  Simulation state (kept in refs, driven by rAF)                     */
 /* ------------------------------------------------------------------ */
 
-const POINTS = 32;
+// Surface is a *modal* model: a few damped standing-wave modes instead of a
+// 32-node spring chain. Same slosh feel, ~10x cheaper per frame.
+const MODES = 3;
+const MODE_W = [4.9, 8.6, 13.4]; // rad/s natural frequencies
+const MODE_D = [1.05, 1.9, 3.1]; // damping
+const MODE_GAIN = [1, 0.45, 0.2]; // how strongly tilt input excites each mode
+const POINTS = 14; // render samples across the surface
 
 type Sim = {
   level: number; // 0..1 fill of glass
@@ -133,8 +139,10 @@ type Sim = {
   targetTilt: number; // raw input tilt (sensor or drag)
   tiltVel: number;
   prevTilt: number;
-  waveY: number[];
-  waveV: number[];
+  prevTiltVel: number;
+  modeA: number[]; // modal amplitudes
+  modeV: number[]; // modal velocities
+  waveEnergy: number; // 0..1 slosh intensity, drives spill + foam
   bubbles: { x: number; y: number; r: number; v: number }[];
   particles: { x: number; y: number; vx: number; vy: number; life: number; r: number }[];
   foamOverflow: number;
@@ -152,8 +160,10 @@ function makeSim(): Sim {
     targetTilt: 0,
     tiltVel: 0,
     prevTilt: 0,
-    waveY: new Array(POINTS).fill(0),
-    waveV: new Array(POINTS).fill(0),
+    prevTiltVel: 0,
+    modeA: new Array(MODES).fill(0),
+    modeV: new Array(MODES).fill(0),
+    waveEnergy: 0,
     bubbles: Array.from({ length: 16 }, () => ({
       x: Math.random(),
       y: Math.random(),
@@ -167,6 +177,17 @@ function makeSim(): Sim {
     elapsed: 0,
   };
 }
+
+/** Surface height offset (normalized) at u in [0,1] across the glass. */
+function waveAt(s: Sim, u: number): number {
+  const x = u - 0.5;
+  return (
+    s.modeA[0] * Math.sin(Math.PI * x) +
+    s.modeA[1] * Math.sin(2 * Math.PI * x) +
+    s.modeA[2] * Math.sin(3 * Math.PI * x)
+  );
+}
+
 
 
 /* ------------------------------------------------------------------ */
@@ -408,30 +429,37 @@ function ChallengeOverlay({
       s.tiltVel += (rawVel - s.tiltVel) * (1 - Math.exp(-dt * 8));
       s.prevTilt = s.tilt;
 
-      // wave propagation along surface (fixed sub-steps for stability)
+      // modal slosh solver: 3 damped oscillators driven by tilt acceleration.
+      // exact-ish semi-implicit integration -> stable at any framerate, no sub-steps.
       const jerk = Math.min(3, Math.abs(s.tiltVel));
-      const steps = Math.min(3, Math.max(1, Math.round(dt / 0.0167)));
-      const sdt = dt / steps;
-      for (let n = 0; n < steps; n++) {
-        let prev = s.waveY[POINTS - 1];
-        const first = s.waveY[0];
-        for (let i = 0; i < POINTS; i++) {
-          const cur = s.waveY[i];
-          const next = i === POINTS - 1 ? first : s.waveY[i + 1];
-          const acc = (prev + next - 2 * cur) * 34 - cur * 6;
-          s.waveV[i] = (s.waveV[i] + acc * sdt) * 0.982;
-          s.waveY[i] = cur + s.waveV[i] * sdt;
-          prev = cur;
+      const tiltAcc = (s.tiltVel - s.prevTiltVel) / Math.max(dt, 0.001);
+      s.prevTiltVel = s.tiltVel;
+
+      // forcing: sideways acceleration of the glass + random shake energy
+      const drive =
+        Math.max(-8, Math.min(8, tiltAcc)) * 0.055 +
+        s.tiltVel * 0.12 +
+        s.shake * (Math.random() - 0.5) * 1.6;
+
+      let energy = 0;
+      for (let m = 0; m < MODES; m++) {
+        const w = MODE_W[m];
+        const acc = -w * w * s.modeA[m] - 2 * MODE_D[m] * s.modeV[m] + drive * MODE_GAIN[m];
+        s.modeV[m] += acc * dt;
+        s.modeA[m] += s.modeV[m] * dt;
+        // clamp so a violent shake can't blow the surface out of the glass
+        const lim = 0.55 * MODE_GAIN[m];
+        if (s.modeA[m] > lim) {
+          s.modeA[m] = lim;
+          s.modeV[m] *= 0.5;
+        } else if (s.modeA[m] < -lim) {
+          s.modeA[m] = -lim;
+          s.modeV[m] *= 0.5;
         }
+        energy += Math.abs(s.modeA[m]) + Math.abs(s.modeV[m]) / w;
       }
-      if (jerk > 1.6 || s.shake > 0.25) {
-        const amp = (jerk * 1.2 + s.shake * 12) * dt;
-        const dir = Math.sign(s.tiltVel) || 1;
-        for (let i = 0; i < 5; i++) {
-          const idx = dir > 0 ? POINTS - 1 - i : i;
-          s.waveV[idx] += amp * 18;
-        }
-      }
+      s.waveEnergy = Math.min(1, energy * 1.4);
+
 
 
       if (ph === "playing") {
@@ -451,9 +479,10 @@ function ChallengeOverlay({
           if (spillPart > 0.002) spawnSplash(s, 3);
         }
 
-        // jerky / shaky movement spills regardless of angle
-        if ((jerk > 2.2 || s.shake > 0.45) && s.level > 0) {
-          const loss = Math.min(s.level, (jerk * 0.004 + s.shake * 0.015) * dt * 6);
+        // sloshing waves crest over the rim -> spill, even at a safe angle
+        if ((jerk > 2.2 || s.shake > 0.45 || s.waveEnergy > 0.62) && s.level > 0) {
+          const crest = Math.max(0, s.waveEnergy - 0.62) * 0.02;
+          const loss = Math.min(s.level, (jerk * 0.004 + s.shake * 0.015 + crest) * dt * 6);
           s.level -= loss;
           s.spilled += loss;
           s.foamOverflow = Math.min(1, s.foamOverflow + loss * 6);
@@ -462,6 +491,7 @@ function ChallengeOverlay({
             audio.splash(loss * 200);
           }
         }
+
 
         s.foamOverflow = Math.max(0, s.foamOverflow - dt * 0.6);
 
@@ -751,18 +781,30 @@ function draw(
 
   const surfPointX = (i: number) => gx + (gw * i) / (POINTS - 1);
   const surfPointY = (i: number) => {
-    const t = i / (POINTS - 1) - 0.5;
-    return surfaceY + t * gw * slope + s.waveY[i] * 40;
+    const u = i / (POINTS - 1);
+    return surfaceY + (u - 0.5) * gw * slope + waveAt(s, u) * 46;
+  };
+  // smooth the sparse sample set with midpoint quadratics (cheap spline)
+  const strokeSurface = (dy: number) => {
+    ctx.moveTo(surfPointX(0), surfPointY(0) + dy);
+    for (let i = 1; i < POINTS - 1; i++) {
+      const cx = surfPointX(i);
+      const cy = surfPointY(i) + dy;
+      const mx = (cx + surfPointX(i + 1)) / 2;
+      const my = (cy + surfPointY(i + 1) + dy) / 2;
+      ctx.quadraticCurveTo(cx, cy, mx, my);
+    }
+    ctx.lineTo(surfPointX(POINTS - 1), surfPointY(POINTS - 1) + dy);
   };
 
   ctx.beginPath();
-  ctx.moveTo(gx, surfPointY(0));
-  for (let i = 1; i < POINTS; i++) ctx.lineTo(surfPointX(i), surfPointY(i));
+  strokeSurface(0);
   ctx.lineTo(gx + gw, gy + gh + 40);
   ctx.lineTo(gx, gy + gh + 40);
   ctx.closePath();
   ctx.fillStyle = beerGrad;
   ctx.fill();
+
 
   // bubbles inside beer
   ctx.fillStyle = "rgba(255,255,255,0.55)";
@@ -782,13 +824,13 @@ function draw(
     ctx.save();
     const foamThickness = 26 + s.foamOverflow * 18;
     ctx.beginPath();
-    ctx.moveTo(surfPointX(0), surfPointY(0) - 10);
-    for (let i = 1; i < POINTS; i++) ctx.lineTo(surfPointX(i), surfPointY(i) - 10);
+    strokeSurface(-10);
     for (let i = POINTS - 1; i >= 0; i--)
       ctx.lineTo(surfPointX(i), surfPointY(i) + foamThickness);
     ctx.closePath();
     ctx.fillStyle = "rgba(255,251,235,0.92)";
     ctx.fill();
+
     // foam texture
     ctx.globalAlpha = 0.5;
     ctx.fillStyle = "#ffffff";
