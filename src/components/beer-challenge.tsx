@@ -566,7 +566,7 @@ function ChallengeOverlay({
 
       {/* HUD */}
       {phase === "playing" && (
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between px-4 pt-4 font-mono text-[10px] uppercase tracking-[0.2em]">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-2 px-4 pt-4 pr-16 font-mono text-[10px] uppercase tracking-[0.2em]">
           <HudChip label="Time" value={`${hud.time.toFixed(1)}s`} />
           <HudChip label="Beer" value={`${Math.round(hud.level * 100)}%`} />
           <HudChip label="Spilled" value={`${Math.round(hud.spill * 100)}%`} tone="warn" />
@@ -755,10 +755,12 @@ function draw(
   // foam head hugging the surface
   if (level > 0.01) {
     ctx.save();
+    const foamThickness = 26 + s.foamOverflow * 18;
     ctx.beginPath();
-    ctx.moveTo(gx, surfPointY(0) + 26);
-    for (let i = POINTS - 1; i >= 0; i--) ctx.lineTo(surfPointX(i), surfPointY(i) - 10);
-    ctx.lineTo(gx, surfPointY(0) + 26);
+    ctx.moveTo(surfPointX(0), surfPointY(0) - 10);
+    for (let i = 1; i < POINTS; i++) ctx.lineTo(surfPointX(i), surfPointY(i) - 10);
+    for (let i = POINTS - 1; i >= 0; i--)
+      ctx.lineTo(surfPointX(i), surfPointY(i) + foamThickness);
     ctx.closePath();
     ctx.fillStyle = "rgba(255,251,235,0.92)";
     ctx.shadowColor = "rgba(255,255,255,0.5)";
