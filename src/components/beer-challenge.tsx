@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Beer, Copy, Check, X, Trophy } from "lucide-react";
+import { Beer, Copy, Check, X, Trophy, Settings2 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
