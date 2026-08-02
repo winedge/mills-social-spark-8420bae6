@@ -629,7 +629,12 @@ function ChallengeOverlay({
       if (ph === "playing") {
         s.elapsed = (now - s.start) / 1000;
         const absTilt = Math.abs(s.tilt);
+      if (ph === "playing") {
+        s.elapsed = (now - s.start) / 1000;
+        const absTilt = Math.abs(s.tilt);
         const deg = (absTilt * 180) / Math.PI;
+        gruntCd = Math.max(0, gruntCd - dt);
+        hapticCd = Math.max(0, hapticCd - dt);
 
         if (deg > 50 && s.level > 0) {
           const steep = Math.min(1, (deg - 50) / 40);
@@ -641,6 +646,16 @@ function ChallengeOverlay({
           s.drank += drankPart;
           s.spilled += spillPart;
           if (spillPart > 0.002) spawnSplash(s, 3);
+
+          // gulp cue: faster swallows the steeper you tilt
+          glugAcc += dt * (0.7 + steep);
+          if (glugAcc > 0.42) {
+            glugAcc = 0;
+            audio.glug(s.level);
+            haptic(6);
+          }
+        } else {
+          glugAcc = Math.min(glugAcc, 0.3);
         }
 
         // sloshing waves crest over the rim -> spill, even at a safe angle
@@ -653,11 +668,20 @@ function ChallengeOverlay({
           if (loss > 0.0015) {
             spawnSplash(s, 6);
             audio.splash(loss * 200);
+            if (hapticCd <= 0) {
+              hapticCd = 0.18;
+              haptic(loss > 0.006 ? [14, 30, 20] : 10);
+            }
+            if (loss > 0.005 && gruntCd <= 0) {
+              gruntCd = 1.4;
+              audio.grunt();
+            }
           }
         }
 
 
         s.foamOverflow = Math.max(0, s.foamOverflow - dt * 0.6);
+
 
         if (s.level <= 0.001) {
           s.level = 0;
