@@ -382,8 +382,7 @@ function ChallengeOverlay({
       if (Math.abs(deg) < 4) deg = 0;
       else deg = deg - Math.sign(deg) * 4;
       deg = Math.max(-85, Math.min(85, deg));
-      if (phaseRef.current !== "playing") simRef.current.targetTilt = (deg * Math.PI) / 180;
-      else simRef.current.targetTilt = (deg * Math.PI) / 180;
+      simRef.current.targetTilt = (deg * Math.PI) / 180;
     };
 
     window.addEventListener("deviceorientation", handler, true);
