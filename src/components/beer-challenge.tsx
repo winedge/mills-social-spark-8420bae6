@@ -629,9 +629,7 @@ function ChallengeOverlay({
       if (ph === "playing") {
         s.elapsed = (now - s.start) / 1000;
         const absTilt = Math.abs(s.tilt);
-      if (ph === "playing") {
-        s.elapsed = (now - s.start) / 1000;
-        const absTilt = Math.abs(s.tilt);
+
         const deg = (absTilt * 180) / Math.PI;
         gruntCd = Math.max(0, gruntCd - dt);
         hapticCd = Math.max(0, hapticCd - dt);
