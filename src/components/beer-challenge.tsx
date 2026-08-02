@@ -376,9 +376,9 @@ function ChallengeOverlay({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let dpr = Math.min(2, window.devicePixelRatio || 1);
+    let dpr = Math.min(1.5, window.devicePixelRatio || 1);
     const resize = () => {
-      dpr = Math.min(2, window.devicePixelRatio || 1);
+      dpr = Math.min(1.5, window.devicePixelRatio || 1);
       canvas.width = window.innerWidth * dpr;
       canvas.height = window.innerHeight * dpr;
       canvas.style.width = `${window.innerWidth}px`;
@@ -501,7 +501,7 @@ function ChallengeOverlay({
         p.y += p.vy * dt;
         p.life -= dt;
       }
-      s.particles = s.particles.filter((p) => p.life > 0).slice(-160);
+      s.particles = s.particles.filter((p) => p.life > 0).slice(-90);
 
       draw(ctx, canvas, dpr, s, ph);
       rafRef.current = requestAnimationFrame(loop);
@@ -762,10 +762,7 @@ function draw(
   ctx.lineTo(gx, gy + gh + 40);
   ctx.closePath();
   ctx.fillStyle = beerGrad;
-  ctx.shadowColor = "rgba(245,158,11,0.55)";
-  ctx.shadowBlur = 40;
   ctx.fill();
-  ctx.shadowBlur = 0;
 
   // bubbles inside beer
   ctx.fillStyle = "rgba(255,255,255,0.55)";
@@ -791,15 +788,13 @@ function draw(
       ctx.lineTo(surfPointX(i), surfPointY(i) + foamThickness);
     ctx.closePath();
     ctx.fillStyle = "rgba(255,251,235,0.92)";
-    ctx.shadowColor = "rgba(255,255,255,0.5)";
-    ctx.shadowBlur = 18 + s.foamOverflow * 30;
     ctx.fill();
     // foam texture
     ctx.globalAlpha = 0.5;
-    for (let i = 0; i < POINTS; i += 2) {
+    ctx.fillStyle = "#ffffff";
+    for (let i = 0; i < POINTS; i += 3) {
       ctx.beginPath();
       ctx.arc(surfPointX(i), surfPointY(i) - 4, 7 + ((i * 13) % 7), 0, Math.PI * 2);
-      ctx.fillStyle = "#ffffff";
       ctx.fill();
     }
     ctx.globalAlpha = 1;
