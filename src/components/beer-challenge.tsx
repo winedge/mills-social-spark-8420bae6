@@ -439,29 +439,30 @@ function ChallengeOverlay({
         const absTilt = Math.abs(s.tilt);
         const deg = (absTilt * 180) / Math.PI;
 
-        if (deg > 55 && s.level > 0) {
-          const steep = Math.min(1, (deg - 55) / 45);
-          const smooth = Math.max(0, 1 - jerk / 1.4);
-          const flow = steep * 0.32 * dt;
-          const drankPart = flow * (0.35 + 0.65 * smooth);
+        if (deg > 50 && s.level > 0) {
+          const steep = Math.min(1, (deg - 50) / 40);
+          const smooth = Math.max(0, 1 - jerk / 2.2);
+          const flow = steep * 0.34 * dt;
+          const drankPart = flow * (0.45 + 0.55 * smooth);
           const spillPart = flow - drankPart;
           s.level = Math.max(0, s.level - flow);
           s.drank += drankPart;
           s.spilled += spillPart;
-          if (spillPart > 0.0012) spawnSplash(s, 4);
+          if (spillPart > 0.002) spawnSplash(s, 3);
         }
 
         // jerky / shaky movement spills regardless of angle
-        if ((jerk > 1.7 || s.shake > 0.35) && s.level > 0) {
-          const loss = Math.min(s.level, (jerk * 0.006 + s.shake * 0.02) * dt * 6);
+        if ((jerk > 2.2 || s.shake > 0.45) && s.level > 0) {
+          const loss = Math.min(s.level, (jerk * 0.004 + s.shake * 0.015) * dt * 6);
           s.level -= loss;
           s.spilled += loss;
           s.foamOverflow = Math.min(1, s.foamOverflow + loss * 6);
           if (loss > 0.0015) {
-            spawnSplash(s, 8);
+            spawnSplash(s, 6);
             audio.splash(loss * 200);
           }
         }
+
         s.foamOverflow = Math.max(0, s.foamOverflow - dt * 0.6);
 
         if (s.level <= 0.001) {
