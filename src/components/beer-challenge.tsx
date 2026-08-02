@@ -822,13 +822,13 @@ function draw(
     ctx.save();
     const foamThickness = 26 + s.foamOverflow * 18;
     ctx.beginPath();
-    ctx.moveTo(surfPointX(0), surfPointY(0) - 10);
-    for (let i = 1; i < POINTS; i++) ctx.lineTo(surfPointX(i), surfPointY(i) - 10);
+    strokeSurface(-10);
     for (let i = POINTS - 1; i >= 0; i--)
       ctx.lineTo(surfPointX(i), surfPointY(i) + foamThickness);
     ctx.closePath();
     ctx.fillStyle = "rgba(255,251,235,0.92)";
     ctx.fill();
+
     // foam texture
     ctx.globalAlpha = 0.5;
     ctx.fillStyle = "#ffffff";
