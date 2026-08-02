@@ -817,3 +817,43 @@ function draw(
     ctx.fill();
   }
 }
+
+/* ------------------------------------------------------------------ */
+/*  Confetti                                                           */
+/* ------------------------------------------------------------------ */
+
+function Confetti() {
+  const pieces = Array.from({ length: 60 }, (_, i) => ({
+    left: `${(i * 37) % 100}%`,
+    delay: `${(i % 12) * 0.12}s`,
+    dur: `${2 + ((i * 7) % 18) / 10}s`,
+    color: ["#38bdf8", "#fbbf24", "#f1f5f9", "#f59e0b"][i % 4],
+    size: 5 + ((i * 5) % 7),
+  }));
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      {pieces.map((p, i) => (
+        <span
+          key={i}
+          className="beer-confetti absolute top-[-10%] block rounded-[2px]"
+          style={{
+            left: p.left,
+            width: p.size,
+            height: p.size * 2,
+            background: p.color,
+            animationDelay: p.delay,
+            animationDuration: p.dur,
+          }}
+        />
+      ))}
+      <style>{`
+        @keyframes beer-confetti-fall {
+          0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+          10% { opacity: 1; }
+          100% { transform: translateY(115vh) rotate(720deg); opacity: 0; }
+        }
+        .beer-confetti { animation-name: beer-confetti-fall; animation-timing-function: linear; animation-iteration-count: infinite; }
+      `}</style>
+    </div>
+  );
+}
