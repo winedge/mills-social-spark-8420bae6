@@ -429,30 +429,37 @@ function ChallengeOverlay({
       s.tiltVel += (rawVel - s.tiltVel) * (1 - Math.exp(-dt * 8));
       s.prevTilt = s.tilt;
 
-      // wave propagation along surface (fixed sub-steps for stability)
+      // modal slosh solver: 3 damped oscillators driven by tilt acceleration.
+      // exact-ish semi-implicit integration -> stable at any framerate, no sub-steps.
       const jerk = Math.min(3, Math.abs(s.tiltVel));
-      const steps = Math.min(3, Math.max(1, Math.round(dt / 0.0167)));
-      const sdt = dt / steps;
-      for (let n = 0; n < steps; n++) {
-        let prev = s.waveY[POINTS - 1];
-        const first = s.waveY[0];
-        for (let i = 0; i < POINTS; i++) {
-          const cur = s.waveY[i];
-          const next = i === POINTS - 1 ? first : s.waveY[i + 1];
-          const acc = (prev + next - 2 * cur) * 34 - cur * 6;
-          s.waveV[i] = (s.waveV[i] + acc * sdt) * 0.982;
-          s.waveY[i] = cur + s.waveV[i] * sdt;
-          prev = cur;
+      const tiltAcc = (s.tiltVel - s.prevTiltVel) / Math.max(dt, 0.001);
+      s.prevTiltVel = s.tiltVel;
+
+      // forcing: sideways acceleration of the glass + random shake energy
+      const drive =
+        Math.max(-8, Math.min(8, tiltAcc)) * 0.055 +
+        s.tiltVel * 0.12 +
+        s.shake * (Math.random() - 0.5) * 1.6;
+
+      let energy = 0;
+      for (let m = 0; m < MODES; m++) {
+        const w = MODE_W[m];
+        const acc = -w * w * s.modeA[m] - 2 * MODE_D[m] * s.modeV[m] + drive * MODE_GAIN[m];
+        s.modeV[m] += acc * dt;
+        s.modeA[m] += s.modeV[m] * dt;
+        // clamp so a violent shake can't blow the surface out of the glass
+        const lim = 0.55 * MODE_GAIN[m];
+        if (s.modeA[m] > lim) {
+          s.modeA[m] = lim;
+          s.modeV[m] *= 0.5;
+        } else if (s.modeA[m] < -lim) {
+          s.modeA[m] = -lim;
+          s.modeV[m] *= 0.5;
         }
+        energy += Math.abs(s.modeA[m]) + Math.abs(s.modeV[m]) / w;
       }
-      if (jerk > 1.6 || s.shake > 0.25) {
-        const amp = (jerk * 1.2 + s.shake * 12) * dt;
-        const dir = Math.sign(s.tiltVel) || 1;
-        for (let i = 0; i < 5; i++) {
-          const idx = dir > 0 ? POINTS - 1 - i : i;
-          s.waveV[idx] += amp * 18;
-        }
-      }
+      s.waveEnergy = Math.min(1, energy * 1.4);
+
 
 
       if (ph === "playing") {
