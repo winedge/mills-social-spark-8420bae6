@@ -703,6 +703,27 @@ function ChallengeOverlay({
         </div>
       )}
 
+      {/* CALIBRATE */}
+      {phase === "calibrate" && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-end gap-4 px-6 pb-16 text-center">
+          <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
+            Calibrating gyroscope
+          </p>
+          <h3 className="font-display text-3xl uppercase leading-none tracking-tight">
+            Hold your phone how you'd hold a pint
+          </h3>
+          <p className="max-w-xs text-sm text-muted-foreground">
+            Stay still - this pose becomes your level, no-spill neutral.
+          </p>
+          <div
+            className="mt-2 flex h-24 w-24 items-center justify-center rounded-full border-2 border-accent/60 font-display text-5xl text-accent"
+            style={{ boxShadow: "0 0 45px rgba(56,189,248,0.35)" }}
+          >
+            {calCount}
+          </div>
+        </div>
+      )}
+
       {/* READY */}
       {phase === "ready" && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-end gap-4 px-6 pb-16 text-center">
@@ -712,9 +733,22 @@ function ChallengeOverlay({
           <h3 className="font-display text-3xl uppercase leading-none tracking-tight">
             Glass is full
           </h3>
+
+          <div className="w-full max-w-xs rounded-xl border border-white/10 bg-black/50 p-4 backdrop-blur">
+            <SensSlider sens={sens} setSens={setSens} liveTilt={liveTilt} />
+            {motionOk && (
+              <button
+                onClick={startCalibration}
+                className="mt-3 w-full rounded-full border border-border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground"
+              >
+                Recalibrate neutral
+              </button>
+            )}
+          </div>
+
           <button
             onClick={start}
-            className="mt-2 rounded-full bg-accent px-14 py-4 font-display text-lg uppercase tracking-[0.3em] text-background"
+            className="mt-1 rounded-full bg-accent px-14 py-4 font-display text-lg uppercase tracking-[0.3em] text-background"
             style={{ boxShadow: "0 0 50px rgba(56,189,248,0.45)" }}
           >
             Start
@@ -724,15 +758,46 @@ function ChallengeOverlay({
 
       {/* HUD */}
       {phase === "playing" && (
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-2 px-4 pt-4 font-mono text-[10px] uppercase tracking-[0.2em]"
-          style={{ paddingRight: 64 }}
-        >
-          <HudChip label="Time" value={`${hud.time.toFixed(1)}s`} />
-          <HudChip label="Beer" value={`${Math.round(hud.level * 100)}%`} />
-          <HudChip label="Spill" value={`${Math.round(hud.spill * 100)}%`} tone="warn" />
-        </div>
+        <>
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-2 px-4 pt-4 font-mono text-[10px] uppercase tracking-[0.2em]"
+            style={{ paddingRight: 64 }}
+          >
+            <HudChip label="Time" value={`${hud.time.toFixed(1)}s`} />
+            <HudChip label="Beer" value={`${Math.round(hud.level * 100)}%`} />
+            <HudChip label="Spill" value={`${Math.round(hud.spill * 100)}%`} tone="warn" />
+          </div>
+
+          <button
+            onClick={() => setShowSens((v) => !v)}
+            aria-label="Tilt sensitivity"
+            className="absolute bottom-6 left-4 z-30 rounded-full border border-white/20 bg-black/50 p-2.5 text-foreground backdrop-blur"
+          >
+            <Settings2 size={18} />
+          </button>
+
+          {showSens && (
+            <div className="absolute bottom-20 left-4 z-30 w-64 rounded-xl border border-white/10 bg-black/70 p-4 backdrop-blur animate-chip-in">
+              <SensSlider sens={sens} setSens={setSens} liveTilt={liveTilt} />
+              <button
+                onClick={() => {
+                  tiltRef.current = {
+                    ...tiltRef.current,
+                    zeroG: rawRef.current.g,
+                    zeroB: rawRef.current.b,
+                  };
+                  saveTilt(tiltRef.current);
+                  setShowSens(false);
+                }}
+                className="mt-3 w-full rounded-full border border-border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground"
+              >
+                Set current pose as level
+              </button>
+            </div>
+          )}
+        </>
       )}
+
 
       {/* RESULT */}
       {phase === "result" && result && (
