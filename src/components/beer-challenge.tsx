@@ -140,10 +140,67 @@ function useAudio() {
     });
   }, []);
 
+  /** Throaty "glug" of a swallow - pitch drops as the glass empties. */
+  const glug = useCallback((level = 1) => {
+    const c = ctx();
+    if (!c) return;
+    const t = c.currentTime;
+    const o = c.createOscillator();
+    const g = c.createGain();
+    const filt = c.createBiquadFilter();
+    filt.type = "lowpass";
+    filt.frequency.value = 700;
+    o.type = "sine";
+    // lower pitch when the glass is fuller = deeper gulp
+    const base = 110 + (1 - level) * 90;
+    o.frequency.setValueAtTime(base * 1.5, t);
+    o.frequency.exponentialRampToValueAtTime(base, t + 0.11);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.13, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+    o.connect(filt).connect(g).connect(c.destination);
+    o.start(t);
+    o.stop(t + 0.2);
+  }, []);
+
+  /** Short "ugh" grunt when beer goes on the floor. */
+  const grunt = useCallback(() => {
+    const c = ctx();
+    if (!c) return;
+    const t = c.currentTime;
+    const o = c.createOscillator();
+    const g = c.createGain();
+    const filt = c.createBiquadFilter();
+    filt.type = "bandpass";
+    filt.frequency.value = 320;
+    filt.Q.value = 3;
+    o.type = "sawtooth";
+    o.frequency.setValueAtTime(160, t);
+    o.frequency.exponentialRampToValueAtTime(95, t + 0.28);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.1, t + 0.04);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
+    o.connect(filt).connect(g).connect(c.destination);
+    o.start(t);
+    o.stop(t + 0.34);
+  }, []);
+
   useEffect(() => () => stopAmbience(), [stopAmbience]);
 
-  return { startAmbience, stopAmbience, splash, cheers };
+  return { startAmbience, stopAmbience, splash, cheers, glug, grunt };
 }
+
+/** Subtle vibration - silently ignored on devices without the API. */
+function haptic(pattern: number | number[]) {
+  try {
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      navigator.vibrate(pattern);
+    }
+  } catch {
+    /* noop */
+  }
+}
+
 
 /* ------------------------------------------------------------------ */
 /*  Simulation state (kept in refs, driven by rAF)                     */
