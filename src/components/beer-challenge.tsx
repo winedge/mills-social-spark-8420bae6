@@ -123,13 +123,14 @@ function useAudio() {
 /*  Simulation state (kept in refs, driven by rAF)                     */
 /* ------------------------------------------------------------------ */
 
-const POINTS = 48;
+const POINTS = 32;
 
 type Sim = {
   level: number; // 0..1 fill of glass
   drank: number; // units drunk
   spilled: number; // units spilled
-  tilt: number; // radians, current tilt of device
+  tilt: number; // radians, smoothed tilt used by physics/render
+  targetTilt: number; // raw input tilt (sensor or drag)
   tiltVel: number;
   prevTilt: number;
   waveY: number[];
@@ -148,11 +149,12 @@ function makeSim(): Sim {
     drank: 0,
     spilled: 0,
     tilt: 0,
+    targetTilt: 0,
     tiltVel: 0,
     prevTilt: 0,
     waveY: new Array(POINTS).fill(0),
     waveV: new Array(POINTS).fill(0),
-    bubbles: Array.from({ length: 28 }, () => ({
+    bubbles: Array.from({ length: 16 }, () => ({
       x: Math.random(),
       y: Math.random(),
       r: 1 + Math.random() * 3,
@@ -165,6 +167,7 @@ function makeSim(): Sim {
     elapsed: 0,
   };
 }
+
 
 /* ------------------------------------------------------------------ */
 /*  Main component                                                     */
@@ -294,10 +297,15 @@ function ChallengeOverlay({
     const handler = (e: DeviceOrientationEvent) => {
       const gamma = e.gamma ?? 0; // left/right tilt, -90..90
       const beta = e.beta ?? 0; // front/back tilt
-      // combine: mostly gamma, beta contributes past vertical
-      const deg = Math.max(-100, Math.min(100, gamma + (beta - 45) * 0.35));
-      simRef.current.tilt = (deg * Math.PI) / 180;
+      // gentler mapping: gamma dominates, beta adds a light contribution
+      let deg = gamma * 0.62 + (beta - 45) * 0.16;
+      // dead zone around neutral so tiny hand jitter does nothing
+      if (Math.abs(deg) < 4) deg = 0;
+      else deg = deg - Math.sign(deg) * 4;
+      deg = Math.max(-85, Math.min(85, deg));
+      simRef.current.targetTilt = (deg * Math.PI) / 180;
     };
+
     window.addEventListener("deviceorientation", handler, true);
     return () => window.removeEventListener("deviceorientation", handler, true);
   }, [motionOk]);
@@ -308,16 +316,18 @@ function ChallengeOverlay({
     if (!el) return;
     const getX = (e: PointerEvent) => e.clientX;
     const down = (e: PointerEvent) => {
-      dragRef.current = { active: true, x: getX(e), tilt: simRef.current.tilt };
+      dragRef.current = { active: true, x: getX(e), tilt: simRef.current.targetTilt };
       el.setPointerCapture(e.pointerId);
     };
     const move = (e: PointerEvent) => {
       const d = dragRef.current;
       if (!d?.active) return;
       const dx = getX(e) - d.x;
-      const target = d.tilt + (dx / Math.max(120, window.innerWidth * 0.4)) * (Math.PI / 2);
-      simRef.current.tilt = Math.max(-1.8, Math.min(1.8, target));
+      // lower sensitivity: full drag across ~70% of the screen = 90deg
+      const target = d.tilt + (dx / Math.max(200, window.innerWidth * 0.7)) * (Math.PI / 2);
+      simRef.current.targetTilt = Math.max(-1.5, Math.min(1.5, target));
     };
+
     const up = () => {
       if (dragRef.current) dragRef.current.active = false;
     };
@@ -366,9 +376,9 @@ function ChallengeOverlay({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let dpr = Math.min(2, window.devicePixelRatio || 1);
+    let dpr = Math.min(1.5, window.devicePixelRatio || 1);
     const resize = () => {
-      dpr = Math.min(2, window.devicePixelRatio || 1);
+      dpr = Math.min(1.5, window.devicePixelRatio || 1);
       canvas.width = window.innerWidth * dpr;
       canvas.height = window.innerHeight * dpr;
       canvas.style.width = `${window.innerWidth}px`;
@@ -388,56 +398,71 @@ function ChallengeOverlay({
       const ph = phaseRef.current;
 
       /* ---- physics ---- */
-      s.tiltVel = (s.tilt - s.prevTilt) / Math.max(dt, 0.001);
-      s.prevTilt = s.tilt;
+      // critically-damped smoothing of raw sensor/drag input -> removes jitter
+      const follow = 1 - Math.exp(-dt * 5.5);
+      s.tilt += (s.targetTilt - s.tilt) * follow;
       s.shake = Math.max(0, s.shake - dt * 1.2);
 
-      // wave propagation along surface
+      // low-passed angular velocity so a single noisy sample can't spike jerk
+      const rawVel = (s.tilt - s.prevTilt) / Math.max(dt, 0.001);
+      s.tiltVel += (rawVel - s.tiltVel) * (1 - Math.exp(-dt * 8));
+      s.prevTilt = s.tilt;
+
+      // wave propagation along surface (fixed sub-steps for stability)
       const jerk = Math.min(3, Math.abs(s.tiltVel));
-      for (let i = 0; i < POINTS; i++) {
-        const l = s.waveY[(i - 1 + POINTS) % POINTS];
-        const r = s.waveY[(i + 1) % POINTS];
-        const acc = (l + r - 2 * s.waveY[i]) * 34 - s.waveY[i] * 6;
-        s.waveV[i] = (s.waveV[i] + acc * dt) * 0.985;
-        s.waveY[i] += s.waveV[i] * dt;
-      }
-      if (jerk > 1.2 || s.shake > 0.2) {
-        const amp = (jerk * 1.6 + s.shake * 14) * dt;
-        const dir = Math.sign(s.tiltVel) || 1;
-        for (let i = 0; i < 6; i++) {
-          const idx = dir > 0 ? POINTS - 1 - i : i;
-          s.waveV[idx] += amp * 22;
+      const steps = Math.min(3, Math.max(1, Math.round(dt / 0.0167)));
+      const sdt = dt / steps;
+      for (let n = 0; n < steps; n++) {
+        let prev = s.waveY[POINTS - 1];
+        const first = s.waveY[0];
+        for (let i = 0; i < POINTS; i++) {
+          const cur = s.waveY[i];
+          const next = i === POINTS - 1 ? first : s.waveY[i + 1];
+          const acc = (prev + next - 2 * cur) * 34 - cur * 6;
+          s.waveV[i] = (s.waveV[i] + acc * sdt) * 0.982;
+          s.waveY[i] = cur + s.waveV[i] * sdt;
+          prev = cur;
         }
       }
+      if (jerk > 1.6 || s.shake > 0.25) {
+        const amp = (jerk * 1.2 + s.shake * 12) * dt;
+        const dir = Math.sign(s.tiltVel) || 1;
+        for (let i = 0; i < 5; i++) {
+          const idx = dir > 0 ? POINTS - 1 - i : i;
+          s.waveV[idx] += amp * 18;
+        }
+      }
+
 
       if (ph === "playing") {
         s.elapsed = (now - s.start) / 1000;
         const absTilt = Math.abs(s.tilt);
         const deg = (absTilt * 180) / Math.PI;
 
-        if (deg > 55 && s.level > 0) {
-          const steep = Math.min(1, (deg - 55) / 45);
-          const smooth = Math.max(0, 1 - jerk / 1.4);
-          const flow = steep * 0.32 * dt;
-          const drankPart = flow * (0.35 + 0.65 * smooth);
+        if (deg > 50 && s.level > 0) {
+          const steep = Math.min(1, (deg - 50) / 40);
+          const smooth = Math.max(0, 1 - jerk / 2.2);
+          const flow = steep * 0.34 * dt;
+          const drankPart = flow * (0.45 + 0.55 * smooth);
           const spillPart = flow - drankPart;
           s.level = Math.max(0, s.level - flow);
           s.drank += drankPart;
           s.spilled += spillPart;
-          if (spillPart > 0.0012) spawnSplash(s, 4);
+          if (spillPart > 0.002) spawnSplash(s, 3);
         }
 
         // jerky / shaky movement spills regardless of angle
-        if ((jerk > 1.7 || s.shake > 0.35) && s.level > 0) {
-          const loss = Math.min(s.level, (jerk * 0.006 + s.shake * 0.02) * dt * 6);
+        if ((jerk > 2.2 || s.shake > 0.45) && s.level > 0) {
+          const loss = Math.min(s.level, (jerk * 0.004 + s.shake * 0.015) * dt * 6);
           s.level -= loss;
           s.spilled += loss;
           s.foamOverflow = Math.min(1, s.foamOverflow + loss * 6);
           if (loss > 0.0015) {
-            spawnSplash(s, 8);
+            spawnSplash(s, 6);
             audio.splash(loss * 200);
           }
         }
+
         s.foamOverflow = Math.max(0, s.foamOverflow - dt * 0.6);
 
         if (s.level <= 0.001) {
@@ -476,7 +501,7 @@ function ChallengeOverlay({
         p.y += p.vy * dt;
         p.life -= dt;
       }
-      s.particles = s.particles.filter((p) => p.life > 0).slice(-160);
+      s.particles = s.particles.filter((p) => p.life > 0).slice(-90);
 
       draw(ctx, canvas, dpr, s, ph);
       rafRef.current = requestAnimationFrame(loop);
@@ -737,10 +762,7 @@ function draw(
   ctx.lineTo(gx, gy + gh + 40);
   ctx.closePath();
   ctx.fillStyle = beerGrad;
-  ctx.shadowColor = "rgba(245,158,11,0.55)";
-  ctx.shadowBlur = 40;
   ctx.fill();
-  ctx.shadowBlur = 0;
 
   // bubbles inside beer
   ctx.fillStyle = "rgba(255,255,255,0.55)";
@@ -766,15 +788,13 @@ function draw(
       ctx.lineTo(surfPointX(i), surfPointY(i) + foamThickness);
     ctx.closePath();
     ctx.fillStyle = "rgba(255,251,235,0.92)";
-    ctx.shadowColor = "rgba(255,255,255,0.5)";
-    ctx.shadowBlur = 18 + s.foamOverflow * 30;
     ctx.fill();
     // foam texture
     ctx.globalAlpha = 0.5;
-    for (let i = 0; i < POINTS; i += 2) {
+    ctx.fillStyle = "#ffffff";
+    for (let i = 0; i < POINTS; i += 3) {
       ctx.beginPath();
       ctx.arc(surfPointX(i), surfPointY(i) - 4, 7 + ((i * 13) % 7), 0, Math.PI * 2);
-      ctx.fillStyle = "#ffffff";
       ctx.fill();
     }
     ctx.globalAlpha = 1;
