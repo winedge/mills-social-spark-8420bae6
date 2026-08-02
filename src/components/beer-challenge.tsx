@@ -123,13 +123,14 @@ function useAudio() {
 /*  Simulation state (kept in refs, driven by rAF)                     */
 /* ------------------------------------------------------------------ */
 
-const POINTS = 48;
+const POINTS = 32;
 
 type Sim = {
   level: number; // 0..1 fill of glass
   drank: number; // units drunk
   spilled: number; // units spilled
-  tilt: number; // radians, current tilt of device
+  tilt: number; // radians, smoothed tilt used by physics/render
+  targetTilt: number; // raw input tilt (sensor or drag)
   tiltVel: number;
   prevTilt: number;
   waveY: number[];
@@ -148,11 +149,12 @@ function makeSim(): Sim {
     drank: 0,
     spilled: 0,
     tilt: 0,
+    targetTilt: 0,
     tiltVel: 0,
     prevTilt: 0,
     waveY: new Array(POINTS).fill(0),
     waveV: new Array(POINTS).fill(0),
-    bubbles: Array.from({ length: 28 }, () => ({
+    bubbles: Array.from({ length: 16 }, () => ({
       x: Math.random(),
       y: Math.random(),
       r: 1 + Math.random() * 3,
@@ -165,6 +167,7 @@ function makeSim(): Sim {
     elapsed: 0,
   };
 }
+
 
 /* ------------------------------------------------------------------ */
 /*  Main component                                                     */
