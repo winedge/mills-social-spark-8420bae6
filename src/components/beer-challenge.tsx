@@ -123,7 +123,13 @@ function useAudio() {
 /*  Simulation state (kept in refs, driven by rAF)                     */
 /* ------------------------------------------------------------------ */
 
-const POINTS = 32;
+// Surface is a *modal* model: a few damped standing-wave modes instead of a
+// 32-node spring chain. Same slosh feel, ~10x cheaper per frame.
+const MODES = 3;
+const MODE_W = [4.9, 8.6, 13.4]; // rad/s natural frequencies
+const MODE_D = [1.05, 1.9, 3.1]; // damping
+const MODE_GAIN = [1, 0.45, 0.2]; // how strongly tilt input excites each mode
+const POINTS = 14; // render samples across the surface
 
 type Sim = {
   level: number; // 0..1 fill of glass
@@ -133,8 +139,10 @@ type Sim = {
   targetTilt: number; // raw input tilt (sensor or drag)
   tiltVel: number;
   prevTilt: number;
-  waveY: number[];
-  waveV: number[];
+  prevTiltVel: number;
+  modeA: number[]; // modal amplitudes
+  modeV: number[]; // modal velocities
+  waveEnergy: number; // 0..1 slosh intensity, drives spill + foam
   bubbles: { x: number; y: number; r: number; v: number }[];
   particles: { x: number; y: number; vx: number; vy: number; life: number; r: number }[];
   foamOverflow: number;
@@ -152,8 +160,10 @@ function makeSim(): Sim {
     targetTilt: 0,
     tiltVel: 0,
     prevTilt: 0,
-    waveY: new Array(POINTS).fill(0),
-    waveV: new Array(POINTS).fill(0),
+    prevTiltVel: 0,
+    modeA: new Array(MODES).fill(0),
+    modeV: new Array(MODES).fill(0),
+    waveEnergy: 0,
     bubbles: Array.from({ length: 16 }, () => ({
       x: Math.random(),
       y: Math.random(),
@@ -167,6 +177,17 @@ function makeSim(): Sim {
     elapsed: 0,
   };
 }
+
+/** Surface height offset (normalized) at u in [0,1] across the glass. */
+function waveAt(s: Sim, u: number): number {
+  const x = u - 0.5;
+  return (
+    s.modeA[0] * Math.sin(Math.PI * x) +
+    s.modeA[1] * Math.sin(2 * Math.PI * x) +
+    s.modeA[2] * Math.sin(3 * Math.PI * x)
+  );
+}
+
 
 
 /* ------------------------------------------------------------------ */
