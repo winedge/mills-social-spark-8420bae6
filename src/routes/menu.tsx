@@ -171,7 +171,7 @@ function MenuPage() {
     if (happy) {
       happy.children.forEach((child) => {
         const match = child.name.match(/^\$(\d+)/);
-        if (match) map.set(match[1], child.id);
+        if (match && !map.has(match[1])) map.set(match[1], child.id);
       });
     }
     return map;
