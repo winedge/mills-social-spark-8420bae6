@@ -571,6 +571,10 @@ function ChallengeOverlay({
     let last = performance.now();
     let hudAcc = 0;
     let introT = 0;
+    let glugAcc = 0; // time spent drinking since last gulp cue
+    let gruntCd = 0; // cooldown so grunts don't machine-gun
+    let hapticCd = 0; // cooldown for spill buzz
+
 
     const loop = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
