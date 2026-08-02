@@ -4,6 +4,7 @@ import { Target, Dices, Gamepad2, CircleDot, Trophy, Clock, Users, ChevronLeft, 
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { BeerChallenge } from "@/components/beer-challenge";
+import { CocktailChallenge } from "@/components/cocktail-challenge";
 import playHero from "@/assets/play-hero.jpg";
 import poolImg from "@/assets/play-pool.jpg";
 import dartsImg from "@/assets/play-darts.jpg";
@@ -38,6 +39,7 @@ function PlayPage() {
       <BoardSection />
       <ArcadeSection />
       <BeerChallenge />
+      <CocktailChallenge />
       <HouseRules />
 
       <SiteFooter />
