@@ -302,15 +302,36 @@ function ChallengeOverlay({
   const [hud, setHud] = useState({ time: 0, level: 1, spill: 0, drink: 0 });
   const [result, setResult] = useState<{ eff: number; time: number; spill: number; reward: Reward } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [sens, setSens] = useState(1);
+  const [showSens, setShowSens] = useState(false);
+  const [calCount, setCalCount] = useState(3);
+  const [liveTilt, setLiveTilt] = useState(0);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const simRef = useRef<Sim>(makeSim());
   const phaseRef = useRef<Phase>("intro");
   const rafRef = useRef<number>(0);
   const dragRef = useRef<{ active: boolean; x: number; tilt: number } | null>(null);
+  const tiltRef = useRef<TiltSetup>(DEFAULT_TILT);
+  const rawRef = useRef<{ g: number; b: number }>({ g: 0, b: 45 });
   const audio = useAudio();
 
   phaseRef.current = phase;
+
+  /* restore saved calibration + sensitivity */
+  useEffect(() => {
+    const saved = loadTilt();
+    if (saved) {
+      tiltRef.current = saved;
+      setSens(saved.sens);
+    }
+  }, []);
+
+  /* keep sensitivity in the ref + persisted */
+  useEffect(() => {
+    tiltRef.current = { ...tiltRef.current, sens };
+    saveTilt(tiltRef.current);
+  }, [sens]);
 
   /* lock scroll */
   useEffect(() => {
@@ -325,18 +346,26 @@ function ChallengeOverlay({
   const requestMotion = useCallback(async () => {
     audio.startAmbience();
     const DOE = (window as any).DeviceOrientationEvent;
+    let ok: boolean;
     if (DOE && typeof DOE.requestPermission === "function") {
       try {
         const res = await DOE.requestPermission();
-        setMotionOk(res === "granted");
+        ok = res === "granted";
       } catch {
-        setMotionOk(false);
+        ok = false;
       }
     } else {
-      setMotionOk(typeof window !== "undefined" && "DeviceOrientationEvent" in window);
+      ok = typeof window !== "undefined" && "DeviceOrientationEvent" in window;
     }
-    setPhase("ready");
+    setMotionOk(ok);
+    // one-time calibration: only when the gyro works and we've never calibrated
+    setPhase(ok && !loadTilt() ? "calibrate" : "ready");
   }, [audio]);
+
+  const startCalibration = useCallback(() => {
+    setCalCount(3);
+    setPhase("calibrate");
+  }, []);
 
   /* orientation listener */
   useEffect(() => {
@@ -344,18 +373,67 @@ function ChallengeOverlay({
     const handler = (e: DeviceOrientationEvent) => {
       const gamma = e.gamma ?? 0; // left/right tilt, -90..90
       const beta = e.beta ?? 0; // front/back tilt
-      // gentler mapping: gamma dominates, beta adds a light contribution
-      let deg = gamma * 0.62 + (beta - 45) * 0.16;
+      rawRef.current = { g: gamma, b: beta };
+
+      const cal = tiltRef.current;
+      // neutral pose subtracted, then scaled by the player's sensitivity
+      let deg = ((gamma - cal.zeroG) * 0.62 + (beta - cal.zeroB) * 0.16) * cal.sens;
       // dead zone around neutral so tiny hand jitter does nothing
       if (Math.abs(deg) < 4) deg = 0;
       else deg = deg - Math.sign(deg) * 4;
       deg = Math.max(-85, Math.min(85, deg));
-      simRef.current.targetTilt = (deg * Math.PI) / 180;
+      if (phaseRef.current !== "playing") simRef.current.targetTilt = (deg * Math.PI) / 180;
+      else simRef.current.targetTilt = (deg * Math.PI) / 180;
     };
 
     window.addEventListener("deviceorientation", handler, true);
     return () => window.removeEventListener("deviceorientation", handler, true);
   }, [motionOk]);
+
+  /* calibration countdown: average the pose over the last second */
+  useEffect(() => {
+    if (phase !== "calibrate") return;
+    let g = 0;
+    let b = 0;
+    let n = 0;
+    const sample = window.setInterval(() => {
+      g += rawRef.current.g;
+      b += rawRef.current.b;
+      n++;
+    }, 60);
+    const tick = window.setInterval(() => {
+      setCalCount((c) => {
+        if (c <= 1) {
+          window.clearInterval(tick);
+          window.clearInterval(sample);
+          const zeroG = n ? g / n : 0;
+          const zeroB = n ? b / n : 45;
+          tiltRef.current = { zeroG, zeroB, sens: tiltRef.current.sens };
+          saveTilt(tiltRef.current);
+          simRef.current.targetTilt = 0;
+          simRef.current.tilt = 0;
+          setPhase("ready");
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+    return () => {
+      window.clearInterval(tick);
+      window.clearInterval(sample);
+    };
+  }, [phase]);
+
+  /* live tilt readout for the calibration / sensitivity UI */
+  useEffect(() => {
+    if (phase !== "ready" && !showSens) return;
+    const id = window.setInterval(
+      () => setLiveTilt((simRef.current.tilt * 180) / Math.PI),
+      120,
+    );
+    return () => window.clearInterval(id);
+  }, [phase, showSens]);
+
 
   /* touch / mouse fallback */
   useEffect(() => {
