@@ -89,6 +89,10 @@ const RACK_Z = -1.75;
 /* approximate resting camera position - used as the audio listener */
 const LISTENER = { x: 0, y: 1.02, z: 2.2 };
 const BALL_HOME = { y: 0.34, z: 0.42 };
+/* beer level a fresh cup is poured to, and how much each ball displaces */
+export const BASE_LEVEL = 0.72;
+export const LEVEL_PER_BALL = 0.34;
+
 
 /* cup formations, chosen by how many cups remain */
 export function makeCups(formation: "triangle" | "diamond" | "line" | "tight" = "triangle") {
