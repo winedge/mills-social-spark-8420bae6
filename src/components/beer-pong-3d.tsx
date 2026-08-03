@@ -316,9 +316,25 @@ function Cup({ cup }: { cup: Cup }) {
         <torusGeometry args={[CUP_R * 0.985, CUP_R * 0.075, 12, 44]} />
         <meshPhysicalMaterial color="#e14a52" roughness={0.28} clearcoat={0.9} />
       </mesh>
-      {/* beer */}
-      <mesh position={[0, CUP_H * 0.74, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[CUP_R * 0.92, 36]} />
+      {/* beer body - cup filled almost to the rim */}
+      <mesh position={[0, CUP_H * 0.4, 0]}>
+        <cylinderGeometry
+          args={[CUP_R * 0.94, CUP_R * 0.68, CUP_H * 0.8, 36, 1, true]}
+        />
+        <meshPhysicalMaterial
+          color="#d9931f"
+          roughness={0.18}
+          metalness={0.05}
+          transmission={0.35}
+          thickness={0.05}
+          emissive="#8a5408"
+          emissiveIntensity={0.28}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      {/* beer surface */}
+      <mesh position={[0, CUP_H * 0.8, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[CUP_R * 0.94, 36]} />
         <meshPhysicalMaterial
           color="#e8a72c"
           roughness={0.12}
@@ -328,10 +344,19 @@ function Cup({ cup }: { cup: Cup }) {
           clearcoat={1}
         />
       </mesh>
-      {/* foam ring */}
-      <mesh position={[0, CUP_H * 0.755, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[CUP_R * 0.72, CUP_R * 0.92, 32]} />
-        <meshStandardMaterial color="#f7e6bd" roughness={0.85} transparent opacity={0.75} />
+      {/* foam head */}
+      <mesh position={[0, CUP_H * 0.815, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[CUP_R * 0.94, 36]} />
+        <meshStandardMaterial color="#f7e6bd" roughness={0.9} transparent opacity={0.55} />
+      </mesh>
+      <mesh position={[0, CUP_H * 0.822, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[CUP_R * 0.74, CUP_R * 0.94, 32]} />
+        <meshStandardMaterial color="#fff6e0" roughness={0.85} transparent opacity={0.85} />
+      </mesh>
+      {/* opaque bottom of the beer so you can't see through the cup */}
+      <mesh position={[0, CUP_H * 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[CUP_R * 0.68, 28]} />
+        <meshStandardMaterial color="#b8781a" roughness={0.4} />
       </mesh>
       {/* base */}
       <mesh position={[0, 0.003, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
