@@ -254,8 +254,8 @@ function drawShaker(
       const surfaceY = h * (1 - fill * 0.55) - h * 0.05;
       const amp = 3 + s.shakeLevel * 16;
       const g = b.createLinearGradient(0, surfaceY, 0, h);
-      g.addColorStop(0, `hsla(${s.hue}, 85%, 62%, 0.72)`);
-      g.addColorStop(1, `hsla(${s.hue - 22}, 90%, 30%, 0.85)`);
+      g.addColorStop(0, `hsla(${s.hue}, 80%, 55%, 0.55)`);
+      g.addColorStop(1, `hsla(${s.hue - 22}, 85%, 24%, 0.68)`);
       b.fillStyle = g;
       b.beginPath();
       b.moveTo(0, h);
@@ -289,7 +289,7 @@ function drawShaker(
         b.rotate(c.rot);
         const size = c.r * 2.6;
         if (ice) {
-          b.globalAlpha = 0.85;
+          b.globalAlpha = 0.55;
           b.drawImage(ice, -size / 2, -size / 2, size, size);
         } else {
           b.fillStyle = "rgba(226,246,255,0.6)";
@@ -319,6 +319,12 @@ function drawShaker(
         b.fill();
       }
     }
+
+    // restore metal specular over the liquid so the steel keeps its polish
+    b.globalCompositeOperation = "source-atop";
+    b.globalAlpha = 0.45;
+    b.drawImage(img, 0, 0, w, h);
+    b.globalAlpha = 1;
 
     // warm rim light
     b.globalCompositeOperation = "source-atop";
