@@ -126,6 +126,8 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
   const [flash, setFlash] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [windUI, setWindUI] = useState(0);
+  const [aimClose, setAimClose] = useState(0);
+  const lockedRef = useRef(false);
   const start = useRef<{ x: number; y: number } | null>(null);
   const startedAt = useRef(Date.now());
 
