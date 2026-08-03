@@ -114,17 +114,21 @@ function MenuPage() {
   }, [catId, tree]);
 
   const filtered = useMemo(() => {
+    const needle = query.trim().toLowerCase();
     return dbItems.filter((i) => {
       const inCat = !selectedIds || (i.category_id && selectedIds.has(i.category_id));
       const inQ =
-        !query ||
-        i.name.toLowerCase().includes(query.toLowerCase()) ||
-        i.description.toLowerCase().includes(query.toLowerCase());
-      const c = i.calories ?? 0;
-      const inCal = c >= activeCal.min && c <= activeCal.max;
+        !needle ||
+        i.name.toLowerCase().includes(needle) ||
+        (i.description ?? "").toLowerCase().includes(needle);
+      // Items without a calorie value only show when no calorie filter is active
+      const c = i.calories ?? null;
+      const inCal =
+        activeCal.id === "all" ? true : c != null && c > 0 && c >= activeCal.min && c <= activeCal.max;
       return inCat && inQ && inCal;
     });
   }, [dbItems, selectedIds, query, activeCal]);
+
 
   const catOrder = useMemo(() => {
     const m = new Map<string, number>();
@@ -490,24 +494,28 @@ function MenuPage() {
               >
                 {[{ id: "", name: "All", count: dbItems.length }, ...tree.map((n) => ({ id: n.id, name: n.name, count: counts.get(n.id) ?? 0 }))].map(
                   (c, idx, arr) => {
-                    const active = c.id === "" ? !catId : catId === c.id || (findNode(tree, catId) != null && catId === c.id);
+                    const inBranch = c.id !== "" && !!catId && (findNode(tree, c.id)?.children.some((ch) => collectDescendantIds(ch).has(catId)) ?? false);
+                    const active = c.id === "" ? !catId : catId === c.id || inBranch;
+                    const featured = /happy hour|daily special/i.test(c.name);
                     return (
                       <button
                         key={c.id || "all"}
                         onClick={() => setCat(c.id)}
                         className={`relative group flex flex-col items-start p-4 text-left transition-colors ${
                           idx < arr.length - 1 ? "border-r border-border" : ""
-                        } ${active ? "bg-surface border-b-2 border-b-accent" : "hover:bg-surface/60 border-b-2 border-b-transparent"}`}
+                        } ${active ? "bg-surface border-b-2 border-b-accent" : "hover:bg-surface/60 border-b-2 border-b-transparent"} ${
+                          featured && !active ? "bg-accent/[0.06]" : ""
+                        }`}
                       >
                         <span className={`absolute top-2 right-2 font-mono text-[9px] ${active ? "text-accent" : "text-muted-foreground/70"}`}>
                           [ {String(c.count).padStart(2, "0")} ]
                         </span>
-                        <span className={`font-mono text-[10px] mb-1 ${active ? "text-accent/60" : "text-muted-foreground/60"}`}>
-                          CAT_{String(idx + 1).padStart(2, "0")}
+                        <span className={`font-mono text-[10px] mb-1 ${featured || active ? "text-accent/70" : "text-muted-foreground/60"}`}>
+                          {featured ? "★ FEATURED" : `CAT_${String(idx + 1).padStart(2, "0")}`}
                         </span>
                         <span
                           className={`font-display text-lg uppercase tracking-tight leading-[0.95] ${
-                            active ? "text-accent" : "text-foreground/80 group-hover:text-foreground"
+                            active || featured ? "text-accent" : "text-foreground/80 group-hover:text-foreground"
                           }`}
                         >
                           {c.name}
@@ -517,6 +525,51 @@ function MenuPage() {
                   },
                 )}
               </div>
+
+              {/* Sub-category row for the active top-level category */}
+              {(() => {
+                if (!catId) return null;
+                const top = tree.find((n) => collectDescendantIds(n).has(catId));
+                const subs = top?.children ?? [];
+                if (subs.length === 0) return null;
+                const renderSubs = (nodes: TreeNode[]) => (
+                  <div className="flex flex-wrap gap-2">
+                    {nodes.map((s) => {
+                      const on = catId === s.id || collectDescendantIds(s).has(catId);
+                      return (
+                        <button
+                          key={s.id}
+                          onClick={() => setCat(s.id)}
+                          className={`px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest border transition-colors ${
+                            on ? "bg-accent text-primary-foreground border-accent" : "border-border text-muted-foreground hover:text-foreground hover:border-accent/60"
+                          }`}
+                        >
+                          {s.name}
+                          <span className="ml-2 opacity-60">{counts.get(s.id) ?? 0}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+                const activeSub = subs.find((s) => collectDescendantIds(s).has(catId));
+                return (
+                  <div className="border-b border-border px-4 py-3 bg-background/40 space-y-2">
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono text-[10px] text-accent shrink-0">{top!.name.toUpperCase()} &gt;</span>
+                      {renderSubs(subs)}
+                      {catId !== top!.id && (
+                        <button onClick={() => setCat(top!.id)} className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-accent">
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                    {activeSub && activeSub.children.length > 0 && (
+                      <div className="pl-4 border-l border-border/60">{renderSubs(activeSub.children)}</div>
+                    )}
+                  </div>
+                );
+              })()}
+
 
               {/* Calorie range bar */}
               <div className="grid grid-cols-12">
@@ -632,30 +685,72 @@ function DailySpecialsStrip() {
   const specials = useDailySpecials();
   if (specials.length === 0) return null;
   return (
-    <section className="border-b border-border bg-card/40">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-14">
-        <div className="flex items-baseline justify-between mb-6 pb-4 border-b border-border">
-          <h2 className="font-display text-3xl md:text-4xl uppercase">Daily Specials</h2>
-          <span className="font-mono text-[10px] tracking-widest text-muted-foreground">EVERY WEEK</span>
+    <section className="relative border-y-2 border-accent/40 bg-card/50 overflow-hidden">
+      <div className="pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full bg-accent/[0.07] blur-3xl" />
+      <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-16">
+        <div className="flex flex-wrap items-end justify-between gap-3 mb-8 pb-4 border-b border-accent/30">
+          <div>
+            <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-accent block mb-2">
+              ★ Featured // Week Long
+            </span>
+            <h2 className="font-display text-4xl md:text-6xl uppercase leading-[0.9]">
+              Daily <span className="text-accent">Specials</span>
+            </h2>
+          </div>
+          <span className="font-mono text-[10px] tracking-widest text-muted-foreground">
+            {String(specials.length).padStart(2, "0")} DEALS
+          </span>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+        <div className="space-y-5">
           {specials.map((s) => (
-            <article key={s.id} className="group border border-border bg-background p-5 hover:border-accent/60 transition-colors">
-              <div className="flex items-center justify-between mb-3">
-                <span className="font-mono text-[10px] tracking-widest text-accent uppercase">{s.day}</span>
-                {s.badge && (
-                  <span className="font-mono text-[10px] tracking-widest border border-border px-2 py-0.5 text-muted-foreground uppercase">
-                    {s.badge}
-                  </span>
+            <article
+              key={s.id}
+              className="group grid gap-0 sm:grid-cols-[minmax(0,14rem)_1fr] md:grid-cols-[minmax(0,20rem)_1fr] border border-border bg-background hover:border-accent/60 transition-colors overflow-hidden"
+            >
+              {/* Image left */}
+              <div className="relative aspect-[16/10] sm:aspect-auto sm:min-h-44 bg-surface overflow-hidden border-b sm:border-b-0 sm:border-r border-border">
+                {s.image_url ? (
+                  <img
+                    src={s.image_url}
+                    alt={`${s.title} - ${s.day} special`}
+                    loading="lazy"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_30%_20%,color-mix(in_oklab,var(--accent)_18%,transparent),transparent_70%)]">
+                    <span className="font-display text-5xl uppercase text-accent/30">{s.day.slice(0, 3)}</span>
+                  </div>
+                )}
+                <span className="absolute left-0 top-0 font-mono text-[10px] tracking-[0.25em] uppercase bg-accent text-primary-foreground px-3 py-1.5">
+                  {s.day}
+                </span>
+              </div>
+
+              {/* Info right */}
+              <div className="p-5 md:p-7 flex flex-col justify-center">
+                <div className="flex items-center gap-3 mb-2 flex-wrap">
+                  <h3 className="font-display text-2xl md:text-3xl uppercase group-hover:text-accent transition-colors">
+                    {s.title}
+                  </h3>
+                  {s.badge && (
+                    <span className="font-mono text-[10px] tracking-widest border border-accent/50 text-accent px-2 py-0.5 uppercase">
+                      {s.badge}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-2xl">
+                  {s.description}
+                </p>
+                {s.price && (
+                  <div className="mt-4 font-mono text-accent text-xl md:text-2xl">{s.price}</div>
                 )}
               </div>
-              <h3 className="font-display text-xl uppercase mb-1.5">{s.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-4">{s.description}</p>
-              <div className="font-mono text-accent text-lg">{s.price}</div>
             </article>
           ))}
         </div>
       </div>
     </section>
+
   );
 }
