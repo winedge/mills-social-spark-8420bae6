@@ -120,6 +120,8 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
   const [power, setPower] = useState(0);
   const [copied, setCopied] = useState(false);
   const [muted, setMuted] = useState(false);
+  const [showSinkMix, setShowSinkMix] = useState(false);
+  const [sinkVol, setSinkVol] = useState(() => sfx.getSinkVolume());
   const [flash, setFlash] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [windUI, setWindUI] = useState(0);
