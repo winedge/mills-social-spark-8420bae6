@@ -1,15 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Copy, Check, X, Martini, Volume2, VolumeX, Sparkles } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import {
-  drawScene,
-  makeSim,
-  preloadCocktailSprites,
-  POUR_TARGET,
-  type Phase,
-  type Sim,
-} from "./cocktail-render";
-import loungeBg from "@/assets/lounge-bg.jpg";
+import { makeSim, POUR_TARGET, type Phase, type Sim } from "./cocktail-sim";
 import imgVodka from "@/assets/ing-vodka.png";
 import imgGin from "@/assets/ing-gin.png";
 import imgRum from "@/assets/ing-rum.png";
@@ -20,6 +12,10 @@ import imgMint from "@/assets/ing-mint.png";
 import imgSyrup from "@/assets/ing-syrup.png";
 import imgCola from "@/assets/ing-cola.png";
 import imgIce from "@/assets/ice-cube.png";
+
+/* WebGL scene is lazy-loaded on open (keeps three.js out of the initial bundle) */
+const CocktailScene = lazy(() => import("./cocktail-3d"));
+
 
 /* ------------------------------------------------------------------ */
 /*  Config                                                             */
@@ -297,7 +293,6 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
   const [muted, setMuted] = useState(true);
   const audio = useBarAudio(muted);
 
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const simRef = useRef<Sim>(makeSim());
   const phaseRef = useRef<Phase>("intro");
   phaseRef.current = phase;
@@ -324,9 +319,8 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
   const shakeStats = useRef({ active: 0, samples: [] as number[], overshoot: 0 });
   const pourStats = useRef({ spill: 0, slow: 0, elapsed: 0 });
 
-  /* ---------- scroll lock + sprite preload ---------- */
+  /* ---------- scroll lock ---------- */
   useEffect(() => {
-    preloadCocktailSprites();
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
@@ -334,54 +328,24 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
     };
   }, []);
 
-  /* ---------- canvas loop ---------- */
+  /* ---------- lightweight sim integrator (WebGL scene renders it) ---------- */
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    let dpr = Math.min(2, window.devicePixelRatio || 1);
-
-    const resize = () => {
-      dpr = Math.min(2, window.devicePixelRatio || 1);
-      const r = canvas.getBoundingClientRect();
-      canvas.width = Math.floor(r.width * dpr);
-      canvas.height = Math.floor(r.height * dpr);
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
     let last = performance.now();
     const loop = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       const s = simRef.current;
-      const ph = phaseRef.current;
-
-      // decay + integrate
       s.froth = Math.max(0, s.froth - dt * 0.15);
       for (const c of s.ice) {
         c.rot += dt * (0.4 + s.shakeLevel * 6) * (c.vx > 0 ? 1 : -1);
-        c.y += Math.sin(now / 400 + c.x * 10) * dt * 0.05;
-        c.y = Math.max(0, Math.min(1, c.y));
+        c.y = Math.max(0, Math.min(1, c.y + Math.sin(now / 400 + c.x * 10) * dt * 0.05));
       }
-      for (const d of s.drops) {
-        d.vy += 900 * dt;
-        d.x += d.vx * dt;
-        d.y += d.vy * dt;
-        d.life -= dt;
-      }
-      s.drops = s.drops.filter((d) => d.life > 0).slice(-70);
-
-      drawScene(ctx, canvas, dpr, s, ph, now / 1000);
       rafRef.current = requestAnimationFrame(loop);
     };
     rafRef.current = requestAnimationFrame(loop);
-    return () => {
-      cancelAnimationFrame(rafRef.current);
-      window.removeEventListener("resize", resize);
-    };
+    return () => cancelAnimationFrame(rafRef.current);
   }, []);
+
 
   /* ---------- motion permission ---------- */
   const requestMotion = useCallback(async () => {
@@ -444,15 +408,8 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
       const target = name === "Cola" ? 22 : name === "Orange Juice" ? 32 : name === "Lime Juice" ? 88 : 150;
       s.hue = s.hue + (target - s.hue) * 0.35;
     }
-    for (let i = 0; i < 8; i++)
-      s.drops.push({
-        x: (canvasRef.current?.clientWidth ?? 320) / 2 + (Math.random() - 0.5) * 40,
-        y: 120 + Math.random() * 40,
-        vx: (Math.random() - 0.5) * 60,
-        vy: -Math.random() * 80,
-        life: 0.5 + Math.random() * 0.3,
-        r: 1.5 + Math.random() * 2,
-      });
+    s.froth = Math.min(1, s.froth + 0.25);
+
     audio.pour(1);
 
     if (next.length >= RECIPE.length) {
@@ -606,16 +563,9 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
           ps.spill += rate * (1 - clean) * 4;
           if (Math.random() < 0.4) {
             haptic(6);
-            for (let i = 0; i < 4; i++)
-              s.drops.push({
-                x: (canvasRef.current?.clientWidth ?? 320) / 2 + (Math.random() - 0.5) * 30,
-                y: (canvasRef.current?.clientHeight ?? 400) * 0.5,
-                vx: (Math.random() - 0.5) * 160,
-                vy: -Math.random() * 60,
-                life: 0.5,
-                r: 1.5 + Math.random() * 2.5,
-              });
+            s.spill = Math.min(1, s.spill + 0.05);
           }
+
         }
         if (Math.random() < 0.08) audio.pour(s.pourFlow * 2);
       } else if (ps.elapsed > 1.5) {
@@ -701,46 +651,53 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
 
   /* ---------- render ---------- */
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-background animate-in fade-in duration-300">
-      {/* luxury lounge backdrop */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-70 blur-[2px]"
-        style={{ backgroundImage: `url(${loungeBg})` }}
-      />
-      <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/70 via-background/40 to-background/90" />
+    <div className="fixed inset-0 z-[100] flex flex-col bg-[#0a0705] animate-in fade-in duration-300">
+
       {/* top bar */}
       <div className="relative flex items-center justify-between px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-2">
-        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">
+        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#c8a24a]">
           Mixologist Challenge
         </span>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setMuted((m) => !m)}
             aria-label={muted ? "Unmute" : "Mute"}
-            className="grid size-9 place-items-center border border-border text-foreground/80 hover:border-accent hover:text-accent"
+            className="grid size-9 place-items-center border border-border text-foreground/80 hover:border-[#c8a24a] hover:text-[#c8a24a]"
           >
             {muted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
           </button>
           <button
             onClick={onClose}
             aria-label="Close challenge"
-            className="grid size-9 place-items-center border border-border text-foreground/80 hover:border-accent hover:text-accent"
+            className="grid size-9 place-items-center border border-border text-foreground/80 hover:border-[#c8a24a] hover:text-[#c8a24a]"
           >
             <X className="size-4" />
           </button>
         </div>
       </div>
 
-      {/* canvas stage */}
+      {/* WebGL stage */}
       <div className="relative flex-1 overflow-hidden">
-        <canvas ref={canvasRef} className="absolute inset-0 size-full touch-none" />
+        <div className="absolute inset-0">
+          <Suspense
+            fallback={
+              <div className="absolute inset-0 grid place-items-center bg-[#0a0705]">
+                <span className="font-mono text-[10px] uppercase tracking-[0.4em] text-[#c8a24a]/80">
+                  Polishing the glassware...
+                </span>
+              </div>
+            }
+          >
+            <CocktailScene simRef={simRef} phase={phase} />
+          </Suspense>
+        </div>
+
 
         {/* INTRO */}
         {phase === "intro" && (
           <div className="absolute inset-0 flex items-center justify-center px-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex w-full max-w-sm flex-col items-center gap-4 rounded-sm border border-accent/25 bg-background/70 p-7 text-center shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)] backdrop-blur-xl">
-              <Martini className="size-10 text-accent drop-shadow-[0_0_18px_rgba(56,189,248,0.6)]" />
+            <div className="flex w-full max-w-sm flex-col items-center gap-4 rounded-sm border border-[#c8a24a]/25 bg-background/70 p-7 text-center shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)] backdrop-blur-xl">
+              <Martini className="size-10 text-[#c8a24a] drop-shadow-[0_0_18px_rgba(56,189,248,0.6)]" />
               <h3 className="font-display text-3xl uppercase leading-none md:text-4xl">
                 Welcome to the Mixologist Challenge
               </h3>
@@ -756,7 +713,7 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
               </ol>
               <button
                 onClick={begin}
-                className="mt-3 bg-accent px-8 py-3.5 font-bold uppercase tracking-widest text-xs text-primary-foreground shadow-[0_10px_30px_-8px_rgba(56,189,248,0.8)] transition-transform hover:scale-105 active:scale-95"
+                className="mt-3 bg-[#c8a24a] px-8 py-3.5 font-bold uppercase tracking-widest text-xs text-black shadow-[0_10px_30px_-8px_rgba(56,189,248,0.8)] transition-transform hover:scale-105 active:scale-95"
               >
                 Start Mixing
               </button>
@@ -767,8 +724,8 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
         {/* RECIPE CARD */}
         {phase === "recipe" && (
           <div className="absolute inset-0 flex items-center justify-center px-6 animate-in fade-in zoom-in-95 duration-300">
-            <div className="w-full max-w-xs border border-accent/50 bg-surface/90 p-6 text-center shadow-2xl">
-              <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">
+            <div className="w-full max-w-xs border border-[#c8a24a]/50 bg-white/5/90 p-6 text-center shadow-2xl">
+              <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#c8a24a]">
                 Memorise the recipe
               </p>
               <h4 className="mt-2 font-display text-2xl uppercase">House Mojito Twist</h4>
@@ -791,7 +748,7 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
         {phase === "shake" && (
           <div className="absolute inset-0 flex flex-col items-center justify-between py-8">
             <div className="text-center">
-              <h4 className="font-display text-3xl uppercase text-accent animate-pulse">
+              <h4 className="font-display text-3xl uppercase text-[#c8a24a] animate-pulse">
                 Shake your phone!
               </h4>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -802,7 +759,7 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
               <ShakeRing progress={shakeProgress} />
               <button
                 onClick={finishShake}
-                className="border border-border bg-background/60 px-6 py-3 font-mono text-[11px] uppercase tracking-widest text-foreground/80 backdrop-blur-md hover:border-accent hover:text-accent"
+                className="border border-border bg-background/60 px-6 py-3 font-mono text-[11px] uppercase tracking-widest text-foreground/80 backdrop-blur-md hover:border-[#c8a24a] hover:text-[#c8a24a]"
               >
                 Done Shaking
               </button>
@@ -814,7 +771,7 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
         {phase === "pour" && (
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-between py-8">
             <div className="text-center">
-              <h4 className="font-display text-3xl uppercase text-accent">Pour it slow</h4>
+              <h4 className="font-display text-3xl uppercase text-[#c8a24a]">Pour it slow</h4>
               <p className="mt-1 text-xs text-muted-foreground">
                 {motionOk ? "Tilt your phone gently" : "Drag upward to tilt the shaker"}
               </p>
@@ -824,9 +781,9 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
                 <span>Fill {Math.round((pourLevel / POUR_TARGET) * 100)}%</span>
                 <span>Tilt {tiltDeg}°</span>
               </div>
-              <div className="mt-2 h-2 w-full overflow-hidden bg-surface">
+              <div className="mt-2 h-2 w-full overflow-hidden bg-white/5">
                 <div
-                  className="h-full bg-accent transition-[width] duration-100"
+                  className="h-full bg-[#c8a24a] transition-[width] duration-100"
                   style={{ width: `${Math.min(100, (pourLevel / POUR_TARGET) * 100)}%` }}
                 />
               </div>
@@ -837,12 +794,12 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
 
       {/* STAGE 1 BOTTLES */}
       {phase === "ingredients" && (
-        <div className="relative border-t border-border bg-surface/90 backdrop-blur-md px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 animate-in slide-in-from-bottom-6 duration-300">
+        <div className="relative border-t border-border bg-white/5/90 backdrop-blur-md px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 animate-in slide-in-from-bottom-6 duration-300">
           <div className="mb-2 flex items-center justify-between px-1">
             <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
               Tap the recipe in order
             </span>
-            <span className="font-mono text-[11px] text-accent">{points} pts</span>
+            <span className="font-mono text-[11px] text-[#c8a24a]">{points} pts</span>
           </div>
           <div className="grid grid-cols-5 gap-2">
             {BOTTLES.map((b) => {
@@ -854,8 +811,8 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
                   onClick={() => tapIngredient(b.name)}
                   className={`flex flex-col items-center gap-1 border px-1 py-2.5 transition-all active:scale-95 ${
                     used
-                      ? "border-accent/60 bg-accent/10 opacity-50"
-                      : "border-border bg-background/60 hover:border-accent"
+                      ? "border-[#c8a24a]/60 bg-[#c8a24a]/10 opacity-50"
+                      : "border-border bg-background/60 hover:border-[#c8a24a]"
                   }`}
                 >
                   <img
@@ -909,7 +866,7 @@ function ShakeRing({ progress }: { progress: number }) {
           stroke="currentColor"
           strokeWidth={8}
           strokeLinecap="round"
-          className={over ? "text-destructive" : "text-accent"}
+          className={over ? "text-destructive" : "text-[#c8a24a]"}
           strokeDasharray={circ}
           strokeDashoffset={circ * (1 - p)}
         />
@@ -940,10 +897,10 @@ function ResultPanel({
   return (
     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center overflow-y-auto bg-background/92 px-6 py-10 backdrop-blur-sm animate-in fade-in duration-300">
       <Confetti />
-      <div className="relative w-full max-w-sm border border-accent/50 bg-surface/95 p-6 text-center shadow-2xl animate-in zoom-in-95 duration-300">
-        <Sparkles className="mx-auto size-8 text-accent" />
+      <div className="relative w-full max-w-sm border border-[#c8a24a]/50 bg-white/5/95 p-6 text-center shadow-2xl animate-in zoom-in-95 duration-300">
+        <Sparkles className="mx-auto size-8 text-[#c8a24a]" />
         <h3 className="mt-3 font-display text-3xl uppercase leading-none">🍸 Cocktail Complete!</h3>
-        <p className="mt-2 font-mono text-[11px] uppercase tracking-widest text-accent">
+        <p className="mt-2 font-mono text-[11px] uppercase tracking-widest text-[#c8a24a]">
           {"★".repeat(result.reward.stars)}
           {"☆".repeat(5 - result.reward.stars)} {result.reward.title}
         </p>
@@ -958,18 +915,18 @@ function ResultPanel({
           <Stat label="Shake" value={`${Math.round(result.shake * 100)}%`} />
         </div>
 
-        <div className="mt-5 border border-accent/60 bg-accent/10 p-4">
+        <div className="mt-5 border border-[#c8a24a]/60 bg-[#c8a24a]/10 p-4">
           <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
             Unlocked discount
           </p>
-          <p className="font-display text-4xl uppercase text-accent">{result.reward.off}</p>
+          <p className="font-display text-4xl uppercase text-[#c8a24a]">{result.reward.off}</p>
           <p className="mt-1 font-mono text-lg tracking-[0.3em]">{result.reward.code}</p>
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
           <button
             onClick={onCopy}
-            className="inline-flex items-center justify-center gap-2 bg-accent px-4 py-3 font-bold uppercase tracking-widest text-[11px] text-primary-foreground"
+            className="inline-flex items-center justify-center gap-2 bg-[#c8a24a] px-4 py-3 font-bold uppercase tracking-widest text-[11px] text-black"
           >
             {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
             {copied ? "Copied" : "Copy Coupon"}
@@ -977,19 +934,19 @@ function ResultPanel({
           <Link
             to="/menu"
             onClick={onClose}
-            className="inline-flex items-center justify-center border border-accent px-4 py-3 font-bold uppercase tracking-widest text-[11px] text-accent"
+            className="inline-flex items-center justify-center border border-[#c8a24a] px-4 py-3 font-bold uppercase tracking-widest text-[11px] text-[#c8a24a]"
           >
             Redeem Now
           </Link>
           <button
             onClick={onAgain}
-            className="border border-border px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-foreground/80 hover:border-accent hover:text-accent"
+            className="border border-border px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-foreground/80 hover:border-[#c8a24a] hover:text-[#c8a24a]"
           >
             Play Again
           </button>
           <button
             onClick={onClose}
-            className="border border-border px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-foreground/80 hover:border-accent hover:text-accent"
+            className="border border-border px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-foreground/80 hover:border-[#c8a24a] hover:text-[#c8a24a]"
           >
             Close
           </button>
