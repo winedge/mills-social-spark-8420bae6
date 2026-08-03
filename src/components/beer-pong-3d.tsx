@@ -77,7 +77,21 @@ export function makeCups(formation: "triangle" | "diamond" | "line" | "tight" = 
   const gap = CUP_R * 2 + 0.014;
   const cups: Cup[] = [];
   const push = (x: number, z: number) =>
-    cups.push({ x, z, alive: true, wobble: 0, wobblePhase: 0, tip: 0, fade: 1 });
+    cups.push({
+      x,
+      z,
+      alive: true,
+      wobble: 0,
+      wobblePhase: 0,
+      tip: 0,
+      fade: 1,
+      sinkT: -1,
+      tipVel: 0,
+      tipDir: Math.random() < 0.5 ? -1 : 1,
+      slide: 0,
+      spinY: 0,
+      landed: false,
+    });
 
   if (formation === "triangle") {
     const rows = [4, 3, 2, 1];
