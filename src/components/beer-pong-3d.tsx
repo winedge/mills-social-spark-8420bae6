@@ -400,6 +400,9 @@ function Ball({ state }: { state: PongState }) {
       b.vx += s.wind * dt;
       /* magnus-ish drift from spin */
       b.vx += b.sz * 0.0009;
+      const px = b.x;
+      const py = b.y;
+      const pz = b.z;
       b.x += b.vx * dt;
       b.y += b.vy * dt;
       b.z += b.vz * dt;
