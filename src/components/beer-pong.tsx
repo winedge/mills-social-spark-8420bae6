@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Beer, X, Trophy, Copy, Check, RotateCcw, Volume2, VolumeX, Target, Flame, Wind } from "lucide-react";
 import { makePong, makeCups, launchVector, type PongState } from "./beer-pong-3d";
 import { sfx } from "./beer-pong-audio";
+import { haptics } from "./haptics";
 
 const BeerPongScene = lazy(() => import("./beer-pong-3d"));
 
@@ -168,14 +169,16 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
       setScore((v) => v + 100 * comboRef.current);
       setToast({ text: comboRef.current > 1 ? `${comboRef.current}x COMBO!` : "SPLASH!", good: true });
       setFlash(1);
-      navigator.vibrate?.([18, 30, 45]);
+      haptics.sink(comboRef.current);
       shotsRef.current += 1;
       setShots(shotsRef.current);
       setTimeout(escalate, 450);
       finish();
     };
+    s.onRim = (strength) => haptics.nearMiss(strength);
     s.onMiss = () => {
       comboRef.current = 0;
+      haptics.play("tap");
       setCombo(0);
       setToast({ text: MISS_LINES[Math.floor(Math.random() * MISS_LINES.length)], good: false });
       shotsRef.current += 1;
@@ -206,6 +209,7 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
     onPointerDown: (e: React.PointerEvent) => {
       if (over || stateRef.current.flying) return;
       sfx.unlock();
+      haptics.prime();
       (e.target as Element).setPointerCapture?.(e.pointerId);
       start.current = { x: e.clientX, y: e.clientY };
       stateRef.current.charging = true;
@@ -217,7 +221,7 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
       const dx = e.clientX - start.current.x;
       const p = Math.min(1, dy / 190);
       const a = Math.max(-1, Math.min(1, dx / 160));
-      if (Math.floor(p * 10) > Math.floor(stateRef.current.power * 10)) navigator.vibrate?.(6);
+      if (Math.floor(p * 10) > Math.floor(stateRef.current.power * 10)) haptics.play("tap", { throttle: 40 });
       stateRef.current.power = p;
       stateRef.current.aim = a;
       setPower(p);
@@ -236,7 +240,7 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
         s.ball.sz = -s.aim * 8;
         s.flying = true;
         sfx.whoosh();
-        navigator.vibrate?.(12);
+        haptics.play("light");
       }
       s.power = 0;
       setPower(0);
