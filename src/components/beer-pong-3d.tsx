@@ -632,6 +632,8 @@ function Ball({ state }: { state: PongState }) {
         restTimer.current = 0;
         s.flying = false;
         sfx.groan();
+        /* the crowd deflates a little on a miss */
+        s.hype = Math.max(0, s.hype * 0.55);
         s.onMiss?.();
         resetBall(s);
       }
