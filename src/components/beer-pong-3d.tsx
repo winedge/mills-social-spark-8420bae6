@@ -391,7 +391,16 @@ function Ball({ state }: { state: PongState }) {
 
         if (b.vy < 0 && d < CUP_R * 0.8 && b.y < CUP_H && b.y > CUP_H * 0.3) {
           c.alive = false;
-          c.wobble = 0.22;
+          c.wobble = 0.34;
+          c.wobblePhase = 0;
+          c.sinkT = 0;
+          c.tipVel = 0;
+          c.tip = 0;
+          c.slide = 0;
+          c.spinY = 0;
+          c.landed = false;
+          /* fall away from wherever the ball came in */
+          c.tipDir = b.vx + dx >= 0 ? 1 : -1;
           s.flying = false;
           spawnSplash(s, c.x, c.z);
           s.shake = 1;
