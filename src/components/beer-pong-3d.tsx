@@ -1128,7 +1128,7 @@ function StadiumFX({ state }: { state: PongState }) {
     }
     if (cone.current) {
       const m = cone.current.material as THREE.MeshBasicMaterial;
-      m.opacity = (0.055 + h * 0.075 + pulse * 0.09) * flicker;
+      m.opacity = (0.028 + h * 0.05 + pulse * 0.05) * flicker;
     }
     if (pool.current) {
       const m = pool.current.material as THREE.MeshBasicMaterial;
