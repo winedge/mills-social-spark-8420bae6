@@ -398,36 +398,48 @@ function Cup({ cup }: { cup: Cup }) {
         <torusGeometry args={[CUP_R * 0.985, CUP_R * 0.075, 12, 44]} />
         <meshPhysicalMaterial color="#e14a52" roughness={0.28} clearcoat={0.9} />
       </mesh>
-      {/* beer body - cup filled almost to the rim */}
-      <mesh position={[0, CUP_H * 0.4, 0]}>
-        <cylinderGeometry
-          args={[CUP_R * 0.94, CUP_R * 0.68, CUP_H * 0.8, 36, 1, true]}
-        />
-        <meshPhysicalMaterial
-          ref={beerMat}
-          color="#d9931f"
-          roughness={0.18}
-          metalness={0.05}
-          transmission={0.35}
-          thickness={0.05}
-          emissive="#8a5408"
-          emissiveIntensity={0.28}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      {/* beer surface */}
-      <mesh position={[0, CUP_H * 0.8, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[CUP_R * 0.94, 36]} />
-        <meshPhysicalMaterial
-          ref={surfaceMat}
-          color="#e8a72c"
-          roughness={0.12}
-          metalness={0.15}
-          emissive="#a5670c"
-          emissiveIntensity={0.35}
-          clearcoat={1}
-        />
-      </mesh>
+      {/* liquid column - scaled vertically as the level rises with each ball */}
+      <group ref={liquid} scale={[1, BASE_LEVEL, 1]}>
+        {/* beer body */}
+        <mesh position={[0, CUP_H * 0.4, 0]}>
+          <cylinderGeometry
+            args={[CUP_R * 0.94, CUP_R * 0.68, CUP_H * 0.8, 36, 1, true]}
+          />
+          <meshPhysicalMaterial
+            ref={beerMat}
+            color="#d9931f"
+            roughness={0.18}
+            metalness={0.05}
+            transmission={0.35}
+            thickness={0.05}
+            emissive="#8a5408"
+            emissiveIntensity={0.28}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+        {/* beer surface */}
+        <mesh position={[0, CUP_H * 0.8, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[CUP_R * 0.94, 36]} />
+          <meshPhysicalMaterial
+            ref={surfaceMat}
+            color="#e8a72c"
+            roughness={0.12}
+            metalness={0.15}
+            emissive="#a5670c"
+            emissiveIntensity={0.35}
+            clearcoat={1}
+          />
+        </mesh>
+        {/* foam head, riding on top of the liquid */}
+        <mesh position={[0, CUP_H * 0.815, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[CUP_R * 0.94, 36]} />
+          <meshStandardMaterial color="#f7e6bd" roughness={0.9} transparent opacity={0.55} />
+        </mesh>
+        <mesh position={[0, CUP_H * 0.822, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[CUP_R * 0.74, CUP_R * 0.94, 32]} />
+          <meshStandardMaterial color="#fff6e0" roughness={0.85} transparent opacity={0.85} />
+        </mesh>
+      </group>
       {/* sink flash - expanding light ring above the rim */}
       <mesh
         ref={flash}
@@ -446,20 +458,40 @@ function Cup({ cup }: { cup: Cup }) {
         distance={0.9}
       />
 
-      {/* foam head */}
-      <mesh position={[0, CUP_H * 0.815, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[CUP_R * 0.94, 36]} />
-        <meshStandardMaterial color="#f7e6bd" roughness={0.9} transparent opacity={0.55} />
+      {/* overflow: a sheet of beer running down the outside of the cup */}
+      <mesh ref={spill} visible={false} position={[0, CUP_H, 0]} scale={[1, 0.001, 1]}>
+        <cylinderGeometry args={[CUP_R * 1.02, CUP_R * 0.76, CUP_H, 36, 1, true]} />
+        <meshStandardMaterial
+          color="#e8a72c"
+          roughness={0.16}
+          transparent
+          opacity={0}
+          depthWrite={false}
+          side={THREE.DoubleSide}
+        />
       </mesh>
-      <mesh position={[0, CUP_H * 0.822, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[CUP_R * 0.74, CUP_R * 0.94, 32]} />
-        <meshStandardMaterial color="#fff6e0" roughness={0.85} transparent opacity={0.85} />
+      {/* puddle of spilled beer spreading on the felt */}
+      <mesh
+        ref={puddle}
+        visible={false}
+        position={[0, 0.004, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <circleGeometry args={[CUP_R * 1.5, 32]} />
+        <meshStandardMaterial
+          color="#c8891f"
+          roughness={0.25}
+          transparent
+          opacity={0}
+          depthWrite={false}
+        />
       </mesh>
       {/* opaque bottom of the beer so you can't see through the cup */}
       <mesh position={[0, CUP_H * 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[CUP_R * 0.68, 28]} />
         <meshStandardMaterial color="#b8781a" roughness={0.4} />
       </mesh>
+
       {/* base */}
       <mesh position={[0, 0.003, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <circleGeometry args={[CUP_R * 0.7, 28]} />
