@@ -211,6 +211,13 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
     return () => clearTimeout(t);
   }, [flash]);
 
+  useEffect(() => {
+    if (!sinkFx) return;
+    const t = setTimeout(() => setSinkFx(null), 1150);
+    return () => clearTimeout(t);
+  }, [sinkFx]);
+
+
   const pointer = {
     onPointerDown: (e: React.PointerEvent) => {
       if (over || stateRef.current.flying) return;
