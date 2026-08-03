@@ -494,24 +494,28 @@ function MenuPage() {
               >
                 {[{ id: "", name: "All", count: dbItems.length }, ...tree.map((n) => ({ id: n.id, name: n.name, count: counts.get(n.id) ?? 0 }))].map(
                   (c, idx, arr) => {
-                    const active = c.id === "" ? !catId : catId === c.id || (findNode(tree, catId) != null && catId === c.id);
+                    const inBranch = c.id !== "" && !!catId && (findNode(tree, c.id)?.children.some((ch) => collectDescendantIds(ch).has(catId)) ?? false);
+                    const active = c.id === "" ? !catId : catId === c.id || inBranch;
+                    const featured = /happy hour|daily special/i.test(c.name);
                     return (
                       <button
                         key={c.id || "all"}
                         onClick={() => setCat(c.id)}
                         className={`relative group flex flex-col items-start p-4 text-left transition-colors ${
                           idx < arr.length - 1 ? "border-r border-border" : ""
-                        } ${active ? "bg-surface border-b-2 border-b-accent" : "hover:bg-surface/60 border-b-2 border-b-transparent"}`}
+                        } ${active ? "bg-surface border-b-2 border-b-accent" : "hover:bg-surface/60 border-b-2 border-b-transparent"} ${
+                          featured && !active ? "bg-accent/[0.06]" : ""
+                        }`}
                       >
                         <span className={`absolute top-2 right-2 font-mono text-[9px] ${active ? "text-accent" : "text-muted-foreground/70"}`}>
                           [ {String(c.count).padStart(2, "0")} ]
                         </span>
-                        <span className={`font-mono text-[10px] mb-1 ${active ? "text-accent/60" : "text-muted-foreground/60"}`}>
-                          CAT_{String(idx + 1).padStart(2, "0")}
+                        <span className={`font-mono text-[10px] mb-1 ${featured || active ? "text-accent/70" : "text-muted-foreground/60"}`}>
+                          {featured ? "★ FEATURED" : `CAT_${String(idx + 1).padStart(2, "0")}`}
                         </span>
                         <span
                           className={`font-display text-lg uppercase tracking-tight leading-[0.95] ${
-                            active ? "text-accent" : "text-foreground/80 group-hover:text-foreground"
+                            active || featured ? "text-accent" : "text-foreground/80 group-hover:text-foreground"
                           }`}
                         >
                           {c.name}
@@ -521,6 +525,51 @@ function MenuPage() {
                   },
                 )}
               </div>
+
+              {/* Sub-category row for the active top-level category */}
+              {(() => {
+                if (!catId) return null;
+                const top = tree.find((n) => collectDescendantIds(n).has(catId));
+                const subs = top?.children ?? [];
+                if (subs.length === 0) return null;
+                const renderSubs = (nodes: TreeNode[]) => (
+                  <div className="flex flex-wrap gap-2">
+                    {nodes.map((s) => {
+                      const on = catId === s.id || collectDescendantIds(s).has(catId);
+                      return (
+                        <button
+                          key={s.id}
+                          onClick={() => setCat(s.id)}
+                          className={`px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest border transition-colors ${
+                            on ? "bg-accent text-primary-foreground border-accent" : "border-border text-muted-foreground hover:text-foreground hover:border-accent/60"
+                          }`}
+                        >
+                          {s.name}
+                          <span className="ml-2 opacity-60">{counts.get(s.id) ?? 0}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+                const activeSub = subs.find((s) => collectDescendantIds(s).has(catId));
+                return (
+                  <div className="border-b border-border px-4 py-3 bg-background/40 space-y-2">
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono text-[10px] text-accent shrink-0">{top!.name.toUpperCase()} &gt;</span>
+                      {renderSubs(subs)}
+                      {catId !== top!.id && (
+                        <button onClick={() => setCat(top!.id)} className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-accent">
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                    {activeSub && activeSub.children.length > 0 && (
+                      <div className="pl-4 border-l border-border/60">{renderSubs(activeSub.children)}</div>
+                    )}
+                  </div>
+                );
+              })()}
+
 
               {/* Calorie range bar */}
               <div className="grid grid-cols-12">
