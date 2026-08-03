@@ -91,7 +91,11 @@ const LISTENER = { x: 0, y: 1.02, z: 2.2 };
 const BALL_HOME = { y: 0.34, z: 0.42 };
 /* beer level a fresh cup is poured to, and how much each ball displaces */
 export const BASE_LEVEL = 0.72;
-export const LEVEL_PER_BALL = 0.34;
+/* how much beer each ball displaces - a nearly full cup brims on one ball,
+   a lighter pour takes a second one and refills smoothly in between */
+export const LEVEL_PER_BALL = 0.3;
+const pourLevel = () => 0.55 + Math.random() * 0.25;
+
 
 
 /* cup formations, chosen by how many cups remain */
