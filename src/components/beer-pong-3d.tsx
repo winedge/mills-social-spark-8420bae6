@@ -1,6 +1,5 @@
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Float } from "@react-three/drei";
-import { useEffect, useMemo, useRef } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { useMemo, useRef } from "react";
 import * as THREE from "three";
 
 /* ------------------------------------------------------------------ */
@@ -58,7 +57,6 @@ export function makePong(): PongState {
 function Cup({ x, z, alive }: { x: number; z: number; alive: boolean }) {
   const g = useRef<THREE.Group>(null);
   useFrame((_, dt) => {
-    if (Math.random() < 0.002) console.log("CUPTICK");
     if (!g.current) return;
     const target = alive ? 1 : 0;
     g.current.scale.y += (target - g.current.scale.y) * Math.min(1, dt * 8);
@@ -68,7 +66,7 @@ function Cup({ x, z, alive }: { x: number; z: number; alive: boolean }) {
   return (
     <group ref={g} position={[x, 0, z]}>
       {/* cup body - tapered */}
-      <mesh castShadow receiveShadow position={[0, CUP_H / 2, 0]}>
+      <mesh position={[0, CUP_H / 2, 0]}>
         <cylinderGeometry args={[CUP_R, CUP_R * 0.72, CUP_H, 28, 1, true]} />
         <meshPhysicalMaterial
           color="#c2222c"
@@ -113,15 +111,12 @@ function Cup({ x, z, alive }: { x: number; z: number; alive: boolean }) {
 /* ------------------------------------------------------------------ */
 
 function Ball({ state }: { state: PongState }) {
-  console.log("BALL RENDER");
   const ref = useRef<THREE.Mesh>(null);
   const restTimer = useRef(0);
-  const dbg = useRef(0);
 
   useFrame((_, delta) => {
     const s = state;
     const b = s.ball;
-    dbg.current += delta; if (dbg.current > 1) { dbg.current = 0; console.log("BALLTICK", b.x.toFixed(2), b.y.toFixed(2), b.z.toFixed(2), !!ref.current); }
     const dt = Math.min(delta, 1 / 45);
 
     if (!s.flying) {
@@ -197,14 +192,13 @@ function Ball({ state }: { state: PongState }) {
 
     if (ref.current) {
       ref.current.position.set(b.x, b.y, b.z);
-      dbg.current += dt; if (dbg.current > 1) { dbg.current = 0; console.log("BALL", b.x.toFixed(2), b.y.toFixed(2), b.z.toFixed(2), ref.current.visible, ref.current.parent?.type); }
       ref.current.rotation.x += (b.vz || 0) * dt * 6;
       ref.current.rotation.z -= (b.vx || 0) * dt * 6;
     }
   });
 
   return (
-    <mesh ref={ref} castShadow>
+    <mesh ref={ref}>
       <sphereGeometry args={[BALL_R, 32, 32]} />
       <meshPhysicalMaterial color="#fdfdfb" roughness={0.35} clearcoat={0.8} clearcoatRoughness={0.25} />
     </mesh>
@@ -226,7 +220,6 @@ function AimGuide({ state }: { state: PongState }) {
   const ref = useRef<THREE.Group>(null);
   const dots = useMemo(() => new Array(14).fill(0), []);
   useFrame(() => {
-    if (Math.random() < 0.01) console.log("GUIDETICK");
     if (!ref.current) return;
     ref.current.visible = state.charging && !state.flying;
     if (!ref.current.visible) return;
@@ -277,7 +270,7 @@ export function launchVector(s: PongState) {
 function Table() {
   return (
     <group>
-      <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -1]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -1]}>
         <planeGeometry args={[2.4, 8]} />
         <meshPhysicalMaterial color="#3a2417" roughness={0.45} clearcoat={0.5} clearcoatRoughness={0.4} />
       </mesh>
@@ -291,18 +284,14 @@ function Table() {
         <planeGeometry args={[14, 6]} />
         <meshBasicMaterial color="#0a0d12" />
       </mesh>
-      <Float speed={1.4} floatIntensity={0.35}>
         <mesh position={[-1.35, 1.65, -3.4]}>
           <sphereGeometry args={[0.055, 16, 16]} />
           <meshBasicMaterial color="#ffb347" />
         </mesh>
-      </Float>
-      <Float speed={1.1} floatIntensity={0.3}>
         <mesh position={[1.3, 1.85, -3.9]}>
           <sphereGeometry args={[0.05, 16, 16]} />
           <meshBasicMaterial color="#38bdf8" />
         </mesh>
-      </Float>
     </group>
   );
 }
@@ -311,22 +300,16 @@ function Table() {
 /*  Scene                                                              */
 /* ------------------------------------------------------------------ */
 
-function Probe() {
-  const { clock, frameloop, invalidate } = useThree((st) => ({ clock: st.clock, frameloop: st.frameloop, invalidate: st.invalidate })) as any;
-  useEffect(() => {
-    const id = setInterval(() => console.log("PROBE", frameloop, clock.getElapsedTime().toFixed(2), clock.running), 1500);
-    return () => clearInterval(id);
-  }, [clock, frameloop, invalidate]);
-  return null;
-}
-
 function Scene({ state }: { state: PongState }) {
   return (
     <>
       <color attach="background" args={["#080a0e"]} />
-      <ambientLight intensity={0.8} />
-      <directionalLight position={[2, 4, 2]} intensity={2} />
-      <Probe />
+      <fog attach="fog" args={["#080a0e", 8, 18]} />
+      <ambientLight intensity={0.55} />
+      <directionalLight position={[2.5, 4.5, 2]} intensity={1.7} />
+      <pointLight position={[0, 2.4, -1.6]} intensity={14} color="#fff1d8" distance={9} />
+      <pointLight position={[-1.6, 1.5, -3.2]} intensity={7} color="#ffb347" distance={7} />
+      <pointLight position={[1.6, 1.7, -3.6]} intensity={6} color="#38bdf8" distance={7} />
       <Table />
       {state.cups.map((c, i) => (
         <Cup key={i} x={c.x} z={c.z} alive={c.alive} />
@@ -340,7 +323,6 @@ function Scene({ state }: { state: PongState }) {
 export default function BeerPongScene({ state }: { state: PongState }) {
   return (
     <Canvas
-      shadows
       dpr={[1, 1.75]}
       camera={{ position: [0, 1.75, 2.55], fov: 44 }}
       gl={{ antialias: true, powerPreference: "high-performance" }}
