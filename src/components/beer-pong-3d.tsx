@@ -415,8 +415,10 @@ function Ball({ state }: { state: PongState }) {
             pan: Math.max(-1, Math.min(1, c.x * 2.2)),
             strength: 0.8 + Math.min(0.4, Math.abs(b.vy) * 0.1),
           });
-          sfx.splash();
-          sfx.cheer(1);
+          /* splash lands with the foam burst leaving the rim, crowd reacts
+             once the sink visually reads as a make */
+          sfx.splash(SINK_TIMELINE.foam);
+          sfx.cheer(1, SINK_TIMELINE.cheer);
           s.onSink?.(i);
           resetBall(s);
           return;
