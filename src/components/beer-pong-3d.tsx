@@ -1079,6 +1079,136 @@ function CameraRig({ state }: { state: PongState }) {
 /*  Scene                                                              */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Overhead spotlight on the rack plus stadium atmosphere that ramps with the
+ * player's combo: brighter beam, faster sweeping colour lights, louder crowd.
+ */
+function StadiumFX({ state }: { state: PongState }) {
+  const spot = useRef<THREE.SpotLight>(null);
+  const target = useRef<THREE.Object3D>(null);
+  const cone = useRef<THREE.Mesh>(null);
+  const pool = useRef<THREE.Mesh>(null);
+  const sweepA = useRef<THREE.SpotLight>(null);
+  const sweepB = useRef<THREE.SpotLight>(null);
+  const rim = useRef<THREE.PointLight>(null);
+  const lastPush = useRef(0);
+
+  useEffect(() => {
+    if (spot.current && target.current) spot.current.target = target.current;
+  }, []);
+
+  useFrame((st, delta) => {
+    const s = state;
+    /* hype decays slowly so a hot streak keeps the room loud */
+    s.hype = Math.max(0, s.hype - delta * 0.075);
+    s.hypePulse = Math.max(0, s.hypePulse - delta * 1.6);
+    const h = Math.min(1, s.hype);
+    const pulse = s.hypePulse;
+    arena.hype = h;
+    arena.pulse = pulse;
+
+    /* push the level into the audio bed a few times a second */
+    lastPush.current += delta;
+    if (lastPush.current > 0.25) {
+      lastPush.current = 0;
+      sfx.setHype(h);
+    }
+
+    const t = st.clock.elapsedTime;
+    const flicker = 1 + Math.sin(t * 9) * 0.015;
+
+    if (spot.current) {
+      spot.current.intensity = (16 + h * 20 + pulse * 26) * flicker;
+      spot.current.angle = 0.3 + h * 0.05;
+    }
+    if (cone.current) {
+      const m = cone.current.material as THREE.MeshBasicMaterial;
+      m.opacity = (0.055 + h * 0.075 + pulse * 0.09) * flicker;
+    }
+    if (pool.current) {
+      const m = pool.current.material as THREE.MeshBasicMaterial;
+      m.opacity = 0.16 + h * 0.16 + pulse * 0.25;
+      pool.current.scale.setScalar(1 + pulse * 0.06);
+    }
+    /* sweeping arena lights - lazy when calm, whipping when the crowd is up */
+    const speed = 0.25 + h * 1.5 + pulse * 1.2;
+    if (sweepA.current) {
+      sweepA.current.position.x = Math.sin(t * speed) * 2.6;
+      sweepA.current.intensity = 2 + h * 12 + pulse * 10;
+    }
+    if (sweepB.current) {
+      sweepB.current.position.x = Math.sin(t * speed * 1.17 + 2.1) * -2.6;
+      sweepB.current.intensity = 2 + h * 11 + pulse * 10;
+    }
+    if (rim.current) rim.current.intensity = h * 6 + pulse * 14;
+  });
+
+  return (
+    <>
+      <object3D ref={target} position={[0, 0, RACK_Z + 0.28]} />
+      <spotLight
+        ref={spot}
+        position={[0, 3.5, RACK_Z + 0.28]}
+        angle={0.3}
+        penumbra={0.55}
+        intensity={16}
+        color="#fff2d6"
+        distance={8}
+        decay={1.4}
+        castShadow
+        shadow-mapSize={[1024, 1024]}
+      />
+      {/* visible light shaft falling on the rack */}
+      <mesh ref={cone} position={[0, 1.72, RACK_Z + 0.28]} renderOrder={2}>
+        <coneGeometry args={[1.05, 3.44, 48, 1, true]} />
+        <meshBasicMaterial
+          color="#ffe6b8"
+          transparent
+          opacity={0.06}
+          depthWrite={false}
+          side={THREE.DoubleSide}
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
+      {/* warm pool of light on the felt under the cups */}
+      <mesh
+        ref={pool}
+        position={[0, 0.006, RACK_Z + 0.28]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        renderOrder={1}
+      >
+        <circleGeometry args={[0.95, 48]} />
+        <meshBasicMaterial
+          color="#ffca7a"
+          transparent
+          opacity={0.18}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
+      <pointLight ref={rim} position={[0, 0.6, RACK_Z]} color="#ffd9a0" intensity={0} distance={2.4} />
+      <spotLight
+        ref={sweepA}
+        position={[-2.4, 3.2, -3.4]}
+        angle={0.55}
+        penumbra={1}
+        intensity={2}
+        color="#38bdf8"
+        distance={11}
+      />
+      <spotLight
+        ref={sweepB}
+        position={[2.4, 3.2, -3.6]}
+        angle={0.55}
+        penumbra={1}
+        intensity={2}
+        color="#ff8a3d"
+        distance={11}
+      />
+    </>
+  );
+}
+
 function Scene({ state }: { state: PongState }) {
   return (
     <>
