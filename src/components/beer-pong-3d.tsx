@@ -61,6 +61,8 @@ export type PongState = {
   splashes: Splash[];
   victory: boolean;
   orbit: number;
+  /* drop-in animation: the ball is being funnelled into a cup */
+  sink: { active: boolean; x: number; z: number; t: number; y0: number };
   onSink?: (index: number) => void;
   onMiss?: () => void;
   onRim?: (strength: number) => void;
