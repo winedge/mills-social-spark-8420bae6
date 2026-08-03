@@ -138,6 +138,7 @@ export function makePong(): PongState {
     splashes: [],
     victory: false,
     orbit: 0,
+    sink: { active: false, x: 0, z: 0, t: 0, y0: CUP_H },
   };
 }
 
