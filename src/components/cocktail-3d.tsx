@@ -225,14 +225,14 @@ function Shaker({ simRef, phase }: { simRef: React.RefObject<Sim>; phase: Phase 
     <group ref={group}>
       <mesh geometry={geo} castShadow receiveShadow>
         <meshStandardMaterial
-          color="#c9ccd1"
+          color="#e6e9ee"
           metalness={1}
-          roughness={0.19}
-          envMapIntensity={1.6}
+          roughness={0.16}
+          envMapIntensity={3.2}
         />
       </mesh>
       <mesh geometry={capGeo} castShadow>
-        <meshStandardMaterial color="#b7bbc2" metalness={1} roughness={0.3} envMapIntensity={1.4} />
+        <meshStandardMaterial color="#dfe3e9" metalness={1} roughness={0.26} envMapIntensity={3} />
       </mesh>
       {/* brushed band */}
       <mesh position={[0, 0.5, 0]}>
@@ -695,8 +695,8 @@ function Scene({ simRef, phase }: { simRef: React.RefObject<Sim>; phase: Phase }
       <Environment resolution={256}>
         <Lightformer form="rect" intensity={4.2} color="#ffb26b" position={[-2, 3, -1]} scale={[6, 3, 1]} />
         <Lightformer form="circle" intensity={7} color="#ffd7a1" position={[0, 2.4, 1.4]} scale={2} />
-        <Lightformer form="rect" intensity={1.4} color="#4a7fb5" position={[3, 1.6, -2]} scale={[4, 3, 1]} />
-        <Lightformer form="ring" intensity={2} color="#ffffff" position={[1.4, 1.4, 1.8]} scale={1.2} />
+        <Lightformer form="rect" intensity={2.6} color="#4a7fb5" position={[3, 1.6, -2]} scale={[4, 3, 1]} />
+        <Lightformer form="ring" intensity={5} color="#ffffff" position={[1.4, 1.4, 1.8]} scale={1.2} />
       </Environment>
 
       <ambientLight intensity={done ? 0.5 : 0.24} color="#ffcf9a" />
@@ -750,7 +750,7 @@ function Scene({ simRef, phase }: { simRef: React.RefObject<Sim>; phase: Phase }
       <CameraRig phase={phase} />
 
       <EffectComposer enableNormalPass={false} multisampling={0}>
-        <DepthOfField focusDistance={0.028} focalLength={0.3} bokehScale={2} height={480} />
+        <DepthOfField focusDistance={0.017} focalLength={0.28} bokehScale={2.2} height={480} />
         <Bloom intensity={done ? 1.25 : 0.75} luminanceThreshold={0.62} luminanceSmoothing={0.3} mipmapBlur />
         <Vignette eskil={false} offset={0.25} darkness={0.85} />
       </EffectComposer>
