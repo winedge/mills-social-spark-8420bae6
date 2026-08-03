@@ -1182,7 +1182,7 @@ function StadiumFX({ state }: { state: PongState }) {
         rotation={[-Math.PI / 2, 0, 0]}
         renderOrder={1}
       >
-        <circleGeometry args={[0.95, 48]} />
+        <circleGeometry args={[0.78, 48]} />
         <meshBasicMaterial
           color="#ffca7a"
           transparent
