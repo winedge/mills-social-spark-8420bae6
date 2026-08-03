@@ -657,7 +657,7 @@ function Ball({ state }: { state: PongState }) {
           /* every ball displaces more beer - the level eases up smoothly and
              the cup only goes out once it brims over the rim */
           c.hits += 1;
-          c.levelTarget = BASE_LEVEL + c.hits * LEVEL_PER_BALL;
+          c.levelTarget = c.levelTarget + LEVEL_PER_BALL;
           const brims = c.levelTarget > 1.02;
           c.wobble = brims ? 0.34 : 0.2;
           c.wobblePhase = 0;
