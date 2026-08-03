@@ -289,6 +289,7 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
     setBestCombo(0);
     setScore(0);
     setElapsed(0);
+    setSinkFx(null);
     setWon(false);
     setOver(false);
   };
