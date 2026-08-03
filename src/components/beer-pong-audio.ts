@@ -8,6 +8,15 @@ let ambienceGain: GainNode | null = null;
 let musicTimer: number | null = null;
 let muted = false;
 
+/* dedicated bus for the glass-and-beer "sink" layer so its level can be
+   tuned independently of bounces, ambience and crowd noise */
+let sinkBus: GainNode | null = null;
+let sinkVolume = 0.85;
+/* reference distance (world units) at which the sink layer plays at full level */
+const SINK_REF_DIST = 1.6;
+const SINK_MAX_DIST = 9;
+
+
 function ac() {
   if (typeof window === "undefined") return null;
   if (!ctx) {
