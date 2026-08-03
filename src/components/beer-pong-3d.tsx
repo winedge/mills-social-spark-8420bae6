@@ -63,6 +63,7 @@ export type PongState = {
   orbit: number;
   onSink?: (index: number) => void;
   onMiss?: () => void;
+  onRim?: (strength: number) => void;
   onBounce?: () => void;
 };
 
@@ -434,6 +435,7 @@ function Ball({ state }: { state: PongState }) {
             c.wobble = Math.min(0.18, Math.abs(vn) * 0.06);
             c.wobblePhase = 0;
             sfx.cupHit(Math.min(1, Math.abs(vn) * 0.5));
+            s.onRim?.(Math.min(1, Math.abs(vn) * 0.9));
           }
           const push = CUP_R + BALL_R - d;
           b.x += nx * push;
