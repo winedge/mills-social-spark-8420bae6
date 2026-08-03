@@ -393,6 +393,8 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
             <span className="font-mono text-[9px] uppercase tracking-widest text-white/60">
               Wind {windUI > 0 ? "→" : "←"} {Math.abs(windUI).toFixed(1)}
             </span>
+          </div>
+        )}
         {charging && aimClose > 0.35 && (
           <div
             className={`flex items-center gap-1.5 rounded-full border backdrop-blur px-3 py-1 transition-colors ${
