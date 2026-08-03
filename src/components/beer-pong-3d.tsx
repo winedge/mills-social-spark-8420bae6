@@ -61,6 +61,8 @@ export type PongState = {
   splashes: Splash[];
   victory: boolean;
   orbit: number;
+  /* drop-in animation: the ball is being funnelled into a cup */
+  sink: { active: boolean; x: number; z: number; t: number; y0: number };
   onSink?: (index: number) => void;
   onMiss?: () => void;
   onRim?: (strength: number) => void;
@@ -136,6 +138,7 @@ export function makePong(): PongState {
     splashes: [],
     victory: false,
     orbit: 0,
+    sink: { active: false, x: 0, z: 0, t: 0, y0: CUP_H },
   };
 }
 
@@ -448,6 +451,30 @@ function Ball({ state }: { state: PongState }) {
     /* impact shake energy bleeds off over ~0.7s for a cinematic settle */
     s.shake = Math.max(0, s.shake - delta * 1.5);
 
+    /* ---- drop-in animation: ball funnels down into the cup ---------- */
+    if (s.sink.active) {
+      s.sink.t += delta;
+      const p = Math.min(1, s.sink.t / 0.4);
+      const ease = 1 - Math.pow(1 - p, 2.2);
+      /* slide onto the cup axis quickly, then sink under the foam */
+      b.x += (s.sink.x - b.x) * Math.min(1, delta * 18);
+      b.z += (s.sink.z - b.z) * Math.min(1, delta * 18);
+      b.y = s.sink.y0 + (CUP_H * 0.3 - s.sink.y0) * ease;
+      if (ref.current) {
+        ref.current.position.set(b.x, b.y, b.z);
+        ref.current.rotation.x += delta * 7;
+        ref.current.rotation.z += delta * 4;
+        ref.current.scale.setScalar(1 - Math.max(0, (p - 0.5) / 0.5) * 0.6);
+      }
+      if (shadow.current)
+        (shadow.current.material as THREE.MeshBasicMaterial).opacity = 0;
+      if (p >= 1) {
+        s.sink.active = false;
+        resetBall(s);
+      }
+      return;
+    }
+
     if (!s.flying) {
       const tx = s.aim * 0.32;
       const ty = BALL_HOME.y + (s.charging ? s.power * 0.05 : 0);
@@ -487,6 +514,32 @@ function Ball({ state }: { state: PongState }) {
         if (Math.abs(b.vy) < 0.32) b.vy = 0;
       }
 
+      /* swept rim-plane crossing, resolved once against ALL cups so a ball
+         dropping into the gap between two cups is always claimed by the
+         nearest one instead of slipping through */
+      let captureIdx = -1;
+      let capX = 0;
+      let capZ = 0;
+      if (b.vy < 0 && py >= CUP_H && b.y < CUP_H) {
+        const t = (py - CUP_H) / Math.max(1e-6, py - b.y);
+        const cx = px + (b.x - px) * t;
+        const cz = pz + (b.z - pz) * t;
+        let best = Infinity;
+        for (let i = 0; i < s.cups.length; i++) {
+          const c = s.cups[i];
+          if (!c.alive) continue;
+          const dd = Math.hypot(cx - c.x, cz - c.z);
+          if (dd < best) {
+            best = dd;
+            captureIdx = i;
+          }
+        }
+        /* capture radius reaches into the gap between neighbouring cups */
+        if (best > CUP_R * 1.32) captureIdx = -1;
+        capX = cx;
+        capZ = cz;
+      }
+
       /* cups */
       for (let i = 0; i < s.cups.length; i++) {
         const c = s.cups[i];
@@ -495,17 +548,8 @@ function Ball({ state }: { state: PongState }) {
         const dz = b.z - c.z;
         const d = Math.hypot(dx, dz);
 
-        /* swept mouth crossing: find where the ball crossed the rim plane this
-           frame so a fast ball can never tunnel through the opening */
-        let mouthHit = false;
-        let mx = dx;
-        let mz = dz;
-        if (b.vy < 0 && py >= CUP_H && b.y < CUP_H) {
-          const t = (py - CUP_H) / Math.max(1e-6, py - b.y);
-          mx = px + (b.x - px) * t - c.x;
-          mz = pz + (b.z - pz) * t - c.z;
-          mouthHit = Math.hypot(mx, mz) < CUP_R * 0.95;
-        }
+        const mouthHit = captureIdx === i;
+        const mx = mouthHit ? capX - c.x : dx;
         const insideNow = b.vy < 0 && d < CUP_R * 0.9 && b.y < CUP_H && b.y > CUP_H * 0.25;
 
         if (mouthHit || insideNow) {
@@ -536,7 +580,15 @@ function Ball({ state }: { state: PongState }) {
           sfx.splash(SINK_TIMELINE.foam);
           sfx.cheer(1, SINK_TIMELINE.cheer);
           s.onSink?.(i);
-          resetBall(s);
+          /* hand the ball to the drop-in animation instead of teleporting it */
+          b.vx = b.vy = b.vz = 0;
+          b.squash = 0;
+          b.y = Math.max(b.y, CUP_H * 0.98);
+          s.sink.active = true;
+          s.sink.t = 0;
+          s.sink.x = c.x;
+          s.sink.z = c.z;
+          s.sink.y0 = b.y;
           return;
         }
         /* don't deflect a ball that's dropping straight over the opening */
