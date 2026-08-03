@@ -776,7 +776,7 @@ function Scene({ state }: { state: PongState }) {
         <Cup key={i} cup={c} />
       ))}
       <Ball state={state} />
-      <Splashes state={state} />
+      {/*SPLASHOFF*/}
       <AimGuide state={state} />
       <CameraRig state={state} />
       <EffectComposer enableNormalPass={false}>
