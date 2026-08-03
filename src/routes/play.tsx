@@ -28,6 +28,7 @@ export const Route = createFileRoute("/play")({
 });
 
 function PlayPage() {
+  const { enabled: beerPongOn, loading: flagLoading } = useFeatureFlag("beer_pong");
   return (
     <div className="bg-background text-foreground font-body min-h-screen overflow-hidden">
       <SiteHeader />
@@ -37,7 +38,7 @@ function PlayPage() {
       <DartsSection />
       <BoardSection />
       <ArcadeSection />
-      <BeerPong />
+      {!flagLoading && beerPongOn && <BeerPong />}
       <HouseRules />
 
       <SiteFooter />
