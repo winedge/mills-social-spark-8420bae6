@@ -1,0 +1,224 @@
+/* ------------------------------------------------------------------ */
+/*  Tiny synthetic sound engine for Beer Pong (no asset downloads)      */
+/* ------------------------------------------------------------------ */
+
+let ctx: AudioContext | null = null;
+let master: GainNode | null = null;
+let ambienceGain: GainNode | null = null;
+let musicTimer: number | null = null;
+let muted = false;
+
+function ac() {
+  if (typeof window === "undefined") return null;
+  if (!ctx) {
+    const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AC) return null;
+    ctx = new AC();
+    master = ctx.createGain();
+    master.gain.value = 0.9;
+    master.connect(ctx.destination);
+  }
+  if (ctx.state === "suspended") void ctx.resume();
+  return ctx;
+}
+
+function noiseBuffer(c: AudioContext, seconds = 1) {
+  const len = Math.floor(c.sampleRate * seconds);
+  const buf = c.createBuffer(1, len, c.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  return buf;
+}
+
+function env(g: GainNode, c: AudioContext, peak: number, attack: number, decay: number) {
+  const t = c.currentTime;
+  g.gain.cancelScheduledValues(t);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(Math.max(peak, 0.0002), t + attack);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + attack + decay);
+}
+
+export const sfx = {
+  setMuted(v: boolean) {
+    muted = v;
+    if (master) master.gain.value = v ? 0 : 0.9;
+  },
+  isMuted: () => muted,
+
+  unlock() {
+    ac();
+  },
+
+  /* ping-pong ball on wood */
+  bounce(strength = 1) {
+    const c = ac();
+    if (!c || !master) return;
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = "triangle";
+    o.frequency.setValueAtTime(720 + Math.random() * 240, c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(220, c.currentTime + 0.07);
+    env(g, c, 0.16 * Math.min(1, strength), 0.002, 0.09);
+    o.connect(g).connect(master);
+    o.start();
+    o.stop(c.currentTime + 0.14);
+  },
+
+  /* hollow plastic cup knock */
+  cupHit(strength = 1) {
+    const c = ac();
+    if (!c || !master) return;
+    const o = c.createOscillator();
+    const g = c.createGain();
+    const f = c.createBiquadFilter();
+    f.type = "bandpass";
+    f.frequency.value = 480;
+    f.Q.value = 3;
+    o.type = "square";
+    o.frequency.setValueAtTime(300 + Math.random() * 120, c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(140, c.currentTime + 0.09);
+    env(g, c, 0.14 * Math.min(1, strength), 0.003, 0.12);
+    o.connect(f).connect(g).connect(master);
+    o.start();
+    o.stop(c.currentTime + 0.2);
+  },
+
+  /* beer splash + glass clink */
+  splash() {
+    const c = ac();
+    if (!c || !master) return;
+    const src = c.createBufferSource();
+    src.buffer = noiseBuffer(c, 0.5);
+    const f = c.createBiquadFilter();
+    f.type = "bandpass";
+    f.frequency.setValueAtTime(1800, c.currentTime);
+    f.frequency.exponentialRampToValueAtTime(420, c.currentTime + 0.35);
+    f.Q.value = 1.1;
+    const g = c.createGain();
+    env(g, c, 0.34, 0.006, 0.42);
+    src.connect(f).connect(g).connect(master);
+    src.start();
+    src.stop(c.currentTime + 0.5);
+
+    /* glass clink */
+    [1860, 2640].forEach((freq, i) => {
+      const o = c.createOscillator();
+      const gg = c.createGain();
+      o.type = "sine";
+      o.frequency.value = freq;
+      const t = c.currentTime + 0.03 + i * 0.02;
+      gg.gain.setValueAtTime(0.0001, t);
+      gg.gain.exponentialRampToValueAtTime(0.09, t + 0.004);
+      gg.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+      o.connect(gg).connect(master!);
+      o.start(t);
+      o.stop(t + 0.34);
+    });
+  },
+
+  /* crowd cheer swell */
+  cheer(intensity = 1) {
+    const c = ac();
+    if (!c || !master) return;
+    const src = c.createBufferSource();
+    src.buffer = noiseBuffer(c, 1.6);
+    const f = c.createBiquadFilter();
+    f.type = "bandpass";
+    f.frequency.setValueAtTime(700, c.currentTime);
+    f.frequency.linearRampToValueAtTime(1500, c.currentTime + 0.45);
+    f.Q.value = 0.8;
+    const g = c.createGain();
+    const t = c.currentTime;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.22 * intensity, t + 0.18);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 1.3 * intensity);
+    src.connect(f).connect(g).connect(master);
+    src.start();
+    src.stop(t + 1.7);
+  },
+
+  /* disappointed "aww" */
+  groan() {
+    const c = ac();
+    if (!c || !master) return;
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = "sawtooth";
+    o.frequency.setValueAtTime(230, c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(120, c.currentTime + 0.7);
+    const f = c.createBiquadFilter();
+    f.type = "lowpass";
+    f.frequency.value = 700;
+    env(g, c, 0.07, 0.12, 0.6);
+    o.connect(f).connect(g).connect(master);
+    o.start();
+    o.stop(c.currentTime + 0.85);
+  },
+
+  whoosh() {
+    const c = ac();
+    if (!c || !master) return;
+    const src = c.createBufferSource();
+    src.buffer = noiseBuffer(c, 0.4);
+    const f = c.createBiquadFilter();
+    f.type = "bandpass";
+    f.frequency.setValueAtTime(400, c.currentTime);
+    f.frequency.exponentialRampToValueAtTime(1600, c.currentTime + 0.22);
+    const g = c.createGain();
+    env(g, c, 0.12, 0.02, 0.26);
+    src.connect(f).connect(g).connect(master);
+    src.start();
+    src.stop(c.currentTime + 0.4);
+  },
+
+  /* looping bar ambience + lazy bassline */
+  startAmbience() {
+    const c = ac();
+    if (!c || !master || ambienceGain) return;
+    ambienceGain = c.createGain();
+    ambienceGain.gain.value = 0.0001;
+    ambienceGain.gain.exponentialRampToValueAtTime(0.055, c.currentTime + 2.5);
+    ambienceGain.connect(master);
+
+    const src = c.createBufferSource();
+    src.buffer = noiseBuffer(c, 3);
+    src.loop = true;
+    const f = c.createBiquadFilter();
+    f.type = "lowpass";
+    f.frequency.value = 620;
+    src.connect(f).connect(ambienceGain);
+    src.start();
+
+    /* sparse lounge bass notes */
+    const notes = [55, 65.4, 73.4, 49];
+    let i = 0;
+    musicTimer = window.setInterval(() => {
+      const cc = ctx;
+      if (!cc || !master || muted) return;
+      const o = cc.createOscillator();
+      const g = cc.createGain();
+      o.type = "sine";
+      o.frequency.value = notes[i++ % notes.length];
+      const t = cc.currentTime;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.07, t + 0.25);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 1.5);
+      o.connect(g).connect(master);
+      o.start(t);
+      o.stop(t + 1.6);
+    }, 1900);
+  },
+
+  stopAmbience() {
+    if (musicTimer) {
+      clearInterval(musicTimer);
+      musicTimer = null;
+    }
+    if (ambienceGain && ctx) {
+      ambienceGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.6);
+      const g = ambienceGain;
+      setTimeout(() => g.disconnect(), 800);
+      ambienceGain = null;
+    }
+  },
+};
