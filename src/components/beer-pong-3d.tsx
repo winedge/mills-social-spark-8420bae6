@@ -1,6 +1,6 @@
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, Float } from "@react-three/drei";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 
 /* ------------------------------------------------------------------ */
@@ -311,6 +311,15 @@ function Table() {
 /*  Scene                                                              */
 /* ------------------------------------------------------------------ */
 
+function Probe() {
+  const { clock, frameloop, invalidate } = useThree((st) => ({ clock: st.clock, frameloop: st.frameloop, invalidate: st.invalidate })) as any;
+  useEffect(() => {
+    const id = setInterval(() => console.log("PROBE", frameloop, clock.getElapsedTime().toFixed(2), clock.running), 1500);
+    return () => clearInterval(id);
+  }, [clock, frameloop, invalidate]);
+  return null;
+}
+
 function Scene({ state }: { state: PongState }) {
   return (
     <>
@@ -323,6 +332,7 @@ function Scene({ state }: { state: PongState }) {
       <pointLight position={[1.3, 1.9, -3.9]} intensity={5} color="#38bdf8" distance={6} />
 
       <spotLight position={[0, 3, -1.6]} angle={0.8} penumbra={0.6} intensity={26} color="#fff1d8" castShadow />
+      <Probe />
       <Table />
       {state.cups.map((c, i) => (
         <Cup key={i} x={c.x} z={c.z} alive={c.alive} />
