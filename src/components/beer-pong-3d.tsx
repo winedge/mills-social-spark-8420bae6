@@ -147,6 +147,42 @@ export function launchVector(s: PongState) {
   return { vx: v.x, vy: v.y, vz: v.z };
 }
 
+/**
+ * Cheap ballistic forecast used for aim-assist feedback.
+ * Integrates the same gravity + wind model as the live step and reports how
+ * close the predicted rim-crossing lands to the nearest surviving cup.
+ * Returns null while the shot is too weak to leave the hand.
+ */
+export function predictAim(s: PongState): { x: number; z: number; dist: number; closeness: number } | null {
+  if (s.power <= 0.08) return null;
+  const v = launchVector(s);
+  let x = s.ball.x;
+  let y = BALL_HOME.y + s.power * 0.05;
+  let z = BALL_HOME.z + s.power * 0.14;
+  let vx = v.vx;
+  let vy = v.vy;
+  const vz = v.vz;
+  const dt = 1 / 120;
+  for (let i = 0; i < 400; i++) {
+    vy -= 9.81 * dt;
+    vx += s.wind * dt;
+    x += vx * dt;
+    y += vy * dt;
+    z += vz * dt;
+    if (vy < 0 && y <= CUP_H) break;
+    if (y < 0) break;
+  }
+  let dist = Infinity;
+  for (const c of s.cups) {
+    if (!c.alive) continue;
+    dist = Math.min(dist, Math.hypot(x - c.x, z - c.z));
+  }
+  if (!isFinite(dist)) return null;
+  const range = CUP_R * 4.5;
+  const closeness = Math.max(0, Math.min(1, 1 - dist / range));
+  return { x, z, dist, closeness };
+}
+
 export function spawnSplash(s: PongState, x: number, z: number) {
   /* upward beer column - fast, narrow, driven straight out of the cup */
   for (let i = 0; i < 18; i++) {
