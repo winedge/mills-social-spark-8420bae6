@@ -630,14 +630,14 @@ function Table() {
         <MeshReflectorMaterial
           map={woodTex}
           resolution={512}
-          mirror={0.28}
-          mixBlur={7}
-          mixStrength={1.4}
-          blur={[280, 90]}
+          mirror={0.2}
+          mixBlur={8}
+          mixStrength={0.7}
+          blur={[200, 70]}
           roughness={0.42}
           metalness={0.06}
           depthScale={0.6}
-          color="#8a5a37"
+          color="#6b4126"
         />
       </mesh>
       {/* edges */}
@@ -655,7 +655,7 @@ function Table() {
       {/* centre stripe */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.002, -1.1]}>
         <planeGeometry args={[0.01, 7.2]} />
-        <meshBasicMaterial color="#38bdf8" transparent opacity={0.14} />
+        <meshBasicMaterial color="#38bdf8" transparent opacity={0.07} />
       </mesh>
       {/* floor */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.75, -2]} receiveShadow>
@@ -674,7 +674,7 @@ function Table() {
       </mesh>
       <NeonSign position={[-2.2, 1.5, -5.6]} color="#ff8a3d" w={1.2} />
       <NeonSign position={[2.1, 1.75, -6.0]} color="#38bdf8" w={0.95} />
-      <NeonSign position={[0.2, 2.15, -6.4]} color="#f472b6" w={1.5} h={0.4} />
+      <NeonSign position={[0.4, 2.5, -6.8]} color="#f472b6" w={1.1} h={0.35} />
       <Crowd />
       <Dust />
     </group>
@@ -688,7 +688,7 @@ function Table() {
 function CameraRig({ state }: { state: PongState }) {
   const { camera } = useThree();
   const look = useRef(new THREE.Vector3(0, 0.2, -1.9));
-  const pos = useRef(new THREE.Vector3(0, 0.72, 1.65));
+  const pos = useRef(new THREE.Vector3(0, 1.0, 2.05));
 
   useFrame((st, delta) => {
     const dt = Math.min(delta, 1 / 30);
@@ -709,11 +709,11 @@ function CameraRig({ state }: { state: PongState }) {
       );
       lookAt = new THREE.Vector3(0, 0.12, RACK_Z);
     } else if (state.flying) {
-      target = new THREE.Vector3(b.x * 0.28, 0.66 + Math.max(0, b.y) * 0.22, Math.max(b.z + 0.85, 0.55));
+      target = new THREE.Vector3(b.x * 0.28, 0.95 + Math.max(0, b.y) * 0.2, Math.max(b.z + 1.15, 0.9));
       lookAt = new THREE.Vector3(b.x * 0.6, Math.max(b.y, 0.08), b.z - 0.7);
     } else {
       const zoom = state.charging ? state.power : 0;
-      target = new THREE.Vector3(b.x * 0.35, 0.7 - zoom * 0.04, 1.62 - zoom * 0.16);
+      target = new THREE.Vector3(b.x * 0.35, 1.0 - zoom * 0.05, 2.05 - zoom * 0.18);
       lookAt = new THREE.Vector3(state.aim * 0.45, 0.2, -1.95);
     }
 
@@ -754,7 +754,7 @@ function Scene({ state }: { state: PongState }) {
       <ambientLight intensity={0.35} />
       <directionalLight
         position={[2.2, 4.2, 2]}
-        intensity={1.1}
+        intensity={0.7}
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-camera-near={0.5}
@@ -764,7 +764,7 @@ function Scene({ state }: { state: PongState }) {
         position={[0, 3.1, -1.4]}
         angle={0.7}
         penumbra={0.85}
-        intensity={26}
+        intensity={13}
         color="#ffd9a8"
         distance={9}
         castShadow
@@ -780,8 +780,8 @@ function Scene({ state }: { state: PongState }) {
       <AimGuide state={state} />
       <CameraRig state={state} />
       <EffectComposer enableNormalPass={false}>
-        <DepthOfField focusDistance={0.012} focalLength={0.05} bokehScale={4.5} height={480} />
-        <Bloom intensity={0.65} luminanceThreshold={0.55} luminanceSmoothing={0.28} mipmapBlur />
+        <DepthOfField focusDistance={0.022} focalLength={0.1} bokehScale={2.6} height={480} />
+        <Bloom intensity={0.5} luminanceThreshold={0.72} luminanceSmoothing={0.28} mipmapBlur />
         <Vignette eskil={false} offset={0.22} darkness={0.85} />
       </EffectComposer>
     </>
@@ -798,7 +798,7 @@ export default function BeerPongScene({ state }: { state: PongState }) {
     <Canvas
       dpr={[1, 1.75]}
       shadows
-      camera={{ position: [0, 0.72, 1.65], fov: 47 }}
+      camera={{ position: [0, 1.0, 2.05], fov: 47 }}
       gl={{ antialias: true, powerPreference: "high-performance" }}
     >
       <Scene state={state} />
