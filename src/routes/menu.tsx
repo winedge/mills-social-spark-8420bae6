@@ -616,17 +616,23 @@ function MenuPage() {
         ) : (
           <div className="space-y-16 md:space-y-20">
             {grouped.map(({ id, label: section, items: list, hh }, gi) => (
-              <div key={section} id={id ? `menu-section-${id}` : undefined}>
+              <div
+                key={section}
+                id={id ? `menu-section-${id}` : undefined}
+                className={hh ? "relative border-2 border-accent/40 bg-accent/[0.04] p-5 md:p-8" : undefined}
+              >
                 {hh && grouped[gi - 1]?.hh !== hh && (
                   <div className="mb-8 flex items-center gap-4">
-                    <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-accent whitespace-nowrap">
-                      Happy Hour // {hh === "food" ? "Food" : "Drinks"}
+                    <span className="font-mono text-[10px] tracking-[0.3em] uppercase bg-accent text-primary-foreground px-3 py-1.5 whitespace-nowrap">
+                      ★ Happy Hour // {hh === "food" ? "Food" : "Drinks"}
                     </span>
                     <span className="h-px flex-1 bg-accent/30" />
                   </div>
                 )}
-                <div className="flex items-baseline justify-between mb-6 md:mb-8 pb-4 border-b border-border">
-                  <h2 className="font-display text-3xl md:text-4xl uppercase">{section}</h2>
+                <div className={`flex items-baseline justify-between mb-6 md:mb-8 pb-4 border-b ${hh ? "border-accent/40" : "border-border"}`}>
+                  <h2 className="font-display text-3xl md:text-4xl uppercase">
+                    {hh ? <span className="text-accent">{section}</span> : section}
+                  </h2>
                   <span className="font-mono text-xs text-muted-foreground tracking-widest">
                     {String(list.length).padStart(2, "0")} ITEMS
                   </span>
