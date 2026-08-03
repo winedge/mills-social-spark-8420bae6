@@ -1,5 +1,5 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Environment, Float } from "@react-three/drei";
+import { Float } from "@react-three/drei";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 
@@ -339,8 +339,6 @@ function Scene({ state }: { state: PongState }) {
       ))}
       <Ball state={state} />
       <AimGuide state={state} />
-
-      <Environment preset="night" />
     </>
   );
 }
