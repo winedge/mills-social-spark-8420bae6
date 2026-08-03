@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Beer, X, Trophy, Copy, Check, RotateCcw, Volume2, VolumeX, Target, Flame, Wind } from "lucide-react";
-import { makePong, makeCups, launchVector, type PongState } from "./beer-pong-3d";
+import { makePong, makeCups, launchVector, predictAim, type PongState } from "./beer-pong-3d";
 import { sfx } from "./beer-pong-audio";
 import { haptics } from "./haptics";
 
@@ -126,6 +126,8 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
   const [flash, setFlash] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [windUI, setWindUI] = useState(0);
+  const [aimClose, setAimClose] = useState(0);
+  const lockedRef = useRef(false);
   const start = useRef<{ x: number; y: number } | null>(null);
   const startedAt = useRef(Date.now());
 
@@ -221,10 +223,18 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
       const dx = e.clientX - start.current.x;
       const p = Math.min(1, dy / 190);
       const a = Math.max(-1, Math.min(1, dx / 160));
-      if (Math.floor(p * 10) > Math.floor(stateRef.current.power * 10)) haptics.play("tap", { throttle: 40 });
       stateRef.current.power = p;
       stateRef.current.aim = a;
       setPower(p);
+
+      /* aim-assist: guide the throw with proximity-scaled vibration */
+      const pred = predictAim(stateRef.current);
+      const close = pred?.closeness ?? 0;
+      const locked = close > 0.88;
+      if (locked && !lockedRef.current) haptics.aimLock();
+      else if (!locked) haptics.aimCue(close);
+      lockedRef.current = locked;
+      setAimClose(close);
     },
     onPointerUp: () => {
       if (!start.current) return;
@@ -244,6 +254,8 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
       }
       s.power = 0;
       setPower(0);
+      lockedRef.current = false;
+      setAimClose(0);
     },
   };
 
@@ -383,7 +395,22 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
             </span>
           </div>
         )}
+        {charging && aimClose > 0.35 && (
+          <div
+            className={`flex items-center gap-1.5 rounded-full border backdrop-blur px-3 py-1 transition-colors ${
+              aimClose > 0.88 ? "border-accent bg-accent/20" : "border-white/20 bg-white/5"
+            }`}
+          >
+            <Target className={`size-3 ${aimClose > 0.88 ? "text-accent" : "text-white/60"}`} />
+            <span
+              className={`font-mono text-[9px] uppercase tracking-widest ${aimClose > 0.88 ? "text-accent" : "text-white/60"}`}
+            >
+              {aimClose > 0.88 ? "On target" : "Close"}
+            </span>
+          </div>
+        )}
       </div>
+
 
       {/* power meter */}
       <div

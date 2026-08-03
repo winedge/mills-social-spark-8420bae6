@@ -113,4 +113,18 @@ export const haptics = {
   nearMiss(strength = 1) {
     this.play(strength > 0.6 ? "medium" : "light", { throttle: 70 });
   },
+  /**
+   * Aim assist: pulses faster and firmer as the predicted landing point closes
+   * in on a cup. `closeness` is 0 (way off) .. 1 (dead centre).
+   */
+  aimCue(closeness: number) {
+    if (closeness <= 0.12) return;
+    const interval = Math.round(240 - closeness * 185); // 240ms -> ~55ms
+    const level: Level = closeness > 0.9 ? "medium" : closeness > 0.6 ? "light" : "tap";
+    this.play(level, { throttle: interval });
+  },
+  /** Fired once when the predicted shot enters the sink window. */
+  aimLock() {
+    this.play("heavy");
+  },
 };
