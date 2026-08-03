@@ -17,7 +17,14 @@ export type Cup = {
   wobblePhase: number;
   tip: number; // 0..1 tip-over on sink
   fade: number; // 1 = present, 0 = gone
+  sinkT: number; // seconds since the sink started (-1 = not sinking)
+  tipVel: number; // angular velocity of the tip-over (rad/s)
+  tipDir: number; // -1 / 1 lateral direction the cup falls
+  slide: number; // how far the cup has skidded while falling
+  spinY: number; // yaw spin while it tumbles
+  landed: boolean; // has it hit the table yet (clink played)
 };
+
 
 export type Splash = {
   x: number;
