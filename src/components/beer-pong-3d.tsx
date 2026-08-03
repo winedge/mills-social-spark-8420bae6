@@ -367,7 +367,7 @@ function Ball({ state }: { state: PongState }) {
   return (
     <>
       <mesh ref={ref} castShadow>
-        <sphereGeometry args={[BALL_R * 0.5, 36, 36]} />
+        <sphereGeometry args={[BALL_R, 36, 36]} />
         <meshPhysicalMaterial
           map={tex}
           color="#ffffff"
@@ -776,7 +776,7 @@ function Scene({ state }: { state: PongState }) {
         <Cup key={i} cup={c} />
       ))}
       <Ball state={state} />
-      {/*SPLASHOFF*/}
+      <Splashes state={state} />
       <AimGuide state={state} />
       <CameraRig state={state} />
       <EffectComposer enableNormalPass={false}>
