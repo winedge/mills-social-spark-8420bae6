@@ -22,7 +22,9 @@ function ac() {
   if (!ctx) {
     const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AC) return null;
-    ctx = new AC();
+    /* "interactive" asks the platform for the smallest output buffer it can
+       give us, which keeps game cues tight against the on-screen action */
+    ctx = new AC({ latencyHint: "interactive" });
     master = ctx.createGain();
     master.gain.value = 0.9;
     master.connect(ctx.destination);
