@@ -670,7 +670,7 @@ function Table() {
       {/* bar shelf glow */}
       <mesh position={[0, 0.55, -6.4]}>
         <boxGeometry args={[7, 0.05, 0.4]} />
-        <meshStandardMaterial color="#20160e" emissive="#doc" emissiveIntensity={0} roughness={0.5} />
+        <meshStandardMaterial color="#20160e" roughness={0.5} />
       </mesh>
       <NeonSign position={[-2.2, 1.5, -5.6]} color="#ff8a3d" w={1.2} />
       <NeonSign position={[2.1, 1.75, -6.0]} color="#38bdf8" w={0.95} />
