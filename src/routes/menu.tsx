@@ -616,17 +616,23 @@ function MenuPage() {
         ) : (
           <div className="space-y-16 md:space-y-20">
             {grouped.map(({ id, label: section, items: list, hh }, gi) => (
-              <div key={section} id={id ? `menu-section-${id}` : undefined}>
+              <div
+                key={section}
+                id={id ? `menu-section-${id}` : undefined}
+                className={hh ? "relative border-2 border-accent/40 bg-accent/[0.04] p-5 md:p-8" : undefined}
+              >
                 {hh && grouped[gi - 1]?.hh !== hh && (
                   <div className="mb-8 flex items-center gap-4">
-                    <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-accent whitespace-nowrap">
-                      Happy Hour // {hh === "food" ? "Food" : "Drinks"}
+                    <span className="font-mono text-[10px] tracking-[0.3em] uppercase bg-accent text-primary-foreground px-3 py-1.5 whitespace-nowrap">
+                      ★ Happy Hour // {hh === "food" ? "Food" : "Drinks"}
                     </span>
                     <span className="h-px flex-1 bg-accent/30" />
                   </div>
                 )}
-                <div className="flex items-baseline justify-between mb-6 md:mb-8 pb-4 border-b border-border">
-                  <h2 className="font-display text-3xl md:text-4xl uppercase">{section}</h2>
+                <div className={`flex items-baseline justify-between mb-6 md:mb-8 pb-4 border-b ${hh ? "border-accent/40" : "border-border"}`}>
+                  <h2 className="font-display text-3xl md:text-4xl uppercase">
+                    {hh ? <span className="text-accent">{section}</span> : section}
+                  </h2>
                   <span className="font-mono text-xs text-muted-foreground tracking-widest">
                     {String(list.length).padStart(2, "0")} ITEMS
                   </span>
@@ -702,14 +708,14 @@ function DailySpecialsStrip() {
           </span>
         </div>
 
-        <div className="space-y-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {specials.map((s) => (
             <article
               key={s.id}
-              className="group grid gap-0 sm:grid-cols-[minmax(0,14rem)_1fr] md:grid-cols-[minmax(0,20rem)_1fr] border border-border bg-background hover:border-accent/60 transition-colors overflow-hidden"
+              className="group flex flex-col border border-border bg-background hover:border-accent/60 transition-colors overflow-hidden"
             >
-              {/* Image left */}
-              <div className="relative aspect-[16/10] sm:aspect-auto sm:min-h-44 bg-surface overflow-hidden border-b sm:border-b-0 sm:border-r border-border">
+              {/* Image top */}
+              <div className="relative aspect-[4/3] bg-surface overflow-hidden border-b border-border">
                 {s.image_url ? (
                   <img
                     src={s.image_url}
@@ -727,10 +733,10 @@ function DailySpecialsStrip() {
                 </span>
               </div>
 
-              {/* Info right */}
-              <div className="p-5 md:p-7 flex flex-col justify-center">
-                <div className="flex items-center gap-3 mb-2 flex-wrap">
-                  <h3 className="font-display text-2xl md:text-3xl uppercase group-hover:text-accent transition-colors">
+              {/* Info bottom */}
+              <div className="p-5 flex flex-col flex-1">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <h3 className="font-display text-xl uppercase group-hover:text-accent transition-colors">
                     {s.title}
                   </h3>
                   {s.badge && (
@@ -739,11 +745,9 @@ function DailySpecialsStrip() {
                     </span>
                   )}
                 </div>
-                <p className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-2xl">
-                  {s.description}
-                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{s.description}</p>
                 {s.price && (
-                  <div className="mt-4 font-mono text-accent text-xl md:text-2xl">{s.price}</div>
+                  <div className="mt-4 font-mono text-accent text-xl">{s.price}</div>
                 )}
               </div>
             </article>
