@@ -221,3 +221,26 @@ export function useContactInfo() {
   }, []);
   return info;
 }
+
+/** Admin-controlled on/off switches for optional website sections. */
+export function useFeatureFlag(key: string, fallback = true) {
+  const [enabled, setEnabled] = useState(fallback);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("site_features")
+        .select("enabled")
+        .eq("key", key)
+        .maybeSingle();
+      if (!alive) return;
+      if (data) setEnabled(Boolean(data.enabled));
+      setLoading(false);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [key]);
+  return { enabled, loading };
+}
