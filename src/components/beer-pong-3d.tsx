@@ -242,10 +242,28 @@ const TIP_REST = Math.PI / 2; /* fully on its side */
 
 function Cup({ cup }: { cup: Cup }) {
   const g = useRef<THREE.Group>(null);
+  const beerMat = useRef<THREE.MeshPhysicalMaterial>(null);
+  const surfaceMat = useRef<THREE.MeshPhysicalMaterial>(null);
+  const flash = useRef<THREE.Mesh>(null);
+  const flashLight = useRef<THREE.PointLight>(null);
 
   useFrame((_, delta) => {
     const dt = Math.min(delta, 1 / 40);
     if (!g.current) return;
+
+    /* cup-fill flash: the beer glows hot for ~0.45s the moment it's sunk */
+    const ft = cup.sinkT >= 0 ? Math.max(0, 1 - cup.sinkT / 0.45) : 0;
+    const pulse = ft * ft;
+    if (beerMat.current) beerMat.current.emissiveIntensity = 0.28 + pulse * 2.6;
+    if (surfaceMat.current) surfaceMat.current.emissiveIntensity = 0.35 + pulse * 3.2;
+    if (flashLight.current) flashLight.current.intensity = pulse * 3.5;
+    if (flash.current) {
+      const grow = 1 + (1 - ft) * 2.6;
+      flash.current.scale.setScalar(cup.sinkT >= 0 ? grow : 0.001);
+      flash.current.visible = ft > 0.01;
+      (flash.current.material as THREE.MeshBasicMaterial).opacity = ft * 0.7;
+    }
+
     /* rim wobble decay */
     cup.wobblePhase += dt * 22;
     cup.wobble *= Math.exp(-dt * 4.5);
