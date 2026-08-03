@@ -805,7 +805,8 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
                 className="border border-border bg-background/60 px-6 py-3 font-mono text-[11px] uppercase tracking-widest text-foreground/80 backdrop-blur-md hover:border-accent hover:text-accent"
               >
                 Done Shaking
-            </button>
+              </button>
+            </div>
           </div>
         )}
 
