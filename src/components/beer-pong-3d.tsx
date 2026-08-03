@@ -432,7 +432,20 @@ function Ball({ state }: { state: PongState }) {
         const dz = b.z - c.z;
         const d = Math.hypot(dx, dz);
 
-        if (b.vy < 0 && d < CUP_R * 0.8 && b.y < CUP_H && b.y > CUP_H * 0.3) {
+        /* swept mouth crossing: find where the ball crossed the rim plane this
+           frame so a fast ball can never tunnel through the opening */
+        let mouthHit = false;
+        let mx = dx;
+        let mz = dz;
+        if (b.vy < 0 && py >= CUP_H && b.y < CUP_H) {
+          const t = (py - CUP_H) / Math.max(1e-6, py - b.y);
+          mx = px + (b.x - px) * t - c.x;
+          mz = pz + (b.z - pz) * t - c.z;
+          mouthHit = Math.hypot(mx, mz) < CUP_R * 0.95;
+        }
+        const insideNow = b.vy < 0 && d < CUP_R * 0.9 && b.y < CUP_H && b.y > CUP_H * 0.25;
+
+        if (mouthHit || insideNow) {
           c.alive = false;
           c.wobble = 0.34;
           c.wobblePhase = 0;
@@ -443,7 +456,7 @@ function Ball({ state }: { state: PongState }) {
           c.spinY = 0;
           c.landed = false;
           /* fall away from wherever the ball came in */
-          c.tipDir = b.vx + dx >= 0 ? 1 : -1;
+          c.tipDir = b.vx + mx >= 0 ? 1 : -1;
           s.flying = false;
           spawnSplash(s, c.x, c.z);
           s.shake = 1;
@@ -456,6 +469,7 @@ function Ball({ state }: { state: PongState }) {
           });
           /* splash lands with the foam burst leaving the rim, crowd reacts
              once the sink visually reads as a make */
+          sfx.splash(0);
           sfx.splash(SINK_TIMELINE.foam);
           sfx.cheer(1, SINK_TIMELINE.cheer);
           s.onSink?.(i);
