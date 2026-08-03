@@ -120,9 +120,10 @@ export const sfx = {
 
     const att = attenuation(distance);
     const amp = att * Math.min(1.2, Math.max(0.2, strength));
-    const t0 = c.currentTime;
-    /* speed of sound delay - far cups read fractionally late */
-    const delay = Math.max(0, (distance - SINK_REF_DIST) * 0.0029);
+    const t0 = c.currentTime + SCHED;
+    /* speed of sound delay - far cups read fractionally late (capped so it
+       never drifts audibly behind the cup wobble on screen) */
+    const delay = Math.min(0.02, Math.max(0, (distance - SINK_REF_DIST) * 0.0029));
 
     /* per-cue chain: panner -> air-absorption lowpass -> bus */
     const panner = c.createStereoPanner();
