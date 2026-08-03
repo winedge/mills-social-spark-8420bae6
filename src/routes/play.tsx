@@ -4,6 +4,7 @@ import { Target, Dices, Gamepad2, CircleDot, Trophy, Clock, Users, ChevronLeft, 
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { BeerPong } from "@/components/beer-pong";
+import { useFeatureFlag } from "@/lib/content";
 import playHero from "@/assets/play-hero.jpg";
 import poolImg from "@/assets/play-pool.jpg";
 import dartsImg from "@/assets/play-darts.jpg";
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/play")({
 });
 
 function PlayPage() {
+  const { enabled: beerPongOn, loading: flagLoading } = useFeatureFlag("beer_pong");
   return (
     <div className="bg-background text-foreground font-body min-h-screen overflow-hidden">
       <SiteHeader />
@@ -37,7 +39,7 @@ function PlayPage() {
       <DartsSection />
       <BoardSection />
       <ArcadeSection />
-      <BeerPong />
+      {!flagLoading && beerPongOn && <BeerPong />}
       <HouseRules />
 
       <SiteFooter />

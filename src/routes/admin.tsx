@@ -1213,6 +1213,58 @@ function HeroVideoUploader() {
   );
 }
 
+const FEATURES: { key: string; label: string; hint: string }[] = [
+  { key: "beer_pong", label: "Beer Pong 3D game", hint: "The playable 3D beer pong section on the Play page." },
+];
+
+function FeatureToggles() {
+  const [flags, setFlags] = useState<Record<string, boolean>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await (supabase as any).from("site_features").select("key, enabled");
+      const map: Record<string, boolean> = {};
+      for (const f of FEATURES) map[f.key] = true;
+      for (const r of (data ?? []) as { key: string; enabled: boolean }[]) map[r.key] = r.enabled;
+      setFlags(map);
+      setLoading(false);
+    })();
+  }, []);
+
+  const set = async (key: string, value: boolean) => {
+    setFlags((f) => ({ ...f, [key]: value }));
+    const { error } = await (supabase as any)
+      .from("site_features")
+      .upsert({ key, enabled: value, updated_at: new Date().toISOString() }, { onConflict: "key" });
+    if (error) {
+      alert(error.message);
+      setFlags((f) => ({ ...f, [key]: !value }));
+    }
+  };
+
+  return (
+    <div className="border border-border bg-surface/40 p-6 space-y-4">
+      <span className="block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        Website Sections
+      </span>
+      {loading ? (
+        <LoaderBlock />
+      ) : (
+        FEATURES.map((f) => (
+          <div key={f.key} className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium">{f.label}</p>
+              <p className="text-xs text-muted-foreground">{f.hint}</p>
+            </div>
+            <ToggleActive checked={flags[f.key] ?? true} onChange={(v) => set(f.key, v)} />
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
 function SettingsSection() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1243,6 +1295,7 @@ function SettingsSection() {
   if (loading) return <LoaderBlock />;
   return (
     <div className="max-w-2xl space-y-6">
+      <FeatureToggles />
       <HeroVideoUploader />
       <form onSubmit={save} className="space-y-6 border border-border bg-surface/40 p-6">
         <div>
