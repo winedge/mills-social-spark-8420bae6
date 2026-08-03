@@ -137,6 +137,15 @@ function MenuPage() {
     return m;
   }, [tree]);
 
+  const slugById = useMemo(() => {
+    const m = new Map<string, string>();
+    cats.forEach((c) => m.set(c.id, c.slug));
+    return m;
+  }, [cats]);
+
+  const dailyCatId = useMemo(() => cats.find((c) => c.slug === "daily-specials")?.id ?? "", [cats]);
+  const isDailyTab = !!dailyCatId && catId === dailyCatId;
+
   const grouped = useMemo(() => {
     const g = new Map<string, { items: typeof filtered; order: number; id: string }>();
     for (const i of filtered) {
@@ -147,8 +156,12 @@ function MenuPage() {
     }
     return Array.from(g.entries())
       .sort((a, b) => a[1].order - b[1].order)
-      .map(([label, v]) => [v.id, label, v.items] as [string, string, typeof filtered]);
-  }, [filtered, nameById, catOrder]);
+      .map(([label, v]) => {
+        const slug = slugById.get(v.id) ?? "";
+        const hh = /^hh-\d+-food$/.test(slug) ? "food" : /^hh-\d+-drinks$/.test(slug) ? "drinks" : null;
+        return { id: v.id, label, items: v.items, hh };
+      });
+  }, [filtered, nameById, catOrder, slugById]);
 
 
   const counts = useMemo(() => {
@@ -538,11 +551,10 @@ function MenuPage() {
       </section>
 
 
-      <DailySpecialsStrip />
-
-
+      {(!catId || isDailyTab) && <DailySpecialsStrip />}
 
       {/* Menu list */}
+      {!isDailyTab && (
       <section className="px-4 md:px-6 py-12 md:py-16 max-w-7xl mx-auto">
         {grouped.length === 0 ? (
           <p className="text-center text-muted-foreground font-mono text-sm py-24">
@@ -550,8 +562,16 @@ function MenuPage() {
           </p>
         ) : (
           <div className="space-y-16 md:space-y-20">
-            {grouped.map(([id, section, list]) => (
+            {grouped.map(({ id, label: section, items: list, hh }, gi) => (
               <div key={section} id={id ? `menu-section-${id}` : undefined}>
+                {hh && grouped[gi - 1]?.hh !== hh && (
+                  <div className="mb-8 flex items-center gap-4">
+                    <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-accent whitespace-nowrap">
+                      Happy Hour // {hh === "food" ? "Food" : "Drinks"}
+                    </span>
+                    <span className="h-px flex-1 bg-accent/30" />
+                  </div>
+                )}
                 <div className="flex items-baseline justify-between mb-6 md:mb-8 pb-4 border-b border-border">
                   <h2 className="font-display text-3xl md:text-4xl uppercase">{section}</h2>
                   <span className="font-mono text-xs text-muted-foreground tracking-widest">
@@ -601,6 +621,7 @@ function MenuPage() {
           </div>
         )}
       </section>
+      )}
 
       <SiteFooter />
     </div>
