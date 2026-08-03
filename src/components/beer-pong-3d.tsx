@@ -321,7 +321,7 @@ function Scene({ state }: { state: PongState }) {
       {state.cups.map((c, i) => (
         <Cup key={i} x={c.x} z={c.z} alive={c.alive} />
       ))}
-      <Ball state={state} />
+      {/*BALLOFF*/}
       <AimGuide state={state} />
 
       <Environment preset="night" />
