@@ -41,8 +41,22 @@ function noiseBuffer(c: AudioContext, seconds = 1) {
   return buf;
 }
 
-function env(g: GainNode, c: AudioContext, peak: number, attack: number, decay: number) {
-  const t = c.currentTime;
+/* smallest safe scheduling lookahead - keeps starts sample-accurate without
+   adding audible latency against the visuals */
+const SCHED = 0.004;
+
+/** visual choreography offsets (seconds after the ball drops into the cup) */
+export const SINK_TIMELINE = {
+  /** rim wobble / glass ring - immediate */
+  ring: 0,
+  /** beer column + foam burst leaves the rim a couple of frames later */
+  foam: 0.055,
+  /** crowd reacts once they see it went in */
+  cheer: 0.22,
+};
+
+function env(g: GainNode, c: AudioContext, peak: number, attack: number, decay: number, at?: number) {
+  const t = at ?? c.currentTime + SCHED;
   g.gain.cancelScheduledValues(t);
   g.gain.setValueAtTime(0.0001, t);
   g.gain.exponentialRampToValueAtTime(Math.max(peak, 0.0002), t + attack);
