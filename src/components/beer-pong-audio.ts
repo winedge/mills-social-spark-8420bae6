@@ -5,6 +5,9 @@
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let ambienceGain: GainNode | null = null;
+let crowdGain: GainNode | null = null;
+let crowdFilter: BiquadFilterNode | null = null;
+let crowdNodes: AudioBufferSourceNode[] = [];
 let musicTimer: number | null = null;
 let muted = false;
 
