@@ -165,18 +165,21 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
     s.onSink = () => {
       sunkRef.current += 1;
       comboRef.current += 1;
+      const c = comboRef.current;
+      const pts = 100 * c;
       setSunk(sunkRef.current);
-      setCombo(comboRef.current);
-      setBestCombo((b) => Math.max(b, comboRef.current));
-      setScore((v) => v + 100 * comboRef.current);
-      setToast({ text: comboRef.current > 1 ? `${comboRef.current}x COMBO!` : "SPLASH!", good: true });
+      setCombo(c);
+      setBestCombo((b) => Math.max(b, c));
+      setScore((v) => v + pts);
+      setSinkFx({ id: Date.now(), points: pts, combo: c });
       setFlash(1);
-      haptics.sink(comboRef.current);
+      haptics.sink(c);
       shotsRef.current += 1;
       setShots(shotsRef.current);
       setTimeout(escalate, 450);
       finish();
     };
+
     s.onRim = (strength) => haptics.nearMiss(strength);
     s.onMiss = () => {
       comboRef.current = 0;
