@@ -62,8 +62,8 @@ export type PongState = {
 export const BALL_R = 0.05;
 export const CUP_R = 0.065; // +30% vs previous
 export const CUP_H = 0.17;
-const RACK_Z = -2.15;
-const BALL_HOME = { y: 0.4, z: 0.75 };
+const RACK_Z = -1.75;
+const BALL_HOME = { y: 0.34, z: 0.42 };
 
 /* cup formations, chosen by how many cups remain */
 export function makeCups(formation: "triangle" | "diamond" | "line" | "tight" = "triangle") {
@@ -632,12 +632,12 @@ function Table() {
           resolution={512}
           mirror={0.2}
           mixBlur={8}
-          mixStrength={0.7}
+          mixStrength={0.35}
           blur={[200, 70]}
           roughness={0.42}
           metalness={0.06}
           depthScale={0.6}
-          color="#6b4126"
+          color="#4d2e1b"
         />
       </mesh>
       {/* edges */}
@@ -688,7 +688,7 @@ function Table() {
 function CameraRig({ state }: { state: PongState }) {
   const { camera } = useThree();
   const look = useRef(new THREE.Vector3(0, 0.2, -1.9));
-  const pos = useRef(new THREE.Vector3(0, 1.0, 2.05));
+  const pos = useRef(new THREE.Vector3(0, 1.02, 2.2));
 
   useFrame((st, delta) => {
     const dt = Math.min(delta, 1 / 30);
@@ -709,12 +709,12 @@ function CameraRig({ state }: { state: PongState }) {
       );
       lookAt = new THREE.Vector3(0, 0.12, RACK_Z);
     } else if (state.flying) {
-      target = new THREE.Vector3(b.x * 0.28, 0.95 + Math.max(0, b.y) * 0.2, Math.max(b.z + 1.15, 0.9));
+      target = new THREE.Vector3(b.x * 0.28, 0.95 + Math.max(0, b.y) * 0.2, Math.max(b.z + 1.5, 1.1));
       lookAt = new THREE.Vector3(b.x * 0.6, Math.max(b.y, 0.08), b.z - 0.7);
     } else {
       const zoom = state.charging ? state.power : 0;
-      target = new THREE.Vector3(b.x * 0.35, 1.0 - zoom * 0.05, 2.05 - zoom * 0.18);
-      lookAt = new THREE.Vector3(state.aim * 0.45, 0.2, -1.95);
+      target = new THREE.Vector3(b.x * 0.35, 1.02 - zoom * 0.05, 2.2 - zoom * 0.18);
+      lookAt = new THREE.Vector3(state.aim * 0.45, 0.16, -1.6);
     }
 
     /* idle sway */
@@ -798,7 +798,7 @@ export default function BeerPongScene({ state }: { state: PongState }) {
     <Canvas
       dpr={[1, 1.75]}
       shadows
-      camera={{ position: [0, 1.0, 2.05], fov: 47 }}
+      camera={{ position: [0, 1.02, 2.2], fov: 47 }}
       gl={{ antialias: true, powerPreference: "high-performance" }}
     >
       <Scene state={state} />
