@@ -451,6 +451,30 @@ function Ball({ state }: { state: PongState }) {
     /* impact shake energy bleeds off over ~0.7s for a cinematic settle */
     s.shake = Math.max(0, s.shake - delta * 1.5);
 
+    /* ---- drop-in animation: ball funnels down into the cup ---------- */
+    if (s.sink.active) {
+      s.sink.t += delta;
+      const p = Math.min(1, s.sink.t / 0.4);
+      const ease = 1 - Math.pow(1 - p, 2.2);
+      /* slide onto the cup axis quickly, then sink under the foam */
+      b.x += (s.sink.x - b.x) * Math.min(1, delta * 18);
+      b.z += (s.sink.z - b.z) * Math.min(1, delta * 18);
+      b.y = s.sink.y0 + (CUP_H * 0.3 - s.sink.y0) * ease;
+      if (ref.current) {
+        ref.current.position.set(b.x, b.y, b.z);
+        ref.current.rotation.x += delta * 7;
+        ref.current.rotation.z += delta * 4;
+        ref.current.scale.setScalar(1 - Math.max(0, (p - 0.5) / 0.5) * 0.6);
+      }
+      if (shadow.current)
+        (shadow.current.material as THREE.MeshBasicMaterial).opacity = 0;
+      if (p >= 1) {
+        s.sink.active = false;
+        resetBall(s);
+      }
+      return;
+    }
+
     if (!s.flying) {
       const tx = s.aim * 0.32;
       const ty = BALL_HOME.y + (s.charging ? s.power * 0.05 : 0);
