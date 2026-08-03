@@ -273,6 +273,9 @@ function Cup({ cup }: { cup: Cup }) {
   const surfaceMat = useRef<THREE.MeshPhysicalMaterial>(null);
   const flash = useRef<THREE.Mesh>(null);
   const flashLight = useRef<THREE.PointLight>(null);
+  const liquid = useRef<THREE.Group>(null);
+  const spill = useRef<THREE.Mesh>(null);
+  const puddle = useRef<THREE.Mesh>(null);
 
   useFrame((_, delta) => {
     const dt = Math.min(delta, 1 / 40);
@@ -291,9 +294,43 @@ function Cup({ cup }: { cup: Cup }) {
       (flash.current.material as THREE.MeshBasicMaterial).opacity = ft * 0.7;
     }
 
+    /* --- beer level: eases up towards the target each time a ball lands,
+       with a little overshoot so the surface sloshes as it settles ------- */
+    const diff = cup.levelTarget - cup.level;
+    cup.level += diff * Math.min(1, dt * 7.5);
+    if (Math.abs(diff) > 0.004) {
+      /* rising liquid ripples the surface */
+      cup.wobble = Math.max(cup.wobble, Math.min(0.12, Math.abs(diff) * 0.5));
+    }
+    const slosh = Math.sin(cup.wobblePhase * 0.7) * cup.wobble * 0.35;
+    if (liquid.current) {
+      const shown = Math.max(0.08, Math.min(1.06, cup.level + slosh));
+      liquid.current.scale.y += (shown - liquid.current.scale.y) * Math.min(1, dt * 14);
+    }
+
+    /* --- overflow: beer sheets down the outside and pools on the table -- */
+    if (cup.overflow > 0) {
+      cup.overflow = Math.max(0, cup.overflow - dt * 0.85);
+      const o = cup.overflow;
+      if (spill.current) {
+        spill.current.visible = true;
+        spill.current.scale.y = Math.min(1, (1 - o) * 2.2);
+        (spill.current.material as THREE.MeshStandardMaterial).opacity = o * 0.75;
+      }
+      if (puddle.current) {
+        puddle.current.visible = true;
+        puddle.current.scale.setScalar(0.4 + (1 - o) * 1.4);
+        (puddle.current.material as THREE.MeshStandardMaterial).opacity = o * 0.5;
+      }
+    } else {
+      if (spill.current) spill.current.visible = false;
+      if (puddle.current) puddle.current.visible = false;
+    }
+
     /* rim wobble decay */
     cup.wobblePhase += dt * 22;
     cup.wobble *= Math.exp(-dt * 4.5);
+
 
     if (!cup.alive) {
       cup.sinkT += dt;
