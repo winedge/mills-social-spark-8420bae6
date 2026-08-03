@@ -1,12 +1,31 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Copy, Check, X, Martini, Volume2, VolumeX, Sparkles } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import {
+  drawScene,
+  makeSim,
+  preloadCocktailSprites,
+  POUR_TARGET,
+  type Phase,
+  type Sim,
+} from "./cocktail-render";
+import loungeBg from "@/assets/lounge-bg.jpg";
+import imgVodka from "@/assets/ing-vodka.png";
+import imgGin from "@/assets/ing-gin.png";
+import imgRum from "@/assets/ing-rum.png";
+import imgTequila from "@/assets/ing-tequila.png";
+import imgLime from "@/assets/ing-lime.png";
+import imgOrange from "@/assets/ing-orange.png";
+import imgMint from "@/assets/ing-mint.png";
+import imgSyrup from "@/assets/ing-syrup.png";
+import imgCola from "@/assets/ing-cola.png";
+import imgIce from "@/assets/ice-cube.png";
 
 /* ------------------------------------------------------------------ */
 /*  Config                                                             */
 /* ------------------------------------------------------------------ */
 
-type Phase = "intro" | "recipe" | "ingredients" | "shake" | "pour" | "result";
+
 
 type Reward = { title: string; stars: number; code: string; off: string };
 
@@ -15,20 +34,19 @@ const STORAGE_KEY = "mms-cocktail-challenge-reward";
 const RECIPE = ["Vodka", "Lime Juice", "Sugar Syrup", "Mint", "Ice"] as const;
 
 const BOTTLES = [
-  { name: "Vodka", emoji: "🍾", tint: "#dbeafe" },
-  { name: "Gin", emoji: "🫙", tint: "#c7f9e5" },
-  { name: "Rum", emoji: "🥃", tint: "#f3c98b" },
-  { name: "Tequila", emoji: "🌵", tint: "#e8e3a8" },
-  { name: "Lime Juice", emoji: "🍋‍🟩", tint: "#a3e635" },
-  { name: "Orange Juice", emoji: "🍊", tint: "#fb923c" },
-  { name: "Mint", emoji: "🌿", tint: "#34d399" },
-  { name: "Sugar Syrup", emoji: "🍯", tint: "#fcd34d" },
-  { name: "Cola", emoji: "🥤", tint: "#7c3f1d" },
-  { name: "Ice", emoji: "🧊", tint: "#bae6fd" },
+  { name: "Vodka", img: imgVodka, tint: "#dbeafe" },
+  { name: "Gin", img: imgGin, tint: "#c7f9e5" },
+  { name: "Rum", img: imgRum, tint: "#f3c98b" },
+  { name: "Tequila", img: imgTequila, tint: "#e8e3a8" },
+  { name: "Lime Juice", img: imgLime, tint: "#a3e635" },
+  { name: "Orange Juice", img: imgOrange, tint: "#fb923c" },
+  { name: "Mint", img: imgMint, tint: "#34d399" },
+  { name: "Sugar Syrup", img: imgSyrup, tint: "#fcd34d" },
+  { name: "Cola", img: imgCola, tint: "#7c3f1d" },
+  { name: "Ice", img: imgIce, tint: "#bae6fd" },
 ];
 
 const SHAKE_TARGET = 5; // seconds of good shaking
-const POUR_TARGET = 0.82; // glass fill line
 
 function rewardFor(score: number): Reward {
   if (score >= 95) return { title: "Master Mixologist", stars: 5, code: "MIX30", off: "30% OFF" };
@@ -222,298 +240,6 @@ function useBarAudio(muted: boolean) {
   return { startAmbience, stopAmbience, pour, blip, startRattle, setRattle, stopRattle, cheers };
 }
 
-/* ------------------------------------------------------------------ */
-/*  Canvas simulation                                                  */
-/* ------------------------------------------------------------------ */
-
-type Sim = {
-  shakerFill: number; // 0..1
-  glassFill: number; // 0..1
-  froth: number; // 0..1
-  shakeLevel: number; // 0..1 smoothed shake intensity
-  tilt: number; // radians for pour
-  wobble: number;
-  wobbleV: number;
-  hue: number; // liquid colour drifts toward the mix
-  ice: { x: number; y: number; vx: number; vy: number; r: number; rot: number }[];
-  mint: { x: number; y: number; p: number }[];
-  drops: { x: number; y: number; vx: number; vy: number; life: number; r: number }[];
-  spill: number;
-  pourFlow: number;
-};
-
-function makeSim(): Sim {
-  return {
-    shakerFill: 0,
-    glassFill: 0,
-    froth: 0,
-    shakeLevel: 0,
-    tilt: 0,
-    wobble: 0,
-    wobbleV: 0,
-    hue: 150,
-    ice: [],
-    mint: [],
-    drops: [],
-    spill: 0,
-    pourFlow: 0,
-  };
-}
-
-function drawScene(
-  ctx: CanvasRenderingContext2D,
-  canvas: HTMLCanvasElement,
-  dpr: number,
-  s: Sim,
-  phase: Phase,
-  t: number,
-) {
-  const W = canvas.width / dpr;
-  const H = canvas.height / dpr;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, W, H);
-
-  // neon lounge backdrop
-  const bg = ctx.createRadialGradient(W / 2, H * 0.25, 10, W / 2, H * 0.5, H);
-  bg.addColorStop(0, "rgba(16,42,40,0.95)");
-  bg.addColorStop(0.55, "rgba(10,14,18,0.98)");
-  bg.addColorStop(1, "rgba(4,6,9,1)");
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, W, H);
-
-  // neon strips
-  for (let i = 0; i < 3; i++) {
-    const y = H * (0.12 + i * 0.07);
-    const g = ctx.createLinearGradient(0, y, W, y);
-    g.addColorStop(0, "rgba(52,211,153,0)");
-    g.addColorStop(0.5, i % 2 ? "rgba(231,184,75,0.35)" : "rgba(52,211,153,0.3)");
-    g.addColorStop(1, "rgba(52,211,153,0)");
-    ctx.fillStyle = g;
-    ctx.fillRect(0, y, W, 2);
-  }
-
-  const cx = W / 2;
-
-  if (phase === "pour" || phase === "result") {
-    drawGlass(ctx, cx, H, s, t, phase);
-  } else {
-    drawShaker(ctx, cx, H, s, t, phase);
-  }
-
-  // floating droplets / splashes
-  for (const d of s.drops) {
-    ctx.globalAlpha = Math.max(0, Math.min(1, d.life));
-    ctx.fillStyle = `hsla(${s.hue}, 70%, 65%, 0.9)`;
-    ctx.beginPath();
-    ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-}
-
-function drawShaker(
-  ctx: CanvasRenderingContext2D,
-  cx: number,
-  H: number,
-  s: Sim,
-  t: number,
-  phase: Phase,
-) {
-  const w = 96;
-  const h = 190;
-  const shakeX = phase === "shake" ? Math.sin(t * 34) * 10 * s.shakeLevel : 0;
-  const shakeY = phase === "shake" ? Math.cos(t * 41) * 6 * s.shakeLevel : 0;
-  const rot = phase === "shake" ? Math.sin(t * 27) * 0.12 * s.shakeLevel : 0;
-  const top = H * 0.5 - h / 2;
-
-  ctx.save();
-  ctx.translate(cx + shakeX, top + h / 2 + shakeY);
-  ctx.rotate(rot);
-  ctx.translate(-w / 2, -h / 2);
-
-  // body
-  const body = new Path2D();
-  body.moveTo(w * 0.12, 0);
-  body.lineTo(w * 0.88, 0);
-  body.lineTo(w, h * 0.9);
-  body.quadraticCurveTo(w, h, w - 12, h);
-  body.lineTo(12, h);
-  body.quadraticCurveTo(0, h, 0, h * 0.9);
-  body.closePath();
-
-  // liquid inside
-  ctx.save();
-  ctx.clip(body);
-  const fill = s.shakerFill;
-  const surfaceY = h * (1 - fill * 0.86) - 4;
-  const lg = ctx.createLinearGradient(0, surfaceY, 0, h);
-  lg.addColorStop(0, `hsla(${s.hue}, 75%, 58%, 0.95)`);
-  lg.addColorStop(1, `hsla(${s.hue - 20}, 80%, 32%, 0.98)`);
-  ctx.fillStyle = lg;
-  ctx.beginPath();
-  const amp = 4 + s.shakeLevel * 14;
-  ctx.moveTo(0, h);
-  for (let x = 0; x <= w; x += 6) {
-    const y = surfaceY + Math.sin(x / 14 + t * 6) * amp * (fill > 0.02 ? 1 : 0);
-    ctx.lineTo(x, y);
-  }
-  ctx.lineTo(w, h);
-  ctx.closePath();
-  ctx.fill();
-
-  // froth
-  if (s.froth > 0.02 && fill > 0.02) {
-    ctx.fillStyle = `rgba(255,255,255,${0.25 + s.froth * 0.5})`;
-    ctx.beginPath();
-    ctx.moveTo(0, surfaceY + 10);
-    for (let x = 0; x <= w; x += 6) {
-      ctx.lineTo(x, surfaceY + Math.sin(x / 11 + t * 8) * amp * 0.7 - s.froth * 6);
-    }
-    ctx.lineTo(w, surfaceY + 12);
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  // ice cubes bobbing
-  for (const c of s.ice) {
-    ctx.save();
-    ctx.translate(w * c.x, surfaceY + 26 + c.y * (h - surfaceY - 40));
-    ctx.rotate(c.rot);
-    ctx.fillStyle = "rgba(226,246,255,0.55)";
-    ctx.strokeStyle = "rgba(255,255,255,0.7)";
-    ctx.lineWidth = 1;
-    ctx.fillRect(-c.r, -c.r, c.r * 2, c.r * 2);
-    ctx.strokeRect(-c.r, -c.r, c.r * 2, c.r * 2);
-    ctx.restore();
-  }
-
-  // mint leaves
-  for (const m of s.mint) {
-    ctx.save();
-    ctx.translate(w * m.x, surfaceY + 20 + m.y * (h - surfaceY - 30));
-    ctx.rotate(Math.sin(t * 2 + m.p) * 0.6);
-    ctx.fillStyle = "rgba(52,211,153,0.85)";
-    ctx.beginPath();
-    ctx.ellipse(0, 0, 7, 3.4, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
-  ctx.restore();
-
-  // metal shell + reflections
-  const metal = ctx.createLinearGradient(0, 0, w, 0);
-  metal.addColorStop(0, "rgba(255,255,255,0.16)");
-  metal.addColorStop(0.25, "rgba(255,255,255,0.42)");
-  metal.addColorStop(0.5, "rgba(180,190,200,0.16)");
-  metal.addColorStop(0.78, "rgba(255,255,255,0.3)");
-  metal.addColorStop(1, "rgba(255,255,255,0.1)");
-  ctx.fillStyle = metal;
-  ctx.fill(body);
-  ctx.strokeStyle = "rgba(231,184,75,0.75)";
-  ctx.lineWidth = 2;
-  ctx.stroke(body);
-
-  // cap (closed once shaking)
-  if (phase === "shake" || phase === "pour") {
-    ctx.fillStyle = "rgba(231,184,75,0.9)";
-    ctx.fillRect(w * 0.06, -16, w * 0.88, 16);
-  }
-  ctx.restore();
-}
-
-function drawGlass(
-  ctx: CanvasRenderingContext2D,
-  cx: number,
-  H: number,
-  s: Sim,
-  t: number,
-  phase: Phase,
-) {
-  const gy = H * 0.62;
-  const rimW = 130;
-  const depth = 86;
-
-  // pouring shaker above, tilted
-  if (phase === "pour") {
-    ctx.save();
-    ctx.translate(cx - 6, H * 0.2);
-    ctx.rotate(-Math.min(1.3, Math.abs(s.tilt)));
-    ctx.fillStyle = "rgba(220,228,235,0.85)";
-    ctx.strokeStyle = "rgba(231,184,75,0.8)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.roundRect(-34, -60, 68, 110, 8);
-    ctx.fill();
-    ctx.stroke();
-    ctx.restore();
-
-    // stream
-    if (s.pourFlow > 0.01) {
-      ctx.strokeStyle = `hsla(${s.hue}, 78%, 60%, 0.9)`;
-      ctx.lineWidth = 3 + s.pourFlow * 9;
-      ctx.beginPath();
-      ctx.moveTo(cx - 18, H * 0.26);
-      ctx.quadraticCurveTo(cx - 6, H * 0.42, cx, gy - depth + 4);
-      ctx.stroke();
-    }
-  }
-
-  // glass bowl (martini)
-  const bowl = new Path2D();
-  bowl.moveTo(cx - rimW / 2, gy - depth);
-  bowl.lineTo(cx + rimW / 2, gy - depth);
-  bowl.lineTo(cx, gy);
-  bowl.closePath();
-
-  // liquid
-  ctx.save();
-  ctx.clip(bowl);
-  const lvl = s.glassFill;
-  const surfaceY = gy - depth * lvl;
-  const lg = ctx.createLinearGradient(0, surfaceY, 0, gy);
-  lg.addColorStop(0, `hsla(${s.hue}, 80%, 62%, 0.95)`);
-  lg.addColorStop(1, `hsla(${s.hue - 25}, 85%, 34%, 0.98)`);
-  ctx.fillStyle = lg;
-  ctx.beginPath();
-  ctx.moveTo(cx - rimW, gy + 4);
-  for (let x = cx - rimW; x <= cx + rimW; x += 6) {
-    ctx.lineTo(x, surfaceY + Math.sin(x / 16 + t * 5) * (2 + s.pourFlow * 5));
-  }
-  ctx.lineTo(cx + rimW, gy + 4);
-  ctx.closePath();
-  ctx.fill();
-  ctx.fillStyle = `rgba(255,255,255,${0.15 + s.froth * 0.35})`;
-  ctx.fillRect(cx - rimW, surfaceY - 3, rimW * 2, 4);
-  ctx.restore();
-
-  // fill line marker
-  const targetY = gy - depth * POUR_TARGET;
-  ctx.strokeStyle = "rgba(231,184,75,0.55)";
-  ctx.setLineDash([5, 5]);
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(cx - rimW / 2 - 12, targetY);
-  ctx.lineTo(cx + rimW / 2 + 12, targetY);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  // glass outline + stem
-  ctx.strokeStyle = "rgba(255,255,255,0.7)";
-  ctx.lineWidth = 2.5;
-  ctx.stroke(bowl);
-  ctx.beginPath();
-  ctx.moveTo(cx, gy);
-  ctx.lineTo(cx, gy + 56);
-  ctx.moveTo(cx - 34, gy + 60);
-  ctx.lineTo(cx + 34, gy + 60);
-  ctx.stroke();
-
-  // sparkle on rim
-  ctx.fillStyle = "rgba(255,255,255,0.85)";
-  ctx.beginPath();
-  ctx.arc(cx + rimW / 2 - 8, gy - depth + 2, 1.8 + Math.sin(t * 3) * 0.8, 0, Math.PI * 2);
-  ctx.fill();
-}
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
@@ -598,8 +324,9 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
   const shakeStats = useRef({ active: 0, samples: [] as number[], overshoot: 0 });
   const pourStats = useRef({ spill: 0, slow: 0, elapsed: 0 });
 
-  /* ---------- scroll lock ---------- */
+  /* ---------- scroll lock + sprite preload ---------- */
   useEffect(() => {
+    preloadCocktailSprites();
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
@@ -974,9 +701,16 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
 
   /* ---------- render ---------- */
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-background/95 backdrop-blur-md animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-background animate-in fade-in duration-300">
+      {/* luxury lounge backdrop */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-70 blur-[2px]"
+        style={{ backgroundImage: `url(${loungeBg})` }}
+      />
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/70 via-background/40 to-background/90" />
       {/* top bar */}
-      <div className="flex items-center justify-between px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-2">
+      <div className="relative flex items-center justify-between px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-2">
         <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">
           Mixologist Challenge
         </span>
@@ -1004,26 +738,29 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
 
         {/* INTRO */}
         {phase === "intro" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <Martini className="size-10 text-accent" />
-            <h3 className="font-display text-3xl uppercase leading-none md:text-5xl">
-              Welcome to the Mixologist Challenge
-            </h3>
-            <p className="max-w-sm text-sm text-muted-foreground">
-              Your mission is to create the perfect cocktail. Three stages: add the ingredients,
-              shake it, then pour the perfect drink. The better your cocktail, the bigger the reward.
-            </p>
-            <ol className="mt-1 space-y-1 font-mono text-[11px] uppercase tracking-widest text-foreground/70">
-              <li>1 - Add Ingredients</li>
-              <li>2 - Shake the Cocktail</li>
-              <li>3 - Pour the Perfect Drink</li>
-            </ol>
-            <button
-              onClick={begin}
-              className="mt-4 bg-accent px-8 py-3.5 font-bold uppercase tracking-widest text-xs text-primary-foreground transition-transform hover:scale-105"
-            >
-              Start Mixing
-            </button>
+          <div className="absolute inset-0 flex items-center justify-center px-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex w-full max-w-sm flex-col items-center gap-4 rounded-sm border border-accent/25 bg-background/70 p-7 text-center shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)] backdrop-blur-xl">
+              <Martini className="size-10 text-accent drop-shadow-[0_0_18px_rgba(56,189,248,0.6)]" />
+              <h3 className="font-display text-3xl uppercase leading-none md:text-4xl">
+                Welcome to the Mixologist Challenge
+              </h3>
+              <p className="text-sm text-foreground/70">
+                Your mission is to create the perfect cocktail. Three stages: add the ingredients,
+                shake it, then pour the perfect drink. The better your cocktail, the bigger the
+                reward.
+              </p>
+              <ol className="mt-1 space-y-1 font-mono text-[11px] uppercase tracking-widest text-foreground/70">
+                <li>1 - Add Ingredients</li>
+                <li>2 - Shake the Cocktail</li>
+                <li>3 - Pour the Perfect Drink</li>
+              </ol>
+              <button
+                onClick={begin}
+                className="mt-3 bg-accent px-8 py-3.5 font-bold uppercase tracking-widest text-xs text-primary-foreground shadow-[0_10px_30px_-8px_rgba(56,189,248,0.8)] transition-transform hover:scale-105 active:scale-95"
+              >
+                Start Mixing
+              </button>
+            </div>
           </div>
         )}
 
@@ -1061,13 +798,15 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
                 {motionOk ? "Aim for 4-6 seconds - smooth and steady" : "No sensors? Swipe fast across the screen"}
               </p>
             </div>
-            <ShakeRing progress={shakeProgress} />
-            <button
-              onClick={finishShake}
-              className="border border-border px-6 py-3 font-mono text-[11px] uppercase tracking-widest text-foreground/80 hover:border-accent hover:text-accent"
-            >
-              Done Shaking
-            </button>
+            <div className="flex flex-col items-center gap-5">
+              <ShakeRing progress={shakeProgress} />
+              <button
+                onClick={finishShake}
+                className="border border-border bg-background/60 px-6 py-3 font-mono text-[11px] uppercase tracking-widest text-foreground/80 backdrop-blur-md hover:border-accent hover:text-accent"
+              >
+                Done Shaking
+              </button>
+            </div>
           </div>
         )}
 
@@ -1098,7 +837,7 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
 
       {/* STAGE 1 BOTTLES */}
       {phase === "ingredients" && (
-        <div className="border-t border-border bg-surface/80 px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 animate-in slide-in-from-bottom-6 duration-300">
+        <div className="relative border-t border-border bg-surface/90 backdrop-blur-md px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 animate-in slide-in-from-bottom-6 duration-300">
           <div className="mb-2 flex items-center justify-between px-1">
             <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
               Tap the recipe in order
@@ -1119,7 +858,14 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
                       : "border-border bg-background/60 hover:border-accent"
                   }`}
                 >
-                  <span className="text-lg leading-none">{b.emoji}</span>
+                  <img
+                    src={b.img}
+                    alt=""
+                    loading="lazy"
+                    width={64}
+                    height={64}
+                    className="h-9 w-9 object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.6)]"
+                  />
                   <span className="text-center font-mono text-[8px] uppercase leading-tight tracking-wide">
                     {b.name}
                   </span>
