@@ -646,20 +646,30 @@ function Ball({ state }: { state: PongState }) {
         const insideNow = b.vy < 0 && d < CUP_R * 0.9 && b.y < CUP_H && b.y > CUP_H * 0.25;
 
         if (mouthHit || insideNow) {
-          c.alive = false;
-          c.wobble = 0.34;
+          /* every ball displaces more beer - the level eases up smoothly and
+             the cup only goes out once it brims over the rim */
+          c.hits += 1;
+          c.levelTarget = BASE_LEVEL + c.hits * LEVEL_PER_BALL;
+          const brims = c.levelTarget > 1.02;
+          c.wobble = brims ? 0.34 : 0.2;
           c.wobblePhase = 0;
           c.sinkT = 0;
-          c.tipVel = 0;
-          c.tip = 0;
-          c.slide = 0;
-          c.spinY = 0;
-          c.landed = false;
-          /* fall away from wherever the ball came in */
-          c.tipDir = b.vx + mx >= 0 ? 1 : -1;
+          if (brims) {
+            c.levelTarget = 1.06;
+            c.overflow = 1;
+            c.alive = false;
+            c.tipVel = 0;
+            c.tip = 0;
+            c.slide = 0;
+            c.spinY = 0;
+            c.landed = false;
+            /* fall away from wherever the ball came in */
+            c.tipDir = b.vx + mx >= 0 ? 1 : -1;
+          }
           s.flying = false;
           spawnSplash(s, c.x, c.z);
-          s.shake = 1;
+          s.shake = brims ? 1 : 0.55;
+
           /* dedicated glass + beer layer, positioned relative to the camera */
           const dist = Math.hypot(c.x - LISTENER.x, LISTENER.y, c.z - LISTENER.z);
           sfx.sink({
