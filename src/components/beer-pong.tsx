@@ -117,6 +117,7 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
   const [over, setOver] = useState(false);
   const [won, setWon] = useState(false);
   const [toast, setToast] = useState<{ text: string; good: boolean } | null>(null);
+  const [sinkFx, setSinkFx] = useState<{ id: number; points: number; combo: number } | null>(null);
   const [charging, setCharging] = useState(false);
   const [power, setPower] = useState(0);
   const [copied, setCopied] = useState(false);
