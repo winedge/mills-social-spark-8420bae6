@@ -353,7 +353,7 @@ export const sfx = {
     src.stop(c.currentTime + 0.4);
   },
 
-  /* looping bar ambience + lazy bassline */
+  /* looping bar ambience + lazy bassline + a crowd bed that swells with hype */
   startAmbience() {
     const c = ac();
     if (!c || !master || ambienceGain) return;
@@ -370,6 +370,21 @@ export const sfx = {
     f.frequency.value = 620;
     src.connect(f).connect(ambienceGain);
     src.start();
+
+    /* stadium crowd bed - murmuring noise that brightens with intensity */
+    crowdGain = c.createGain();
+    crowdGain.gain.value = 0.012;
+    crowdGain.connect(master);
+    crowdFilter = c.createBiquadFilter();
+    crowdFilter.type = "bandpass";
+    crowdFilter.frequency.value = 620;
+    crowdFilter.Q.value = 0.55;
+    const crowdSrc = c.createBufferSource();
+    crowdSrc.buffer = noiseBuffer(c, 4);
+    crowdSrc.loop = true;
+    crowdSrc.connect(crowdFilter).connect(crowdGain);
+    crowdSrc.start();
+    crowdNodes = [crowdSrc];
 
     /* sparse lounge bass notes */
     const notes = [55, 65.4, 73.4, 49];
@@ -391,11 +406,38 @@ export const sfx = {
     }, 1900);
   },
 
+  /**
+   * Crowd / room intensity, 0..1. Drives the ambience bed volume and how
+   * bright (excited) the crowd murmur sounds.
+   */
+  setHype(level: number) {
+    const c = ctx;
+    if (!c) return;
+    const h = Math.max(0, Math.min(1, level));
+    const t = c.currentTime;
+    if (crowdGain) crowdGain.gain.setTargetAtTime(0.012 + h * 0.075, t, 0.35);
+    if (crowdFilter) crowdFilter.frequency.setTargetAtTime(620 + h * 900, t, 0.4);
+    if (ambienceGain) ambienceGain.gain.setTargetAtTime(0.055 + h * 0.03, t, 0.5);
+  },
+
   stopAmbience() {
     if (musicTimer) {
       clearInterval(musicTimer);
       musicTimer = null;
     }
+    crowdNodes.forEach((n) => {
+      try {
+        n.stop();
+      } catch {
+        /* already stopped */
+      }
+    });
+    crowdNodes = [];
+    if (crowdGain) {
+      crowdGain.disconnect();
+      crowdGain = null;
+    }
+    crowdFilter = null;
     if (ambienceGain && ctx) {
       ambienceGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.6);
       const g = ambienceGain;
