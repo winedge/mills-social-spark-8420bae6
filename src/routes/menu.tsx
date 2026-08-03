@@ -114,17 +114,21 @@ function MenuPage() {
   }, [catId, tree]);
 
   const filtered = useMemo(() => {
+    const needle = query.trim().toLowerCase();
     return dbItems.filter((i) => {
       const inCat = !selectedIds || (i.category_id && selectedIds.has(i.category_id));
       const inQ =
-        !query ||
-        i.name.toLowerCase().includes(query.toLowerCase()) ||
-        i.description.toLowerCase().includes(query.toLowerCase());
-      const c = i.calories ?? 0;
-      const inCal = c >= activeCal.min && c <= activeCal.max;
+        !needle ||
+        i.name.toLowerCase().includes(needle) ||
+        (i.description ?? "").toLowerCase().includes(needle);
+      // Items without a calorie value only show when no calorie filter is active
+      const c = i.calories ?? null;
+      const inCal =
+        activeCal.id === "all" ? true : c != null && c > 0 && c >= activeCal.min && c <= activeCal.max;
       return inCat && inQ && inCal;
     });
   }, [dbItems, selectedIds, query, activeCal]);
+
 
   const catOrder = useMemo(() => {
     const m = new Map<string, number>();
