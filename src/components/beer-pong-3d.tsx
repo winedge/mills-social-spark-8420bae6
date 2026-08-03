@@ -59,7 +59,7 @@ export type PongState = {
   onBounce?: () => void;
 };
 
-export const BALL_R = 0.05;
+export const BALL_R = 0.03;
 export const CUP_R = 0.065; // +30% vs previous
 export const CUP_H = 0.17;
 const RACK_Z = -1.75;
@@ -632,12 +632,12 @@ function Table() {
           resolution={512}
           mirror={0.2}
           mixBlur={8}
-          mixStrength={0.35}
+          mixStrength={0.28}
           blur={[200, 70]}
-          roughness={0.42}
-          metalness={0.06}
+          roughness={0.5}
+          metalness={0.03}
           depthScale={0.6}
-          color="#4d2e1b"
+          color="#40230f"
         />
       </mesh>
       {/* edges */}
