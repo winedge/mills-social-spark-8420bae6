@@ -117,6 +117,7 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
   const [over, setOver] = useState(false);
   const [won, setWon] = useState(false);
   const [toast, setToast] = useState<{ text: string; good: boolean } | null>(null);
+  const [sinkFx, setSinkFx] = useState<{ id: number; points: number; combo: number } | null>(null);
   const [charging, setCharging] = useState(false);
   const [power, setPower] = useState(0);
   const [copied, setCopied] = useState(false);
@@ -165,18 +166,21 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
     s.onSink = () => {
       sunkRef.current += 1;
       comboRef.current += 1;
+      const c = comboRef.current;
+      const pts = 100 * c;
       setSunk(sunkRef.current);
-      setCombo(comboRef.current);
-      setBestCombo((b) => Math.max(b, comboRef.current));
-      setScore((v) => v + 100 * comboRef.current);
-      setToast({ text: comboRef.current > 1 ? `${comboRef.current}x COMBO!` : "SPLASH!", good: true });
+      setCombo(c);
+      setBestCombo((b) => Math.max(b, c));
+      setScore((v) => v + pts);
+      setSinkFx({ id: Date.now(), points: pts, combo: c });
       setFlash(1);
-      haptics.sink(comboRef.current);
+      haptics.sink(c);
       shotsRef.current += 1;
       setShots(shotsRef.current);
       setTimeout(escalate, 450);
       finish();
     };
+
     s.onRim = (strength) => haptics.nearMiss(strength);
     s.onMiss = () => {
       comboRef.current = 0;
@@ -206,6 +210,13 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
     const t = setTimeout(() => setFlash(0), 260);
     return () => clearTimeout(t);
   }, [flash]);
+
+  useEffect(() => {
+    if (!sinkFx) return;
+    const t = setTimeout(() => setSinkFx(null), 1150);
+    return () => clearTimeout(t);
+  }, [sinkFx]);
+
 
   const pointer = {
     onPointerDown: (e: React.PointerEvent) => {
@@ -278,6 +289,7 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
     setBestCombo(0);
     setScore(0);
     setElapsed(0);
+    setSinkFx(null);
     setWon(false);
     setOver(false);
   };
@@ -317,10 +329,26 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
           <Stat label="Acc" value={`${accuracy}%`} icon={<Target className="size-3" />} />
         </div>
         <div className="flex items-center gap-2 pointer-events-auto">
-          <div className={glass("rounded-2xl px-3 py-2 text-right")}>
+          <div className={glass("relative rounded-2xl px-3 py-2 text-right")}>
             <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/45">Score</p>
-            <p className="font-display text-lg leading-none text-white tabular-nums">{score}</p>
+            <p
+              key={sinkFx?.id ?? "score"}
+              className={`font-display text-lg leading-none tabular-nums origin-right ${
+                sinkFx ? "text-accent animate-[score-pop_0.5s_ease-out]" : "text-white"
+              }`}
+            >
+              {score}
+            </p>
+            {sinkFx && (
+              <span
+                key={`pts-${sinkFx.id}`}
+                className="pointer-events-none absolute -bottom-1 right-3 font-display text-sm text-accent drop-shadow-[0_0_12px_rgba(56,189,248,0.8)] animate-[points-float_1s_ease-out_forwards]"
+              >
+                +{sinkFx.points}
+              </span>
+            )}
           </div>
+
           <div className="relative">
             <button
               onClick={() => {
@@ -444,6 +472,26 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
           </span>
         </div>
       )}
+
+      {/* sink feedback burst */}
+      {sinkFx && (
+        <div
+          key={sinkFx.id}
+          className="pointer-events-none absolute inset-x-0 top-[30%] flex flex-col items-center"
+        >
+          <span className="absolute -top-6 size-32 rounded-full border-2 border-accent/70 animate-[sink-ring_0.7s_ease-out_forwards]" />
+          <div className="animate-[sink-burst_1.05s_ease-out_forwards] flex flex-col items-center gap-1">
+            <span className="font-display text-4xl md:text-6xl uppercase text-accent drop-shadow-[0_0_32px_rgba(56,189,248,0.85)]">
+              {sinkFx.combo > 1 ? `${sinkFx.combo}x Combo!` : "Sink!"}
+            </span>
+            <span className={glass("rounded-full px-3 py-1 font-mono text-[11px] uppercase tracking-[0.25em] text-accent")}>
+              +{sinkFx.points} pts
+            </span>
+          </div>
+        </div>
+      )}
+
+
 
       {/* confetti on win */}
       {won && (

@@ -104,3 +104,25 @@
     color: #000;
   }
 }
+
+/* ---- beer pong sink feedback ---- */
+@keyframes sink-burst {
+  0% { opacity: 0; transform: scale(0.6); }
+  25% { opacity: 1; transform: scale(1.12); }
+  70% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.04) translateY(-10px); }
+}
+@keyframes sink-ring {
+  0% { opacity: 0.85; transform: scale(0.35); }
+  100% { opacity: 0; transform: scale(2.2); }
+}
+@keyframes points-float {
+  0% { opacity: 0; transform: translateY(8px) scale(0.9); }
+  20% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-34px) scale(1); }
+}
+@keyframes score-pop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.28); }
+  100% { transform: scale(1); }
+}
