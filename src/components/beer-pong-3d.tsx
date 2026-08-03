@@ -1165,13 +1165,13 @@ function StadiumFX({ state }: { state: PongState }) {
       />
       {/* visible light shaft falling on the rack */}
       <mesh ref={cone} position={[0, 1.72, RACK_Z + 0.28]} renderOrder={2}>
-        <coneGeometry args={[1.05, 3.44, 48, 1, true]} />
+        <coneGeometry args={[0.82, 3.4, 40, 1, true]} />
         <meshBasicMaterial
-          color="#ffe6b8"
+          color="#ffdca6"
           transparent
-          opacity={0.06}
+          opacity={0.03}
           depthWrite={false}
-          side={THREE.DoubleSide}
+          side={THREE.BackSide}
           blending={THREE.AdditiveBlending}
         />
       </mesh>
