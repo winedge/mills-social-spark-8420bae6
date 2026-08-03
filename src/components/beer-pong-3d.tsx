@@ -331,6 +331,9 @@ function Cup({ cup }: { cup: Cup }) {
     cup.wobblePhase += dt * 22;
     cup.wobble *= Math.exp(-dt * 4.5);
 
+    /* a cup that survived the hit still needs its flash timer to run out */
+    if (cup.alive && cup.sinkT >= 0) cup.sinkT += dt;
+
 
     if (!cup.alive) {
       cup.sinkT += dt;
