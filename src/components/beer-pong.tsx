@@ -329,10 +329,26 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
           <Stat label="Acc" value={`${accuracy}%`} icon={<Target className="size-3" />} />
         </div>
         <div className="flex items-center gap-2 pointer-events-auto">
-          <div className={glass("rounded-2xl px-3 py-2 text-right")}>
+          <div className={glass("relative rounded-2xl px-3 py-2 text-right")}>
             <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/45">Score</p>
-            <p className="font-display text-lg leading-none text-white tabular-nums">{score}</p>
+            <p
+              key={sinkFx?.id ?? "score"}
+              className={`font-display text-lg leading-none tabular-nums origin-right ${
+                sinkFx ? "text-accent animate-[score-pop_0.5s_ease-out]" : "text-white"
+              }`}
+            >
+              {score}
+            </p>
+            {sinkFx && (
+              <span
+                key={`pts-${sinkFx.id}`}
+                className="pointer-events-none absolute -bottom-1 right-3 font-display text-sm text-accent drop-shadow-[0_0_12px_rgba(56,189,248,0.8)] animate-[points-float_1s_ease-out_forwards]"
+              >
+                +{sinkFx.points}
+              </span>
+            )}
           </div>
+
           <div className="relative">
             <button
               onClick={() => {
