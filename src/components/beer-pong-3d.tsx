@@ -476,7 +476,9 @@ function Ball({ state }: { state: PongState }) {
           resetBall(s);
           return;
         }
-        if (d < CUP_R + BALL_R && b.y < CUP_H + BALL_R) {
+        /* don't deflect a ball that's dropping straight over the opening */
+        const overMouth = b.vy < 0 && d < CUP_R * 0.92 && b.y > CUP_H - BALL_R;
+        if (!overMouth && d < CUP_R + BALL_R && b.y < CUP_H + BALL_R) {
           const nx = dx / (d || 1);
           const nz = dz / (d || 1);
           const vn = b.vx * nx + b.vz * nz;
