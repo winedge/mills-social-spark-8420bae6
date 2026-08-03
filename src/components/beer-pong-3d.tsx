@@ -340,6 +340,7 @@ function Cup({ cup }: { cup: Cup }) {
           args={[CUP_R * 0.94, CUP_R * 0.68, CUP_H * 0.8, 36, 1, true]}
         />
         <meshPhysicalMaterial
+          ref={beerMat}
           color="#d9931f"
           roughness={0.18}
           metalness={0.05}
@@ -354,6 +355,7 @@ function Cup({ cup }: { cup: Cup }) {
       <mesh position={[0, CUP_H * 0.8, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[CUP_R * 0.94, 36]} />
         <meshPhysicalMaterial
+          ref={surfaceMat}
           color="#e8a72c"
           roughness={0.12}
           metalness={0.15}
@@ -362,6 +364,24 @@ function Cup({ cup }: { cup: Cup }) {
           clearcoat={1}
         />
       </mesh>
+      {/* sink flash - expanding light ring above the rim */}
+      <mesh
+        ref={flash}
+        visible={false}
+        position={[0, CUP_H * 0.86, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <ringGeometry args={[CUP_R * 0.6, CUP_R * 1.05, 40]} />
+        <meshBasicMaterial color="#ffd88a" transparent opacity={0} depthWrite={false} />
+      </mesh>
+      <pointLight
+        ref={flashLight}
+        position={[0, CUP_H * 1.1, 0]}
+        color="#ffc65c"
+        intensity={0}
+        distance={0.9}
+      />
+
       {/* foam head */}
       <mesh position={[0, CUP_H * 0.815, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[CUP_R * 0.94, 36]} />
