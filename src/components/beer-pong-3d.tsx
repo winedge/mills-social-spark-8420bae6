@@ -585,6 +585,9 @@ function Ball({ state }: { state: PongState }) {
           sfx.splash(0);
           sfx.splash(SINK_TIMELINE.foam);
           sfx.cheer(1, SINK_TIMELINE.cheer);
+          /* the room gets louder and brighter with every make */
+          s.hype = Math.min(1, s.hype + 0.3);
+          s.hypePulse = 1;
           s.onSink?.(i);
           /* hand the ball to the drop-in animation instead of teleporting it */
           b.vx = b.vy = b.vz = 0;
