@@ -343,7 +343,8 @@ function Ball({ state }: { state: PongState }) {
     const scale = 1 - s.slowmo * 0.72;
     const dt = Math.min(delta, 1 / 45) * scale;
     s.slowmo = Math.max(0, s.slowmo - delta * 0.9);
-    s.shake = Math.max(0, s.shake - delta * 2.4);
+    /* impact shake energy bleeds off over ~0.7s for a cinematic settle */
+    s.shake = Math.max(0, s.shake - delta * 1.5);
 
     if (!s.flying) {
       const tx = s.aim * 0.32;
