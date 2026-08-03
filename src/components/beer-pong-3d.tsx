@@ -367,7 +367,7 @@ function Ball({ state }: { state: PongState }) {
   return (
     <>
       <mesh ref={ref} castShadow>
-        <sphereGeometry args={[BALL_R, 36, 36]} />
+        <sphereGeometry args={[BALL_R * 0.5, 36, 36]} />
         <meshPhysicalMaterial
           map={tex}
           color="#ffffff"
