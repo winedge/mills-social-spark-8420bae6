@@ -137,6 +137,15 @@ function MenuPage() {
     return m;
   }, [tree]);
 
+  const slugById = useMemo(() => {
+    const m = new Map<string, string>();
+    cats.forEach((c) => m.set(c.id, c.slug));
+    return m;
+  }, [cats]);
+
+  const dailyCatId = useMemo(() => cats.find((c) => c.slug === "daily-specials")?.id ?? "", [cats]);
+  const isDailyTab = !!dailyCatId && catId === dailyCatId;
+
   const grouped = useMemo(() => {
     const g = new Map<string, { items: typeof filtered; order: number; id: string }>();
     for (const i of filtered) {
@@ -147,8 +156,12 @@ function MenuPage() {
     }
     return Array.from(g.entries())
       .sort((a, b) => a[1].order - b[1].order)
-      .map(([label, v]) => [v.id, label, v.items] as [string, string, typeof filtered]);
-  }, [filtered, nameById, catOrder]);
+      .map(([label, v]) => {
+        const slug = slugById.get(v.id) ?? "";
+        const hh = /^hh-\d+-food$/.test(slug) ? "food" : /^hh-\d+-drinks$/.test(slug) ? "drinks" : null;
+        return { id: v.id, label, items: v.items, hh };
+      });
+  }, [filtered, nameById, catOrder, slugById]);
 
 
   const counts = useMemo(() => {
