@@ -798,12 +798,13 @@ function CocktailGame({ onClose, onWin }: { onClose: () => void; onWin: (r: Rewa
                 {motionOk ? "Aim for 4-6 seconds - smooth and steady" : "No sensors? Swipe fast across the screen"}
               </p>
             </div>
-            <ShakeRing progress={shakeProgress} />
-            <button
-              onClick={finishShake}
-              className="border border-border px-6 py-3 font-mono text-[11px] uppercase tracking-widest text-foreground/80 hover:border-accent hover:text-accent"
-            >
-              Done Shaking
+            <div className="flex flex-col items-center gap-5">
+              <ShakeRing progress={shakeProgress} />
+              <button
+                onClick={finishShake}
+                className="border border-border bg-background/60 px-6 py-3 font-mono text-[11px] uppercase tracking-widest text-foreground/80 backdrop-blur-md hover:border-accent hover:text-accent"
+              >
+                Done Shaking
             </button>
           </div>
         )}
