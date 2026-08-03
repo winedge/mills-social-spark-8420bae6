@@ -63,6 +63,10 @@ export type PongState = {
   orbit: number;
   /* drop-in animation: the ball is being funnelled into a cup */
   sink: { active: boolean; x: number; z: number; t: number; y0: number };
+  /* crowd / arena intensity 0..1, ramps with combo and decays over time */
+  hype: number;
+  /* transient celebration pulse 0..1 (light strobe on a sink) */
+  hypePulse: number;
   onSink?: (index: number) => void;
   onMiss?: () => void;
   onRim?: (strength: number) => void;
