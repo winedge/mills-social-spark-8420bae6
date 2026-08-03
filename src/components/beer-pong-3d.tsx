@@ -405,6 +405,13 @@ function Ball({ state }: { state: PongState }) {
           s.flying = false;
           spawnSplash(s, c.x, c.z);
           s.shake = 1;
+          /* dedicated glass + beer layer, positioned relative to the camera */
+          const dist = Math.hypot(c.x - LISTENER.x, LISTENER.y, c.z - LISTENER.z);
+          sfx.sink({
+            distance: dist,
+            pan: Math.max(-1, Math.min(1, c.x * 2.2)),
+            strength: 0.8 + Math.min(0.4, Math.abs(b.vy) * 0.1),
+          });
           sfx.splash();
           sfx.cheer(1);
           s.onSink?.(i);
