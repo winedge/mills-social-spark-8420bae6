@@ -640,15 +640,16 @@ function Table() {
         <MeshReflectorMaterial
           map={woodTex}
           resolution={512}
-          mirror={0.2}
-          mixBlur={8}
-          mixStrength={0.28}
-          blur={[200, 70]}
-          roughness={0.5}
-          metalness={0.03}
-          depthScale={0.6}
-          color="#40230f"
+          mirror={0.08}
+          mixBlur={10}
+          mixStrength={0.12}
+          blur={[300, 90]}
+          roughness={0.62}
+          metalness={0.02}
+          depthScale={0.4}
+          color="#7a4321"
         />
+
       </mesh>
       {/* edges */}
       {[-1.15, 1.15].map((x) => (
