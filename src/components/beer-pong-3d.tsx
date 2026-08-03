@@ -1215,24 +1215,25 @@ function Scene({ state }: { state: PongState }) {
       <color attach="background" args={["#07090d"]} />
       <fog attach="fog" args={["#07090d", 5.5, 12]} />
       <Environment preset="night" />
-      <ambientLight intensity={0.35} />
+      <ambientLight intensity={0.26} />
       <directionalLight
         position={[2.2, 4.2, 2]}
-        intensity={0.7}
+        intensity={0.55}
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-camera-near={0.5}
         shadow-camera-far={12}
       />
+      {/* soft fill over the throwing end - the rack gets its own spotlight */}
       <spotLight
-        position={[0, 3.1, -1.4]}
-        angle={0.7}
-        penumbra={0.85}
-        intensity={13}
+        position={[0, 3.1, 0.6]}
+        angle={0.75}
+        penumbra={0.9}
+        intensity={7}
         color="#ffd9a8"
         distance={9}
-        castShadow
       />
+      <StadiumFX state={state} />
       <pointLight position={[-1.8, 1.5, -3.2]} intensity={6} color="#ff9a4d" distance={7} />
       <pointLight position={[1.8, 1.7, -3.6]} intensity={5} color="#38bdf8" distance={7} />
       <Table />
