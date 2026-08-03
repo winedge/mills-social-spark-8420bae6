@@ -167,7 +167,7 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
   const replay = () => {
     stateRef.current.cups.forEach((c) => (c.alive = true));
     stateRef.current.flying = false;
-    stateRef.current.ball = { x: 0, y: 0.72, z: 1.55, vx: 0, vy: 0, vz: 0 };
+    stateRef.current.ball = { x: 0, y: 0.42, z: 0.7, vx: 0, vy: 0, vz: 0 };
     shotsRef.current = 0;
     setShots(0);
     setSunk(0);

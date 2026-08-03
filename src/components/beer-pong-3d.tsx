@@ -43,7 +43,7 @@ export function makeCups() {
 export function makePong(): PongState {
   return {
     cups: makeCups(),
-    ball: { x: 0, y: 0.72, z: 1.55, vx: 0, vy: 0, vz: 0 },
+    ball: { x: 0, y: 0.42, z: 0.7, vx: 0, vy: 0, vz: 0 },
     flying: false,
     aim: 0,
     power: 0,
@@ -123,8 +123,8 @@ function Ball({ state }: { state: PongState }) {
     if (!s.flying) {
       /* idle in hand - subtle bob, follows aim while charging */
       const tx = s.aim * 0.35;
-      const ty = 0.72 + (s.charging ? s.power * 0.1 : 0);
-      const tz = 1.55 - (s.charging ? s.power * 0.08 : 0);
+      const ty = 0.42 + (s.charging ? s.power * 0.08 : 0);
+      const tz = 0.7 + (s.charging ? s.power * 0.1 : 0);
       b.x += (tx - b.x) * Math.min(1, dt * 10);
       b.y += (ty - b.y) * Math.min(1, dt * 10);
       b.z += (tz - b.z) * Math.min(1, dt * 10);
@@ -183,7 +183,7 @@ function Ball({ state }: { state: PongState }) {
       if (speed < 0.25 && b.y <= BALL_R + 0.001) restTimer.current += dt;
       else restTimer.current = 0;
 
-      if (restTimer.current > 0.45 || b.z < -5 || b.z > 3 || Math.abs(b.x) > 2.2 || b.y < -1) {
+      if (restTimer.current > 0.45 || b.z < -4.6 || b.z > 2.4 || Math.abs(b.x) > 2.2 || b.y < -1) {
         restTimer.current = 0;
         s.flying = false;
         s.onMiss?.();
@@ -208,8 +208,8 @@ function Ball({ state }: { state: PongState }) {
 
 function resetBall(s: PongState) {
   s.ball.x = s.aim * 0.35;
-  s.ball.y = 0.72;
-  s.ball.z = 1.55;
+  s.ball.y = 0.42;
+  s.ball.z = 0.7;
   s.ball.vx = s.ball.vy = s.ball.vz = 0;
 }
 
@@ -257,8 +257,8 @@ function AimGuide({ state }: { state: PongState }) {
 }
 
 export function launchVector(s: PongState) {
-  const speed = 2.9 + s.power * 3.1;
-  const lift = 0.62 + s.power * 0.18;
+  const speed = 3.6 + s.power * 3.2;
+  const lift = 0.86 - s.power * 0.06;
   const lateral = s.aim * 0.55;
   const v = new THREE.Vector3(lateral, lift, -1).normalize().multiplyScalar(speed);
   return { vx: v.x, vy: v.y, vz: v.z };
@@ -321,7 +321,7 @@ function Scene({ state }: { state: PongState }) {
       {state.cups.map((c, i) => (
         <Cup key={i} x={c.x} z={c.z} alive={c.alive} />
       ))}
-      {/*BALLOFF*/}
+      <Ball state={state} />
       <AimGuide state={state} />
 
       <Environment preset="night" />
@@ -336,7 +336,7 @@ export default function BeerPongScene({ state }: { state: PongState }) {
       dpr={[1, 1.75]}
       camera={{ position: [0, 1.75, 2.55], fov: 44 }}
       gl={{ antialias: true, powerPreference: "high-performance" }}
-      onCreated={({ camera }) => { camera.lookAt(0, -0.15, -1.9); console.log("CAM", JSON.stringify(camera.position), (camera as THREE.PerspectiveCamera).fov); }}
+      onCreated={({ camera }) => camera.lookAt(0, -0.15, -1.9)}
     >
       <Scene state={state} />
     </Canvas>
