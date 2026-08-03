@@ -143,6 +143,8 @@ export function makePong(): PongState {
     victory: false,
     orbit: 0,
     sink: { active: false, x: 0, z: 0, t: 0, y0: CUP_H },
+    hype: 0,
+    hypePulse: 0,
   };
 }
 
