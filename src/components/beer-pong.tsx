@@ -221,10 +221,18 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
       const dx = e.clientX - start.current.x;
       const p = Math.min(1, dy / 190);
       const a = Math.max(-1, Math.min(1, dx / 160));
-      if (Math.floor(p * 10) > Math.floor(stateRef.current.power * 10)) haptics.play("tap", { throttle: 40 });
       stateRef.current.power = p;
       stateRef.current.aim = a;
       setPower(p);
+
+      /* aim-assist: guide the throw with proximity-scaled vibration */
+      const pred = predictAim(stateRef.current);
+      const close = pred?.closeness ?? 0;
+      const locked = close > 0.88;
+      if (locked && !lockedRef.current) haptics.aimLock();
+      else if (!locked) haptics.aimCue(close);
+      lockedRef.current = locked;
+      setAimClose(close);
     },
     onPointerUp: () => {
       if (!start.current) return;
