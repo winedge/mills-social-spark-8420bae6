@@ -23,7 +23,16 @@ export type Cup = {
   slide: number; // how far the cup has skidded while falling
   spinY: number; // yaw spin while it tumbles
   landed: boolean; // has it hit the table yet (clink played)
+  /* how many balls have landed in this cup */
+  hits: number;
+  /* animated beer level (1 = full to the normal fill line) */
+  level: number;
+  /* level the beer is easing towards - each ball displaces more beer */
+  levelTarget: number;
+  /* 0..1 spill animation running down the outside of the cup */
+  overflow: number;
 };
+
 
 
 export type Splash = {
@@ -80,6 +89,14 @@ const RACK_Z = -1.75;
 /* approximate resting camera position - used as the audio listener */
 const LISTENER = { x: 0, y: 1.02, z: 2.2 };
 const BALL_HOME = { y: 0.34, z: 0.42 };
+/* beer level a fresh cup is poured to, and how much each ball displaces */
+export const BASE_LEVEL = 0.72;
+/* how much beer each ball displaces - a nearly full cup brims on one ball,
+   a lighter pour takes a second one and refills smoothly in between */
+export const LEVEL_PER_BALL = 0.3;
+const pourLevel = () => 0.55 + Math.random() * 0.25;
+
+
 
 /* cup formations, chosen by how many cups remain */
 export function makeCups(formation: "triangle" | "diamond" | "line" | "tight" = "triangle") {
@@ -100,7 +117,13 @@ export function makeCups(formation: "triangle" | "diamond" | "line" | "tight" = 
       slide: 0,
       spinY: 0,
       landed: false,
+      hits: 0,
+      level: 0.2,
+      levelTarget: pourLevel(),
+
+      overflow: 0,
     });
+
 
   if (formation === "triangle") {
     const rows = [4, 3, 2, 1];
@@ -255,6 +278,9 @@ function Cup({ cup }: { cup: Cup }) {
   const surfaceMat = useRef<THREE.MeshPhysicalMaterial>(null);
   const flash = useRef<THREE.Mesh>(null);
   const flashLight = useRef<THREE.PointLight>(null);
+  const liquid = useRef<THREE.Group>(null);
+  const spill = useRef<THREE.Mesh>(null);
+  const puddle = useRef<THREE.Mesh>(null);
 
   useFrame((_, delta) => {
     const dt = Math.min(delta, 1 / 40);
@@ -273,9 +299,46 @@ function Cup({ cup }: { cup: Cup }) {
       (flash.current.material as THREE.MeshBasicMaterial).opacity = ft * 0.7;
     }
 
+    /* --- beer level: eases up towards the target each time a ball lands,
+       with a little overshoot so the surface sloshes as it settles ------- */
+    const diff = cup.levelTarget - cup.level;
+    cup.level += diff * Math.min(1, dt * 7.5);
+    if (Math.abs(diff) > 0.004) {
+      /* rising liquid ripples the surface */
+      cup.wobble = Math.max(cup.wobble, Math.min(0.12, Math.abs(diff) * 0.5));
+    }
+    const slosh = Math.sin(cup.wobblePhase * 0.7) * cup.wobble * 0.35;
+    if (liquid.current) {
+      const shown = Math.max(0.08, Math.min(1.06, cup.level + slosh));
+      liquid.current.scale.y += (shown - liquid.current.scale.y) * Math.min(1, dt * 14);
+    }
+
+    /* --- overflow: beer sheets down the outside and pools on the table -- */
+    if (cup.overflow > 0) {
+      cup.overflow = Math.max(0, cup.overflow - dt * 0.85);
+      const o = cup.overflow;
+      if (spill.current) {
+        spill.current.visible = true;
+        spill.current.scale.y = Math.min(1, (1 - o) * 2.2);
+        (spill.current.material as THREE.MeshStandardMaterial).opacity = o * 0.75;
+      }
+      if (puddle.current) {
+        puddle.current.visible = true;
+        puddle.current.scale.setScalar(0.4 + (1 - o) * 1.4);
+        (puddle.current.material as THREE.MeshStandardMaterial).opacity = o * 0.5;
+      }
+    } else {
+      if (spill.current) spill.current.visible = false;
+      if (puddle.current) puddle.current.visible = false;
+    }
+
     /* rim wobble decay */
     cup.wobblePhase += dt * 22;
     cup.wobble *= Math.exp(-dt * 4.5);
+
+    /* a cup that survived the hit still needs its flash timer to run out */
+    if (cup.alive && cup.sinkT >= 0) cup.sinkT += dt;
+
 
     if (!cup.alive) {
       cup.sinkT += dt;
@@ -343,36 +406,48 @@ function Cup({ cup }: { cup: Cup }) {
         <torusGeometry args={[CUP_R * 0.985, CUP_R * 0.075, 12, 44]} />
         <meshPhysicalMaterial color="#e14a52" roughness={0.28} clearcoat={0.9} />
       </mesh>
-      {/* beer body - cup filled almost to the rim */}
-      <mesh position={[0, CUP_H * 0.4, 0]}>
-        <cylinderGeometry
-          args={[CUP_R * 0.94, CUP_R * 0.68, CUP_H * 0.8, 36, 1, true]}
-        />
-        <meshPhysicalMaterial
-          ref={beerMat}
-          color="#d9931f"
-          roughness={0.18}
-          metalness={0.05}
-          transmission={0.35}
-          thickness={0.05}
-          emissive="#8a5408"
-          emissiveIntensity={0.28}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      {/* beer surface */}
-      <mesh position={[0, CUP_H * 0.8, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[CUP_R * 0.94, 36]} />
-        <meshPhysicalMaterial
-          ref={surfaceMat}
-          color="#e8a72c"
-          roughness={0.12}
-          metalness={0.15}
-          emissive="#a5670c"
-          emissiveIntensity={0.35}
-          clearcoat={1}
-        />
-      </mesh>
+      {/* liquid column - scaled vertically as the level rises with each ball */}
+      <group ref={liquid} scale={[1, BASE_LEVEL, 1]}>
+        {/* beer body */}
+        <mesh position={[0, CUP_H * 0.4, 0]}>
+          <cylinderGeometry
+            args={[CUP_R * 0.94, CUP_R * 0.68, CUP_H * 0.8, 36, 1, true]}
+          />
+          <meshPhysicalMaterial
+            ref={beerMat}
+            color="#d9931f"
+            roughness={0.18}
+            metalness={0.05}
+            transmission={0.35}
+            thickness={0.05}
+            emissive="#8a5408"
+            emissiveIntensity={0.28}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+        {/* beer surface */}
+        <mesh position={[0, CUP_H * 0.8, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[CUP_R * 0.94, 36]} />
+          <meshPhysicalMaterial
+            ref={surfaceMat}
+            color="#e8a72c"
+            roughness={0.12}
+            metalness={0.15}
+            emissive="#a5670c"
+            emissiveIntensity={0.35}
+            clearcoat={1}
+          />
+        </mesh>
+        {/* foam head, riding on top of the liquid */}
+        <mesh position={[0, CUP_H * 0.815, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[CUP_R * 0.94, 36]} />
+          <meshStandardMaterial color="#f7e6bd" roughness={0.9} transparent opacity={0.55} />
+        </mesh>
+        <mesh position={[0, CUP_H * 0.822, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[CUP_R * 0.74, CUP_R * 0.94, 32]} />
+          <meshStandardMaterial color="#fff6e0" roughness={0.85} transparent opacity={0.85} />
+        </mesh>
+      </group>
       {/* sink flash - expanding light ring above the rim */}
       <mesh
         ref={flash}
@@ -391,20 +466,40 @@ function Cup({ cup }: { cup: Cup }) {
         distance={0.9}
       />
 
-      {/* foam head */}
-      <mesh position={[0, CUP_H * 0.815, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[CUP_R * 0.94, 36]} />
-        <meshStandardMaterial color="#f7e6bd" roughness={0.9} transparent opacity={0.55} />
+      {/* overflow: a sheet of beer running down the outside of the cup */}
+      <mesh ref={spill} visible={false} position={[0, CUP_H, 0]} scale={[1, 0.001, 1]}>
+        <cylinderGeometry args={[CUP_R * 1.02, CUP_R * 0.76, CUP_H, 36, 1, true]} />
+        <meshStandardMaterial
+          color="#e8a72c"
+          roughness={0.16}
+          transparent
+          opacity={0}
+          depthWrite={false}
+          side={THREE.DoubleSide}
+        />
       </mesh>
-      <mesh position={[0, CUP_H * 0.822, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[CUP_R * 0.74, CUP_R * 0.94, 32]} />
-        <meshStandardMaterial color="#fff6e0" roughness={0.85} transparent opacity={0.85} />
+      {/* puddle of spilled beer spreading on the felt */}
+      <mesh
+        ref={puddle}
+        visible={false}
+        position={[0, 0.004, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <circleGeometry args={[CUP_R * 1.5, 32]} />
+        <meshStandardMaterial
+          color="#c8891f"
+          roughness={0.25}
+          transparent
+          opacity={0}
+          depthWrite={false}
+        />
       </mesh>
       {/* opaque bottom of the beer so you can't see through the cup */}
       <mesh position={[0, CUP_H * 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[CUP_R * 0.68, 28]} />
         <meshStandardMaterial color="#b8781a" roughness={0.4} />
       </mesh>
+
       {/* base */}
       <mesh position={[0, 0.003, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <circleGeometry args={[CUP_R * 0.7, 28]} />
@@ -559,20 +654,30 @@ function Ball({ state }: { state: PongState }) {
         const insideNow = b.vy < 0 && d < CUP_R * 0.9 && b.y < CUP_H && b.y > CUP_H * 0.25;
 
         if (mouthHit || insideNow) {
-          c.alive = false;
-          c.wobble = 0.34;
+          /* every ball displaces more beer - the level eases up smoothly and
+             the cup only goes out once it brims over the rim */
+          c.hits += 1;
+          c.levelTarget = c.levelTarget + LEVEL_PER_BALL;
+          const brims = c.levelTarget > 1.02;
+          c.wobble = brims ? 0.34 : 0.2;
           c.wobblePhase = 0;
           c.sinkT = 0;
-          c.tipVel = 0;
-          c.tip = 0;
-          c.slide = 0;
-          c.spinY = 0;
-          c.landed = false;
-          /* fall away from wherever the ball came in */
-          c.tipDir = b.vx + mx >= 0 ? 1 : -1;
+          if (brims) {
+            c.levelTarget = 1.06;
+            c.overflow = 1;
+            c.alive = false;
+            c.tipVel = 0;
+            c.tip = 0;
+            c.slide = 0;
+            c.spinY = 0;
+            c.landed = false;
+            /* fall away from wherever the ball came in */
+            c.tipDir = b.vx + mx >= 0 ? 1 : -1;
+          }
           s.flying = false;
           spawnSplash(s, c.x, c.z);
-          s.shake = 1;
+          s.shake = brims ? 1 : 0.55;
+
           /* dedicated glass + beer layer, positioned relative to the camera */
           const dist = Math.hypot(c.x - LISTENER.x, LISTENER.y, c.z - LISTENER.z);
           sfx.sink({
