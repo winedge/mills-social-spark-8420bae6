@@ -473,6 +473,26 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
         </div>
       )}
 
+      {/* sink feedback burst */}
+      {sinkFx && (
+        <div
+          key={sinkFx.id}
+          className="pointer-events-none absolute inset-x-0 top-[30%] flex flex-col items-center"
+        >
+          <span className="absolute -top-6 size-32 rounded-full border-2 border-accent/70 animate-[sink-ring_0.7s_ease-out_forwards]" />
+          <div className="animate-[sink-burst_1.05s_ease-out_forwards] flex flex-col items-center gap-1">
+            <span className="font-display text-4xl md:text-6xl uppercase text-accent drop-shadow-[0_0_32px_rgba(56,189,248,0.85)]">
+              {sinkFx.combo > 1 ? `${sinkFx.combo}x Combo!` : "Sink!"}
+            </span>
+            <span className={glass("rounded-full px-3 py-1 font-mono text-[11px] uppercase tracking-[0.25em] text-accent")}>
+              +{sinkFx.points} pts
+            </span>
+          </div>
+        </div>
+      )}
+
+
+
       {/* confetti on win */}
       {won && (
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
