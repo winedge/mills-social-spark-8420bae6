@@ -621,6 +621,7 @@ function MenuPage() {
           </div>
         )}
       </section>
+      )}
 
       <SiteFooter />
     </div>
