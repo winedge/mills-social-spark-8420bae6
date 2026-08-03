@@ -120,6 +120,7 @@ function Ball({ state }: { state: PongState }) {
   useFrame((_, delta) => {
     const s = state;
     const b = s.ball;
+    dbg.current += delta; if (dbg.current > 1) { dbg.current = 0; console.log("BALLTICK", b.x.toFixed(2), b.y.toFixed(2), b.z.toFixed(2), !!ref.current); }
     const dt = Math.min(delta, 1 / 45);
 
     if (!s.flying) {
