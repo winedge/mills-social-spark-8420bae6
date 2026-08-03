@@ -17,7 +17,14 @@ export type Cup = {
   wobblePhase: number;
   tip: number; // 0..1 tip-over on sink
   fade: number; // 1 = present, 0 = gone
+  sinkT: number; // seconds since the sink started (-1 = not sinking)
+  tipVel: number; // angular velocity of the tip-over (rad/s)
+  tipDir: number; // -1 / 1 lateral direction the cup falls
+  slide: number; // how far the cup has skidded while falling
+  spinY: number; // yaw spin while it tumbles
+  landed: boolean; // has it hit the table yet (clink played)
 };
+
 
 export type Splash = {
   x: number;
@@ -70,7 +77,21 @@ export function makeCups(formation: "triangle" | "diamond" | "line" | "tight" = 
   const gap = CUP_R * 2 + 0.014;
   const cups: Cup[] = [];
   const push = (x: number, z: number) =>
-    cups.push({ x, z, alive: true, wobble: 0, wobblePhase: 0, tip: 0, fade: 1 });
+    cups.push({
+      x,
+      z,
+      alive: true,
+      wobble: 0,
+      wobblePhase: 0,
+      tip: 0,
+      fade: 1,
+      sinkT: -1,
+      tipVel: 0,
+      tipDir: Math.random() < 0.5 ? -1 : 1,
+      slide: 0,
+      spinY: 0,
+      landed: false,
+    });
 
   if (formation === "triangle") {
     const rows = [4, 3, 2, 1];
@@ -124,19 +145,52 @@ export function launchVector(s: PongState) {
 }
 
 export function spawnSplash(s: PongState, x: number, z: number) {
-  for (let i = 0; i < 26; i++) {
+  /* upward beer column - fast, narrow, driven straight out of the cup */
+  for (let i = 0; i < 18; i++) {
     const a = Math.random() * Math.PI * 2;
-    const r = Math.random() * 0.6 + 0.25;
+    const r = Math.random() * 0.22;
     s.splashes.push({
-      x,
-      y: CUP_H * 0.9,
-      z,
+      x: x + Math.cos(a) * 0.012,
+      y: CUP_H * 0.82,
+      z: z + Math.sin(a) * 0.012,
       vx: Math.cos(a) * r,
-      vy: 1.2 + Math.random() * 1.5,
+      vy: 2.4 + Math.random() * 1.6,
       vz: Math.sin(a) * r,
       life: 0,
-      max: 0.55 + Math.random() * 0.5,
+      max: 0.6 + Math.random() * 0.4,
+      foam: i % 4 === 0,
+    });
+  }
+  /* wide crown of droplets thrown off the rim */
+  for (let i = 0; i < 24; i++) {
+    const a = (i / 24) * Math.PI * 2 + Math.random() * 0.3;
+    const r = 0.5 + Math.random() * 0.7;
+    s.splashes.push({
+      x: x + Math.cos(a) * CUP_R * 0.7,
+      y: CUP_H * 0.92,
+      z: z + Math.sin(a) * CUP_R * 0.7,
+      vx: Math.cos(a) * r,
+      vy: 1.1 + Math.random() * 1.3,
+      vz: Math.sin(a) * r,
+      life: 0,
+      max: 0.5 + Math.random() * 0.5,
       foam: i % 3 === 0,
+    });
+  }
+  /* slow, buoyant foam clumps that linger over the rim */
+  for (let i = 0; i < 14; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const r = Math.random() * 0.28;
+    s.splashes.push({
+      x: x + Math.cos(a) * CUP_R * 0.5,
+      y: CUP_H * 0.95 + Math.random() * 0.03,
+      z: z + Math.sin(a) * CUP_R * 0.5,
+      vx: Math.cos(a) * r,
+      vy: 0.5 + Math.random() * 0.7,
+      vz: Math.sin(a) * r,
+      life: 0,
+      max: 0.9 + Math.random() * 0.6,
+      foam: true,
     });
   }
 }
@@ -145,27 +199,62 @@ export function spawnSplash(s: PongState, x: number, z: number) {
 /*  Cups                                                               */
 /* ------------------------------------------------------------------ */
 
+const TIP_REST = Math.PI / 2; /* fully on its side */
+
 function Cup({ cup }: { cup: Cup }) {
   const g = useRef<THREE.Group>(null);
 
   useFrame((_, delta) => {
     const dt = Math.min(delta, 1 / 40);
     if (!g.current) return;
-    /* wobble decay */
+    /* rim wobble decay */
     cup.wobblePhase += dt * 22;
     cup.wobble *= Math.exp(-dt * 4.5);
+
     if (!cup.alive) {
-      cup.tip = Math.min(1, cup.tip + dt * 3.2);
-      cup.fade = Math.max(0, cup.fade - dt * 1.5);
+      cup.sinkT += dt;
+      /* stage 1 (0 - 0.22s): the cup just shudders from the impact       */
+      /* stage 2: gravity torque tips it over, it skids and yaws          */
+      if (cup.sinkT > 0.22) {
+        const angle = cup.tip * TIP_REST;
+        /* torque grows as the centre of mass passes over the rim edge */
+        cup.tipVel += (5.5 + Math.sin(angle) * 9) * dt;
+        cup.tip = Math.min(1, cup.tip + (cup.tipVel * dt) / TIP_REST);
+        cup.slide += cup.tipVel * dt * 0.018;
+        cup.spinY += cup.tipVel * dt * 0.12 * cup.tipDir;
+        if (cup.tip >= 1) {
+          if (!cup.landed) {
+            cup.landed = true;
+            sfx.clink(Math.min(1, cup.tipVel * 0.35));
+            cup.wobble = 0.07;
+            cup.wobblePhase = 0;
+          }
+          /* settle: small bounce of the rim against the wood */
+          cup.tipVel *= Math.exp(-dt * 9);
+        }
+      }
+      /* stage 3: once it has come to rest, fade the cup out of play */
+      if (cup.landed) cup.fade = Math.max(0, cup.fade - dt * 0.85);
     }
+
     const w = cup.wobble * Math.sin(cup.wobblePhase);
-    g.current.rotation.z = w * 0.5 + cup.tip * 0.9;
-    g.current.rotation.x = w * 0.25;
-    g.current.position.set(cup.x, cup.tip * -0.01, cup.z);
-    const sc = 0.4 + cup.fade * 0.6;
-    g.current.scale.setScalar(cup.alive ? 1 : sc);
+    const tipAngle = cup.tip * TIP_REST;
+    const lean = Math.min(1, cup.fade * 1.4);
+    g.current.rotation.set(
+      w * 0.25 + Math.sin(cup.spinY) * tipAngle * 0.25,
+      cup.spinY,
+      w * 0.5 + tipAngle * cup.tipDir,
+    );
+    /* the cup pivots on its rim, so it drops and slides as it falls */
+    g.current.position.set(
+      cup.x + cup.slide * cup.tipDir,
+      cup.alive ? 0 : -Math.sin(tipAngle) * CUP_R * 0.22,
+      cup.z + Math.sin(cup.spinY) * cup.slide * 0.4,
+    );
+    g.current.scale.setScalar(cup.alive ? 1 : 0.6 + lean * 0.4);
     g.current.visible = cup.fade > 0.02;
   });
+
 
   return (
     <group ref={g} position={[cup.x, 0, cup.z]}>
@@ -302,7 +391,16 @@ function Ball({ state }: { state: PongState }) {
 
         if (b.vy < 0 && d < CUP_R * 0.8 && b.y < CUP_H && b.y > CUP_H * 0.3) {
           c.alive = false;
-          c.wobble = 0.22;
+          c.wobble = 0.34;
+          c.wobblePhase = 0;
+          c.sinkT = 0;
+          c.tipVel = 0;
+          c.tip = 0;
+          c.slide = 0;
+          c.spinY = 0;
+          c.landed = false;
+          /* fall away from wherever the ball came in */
+          c.tipDir = b.vx + dx >= 0 ? 1 : -1;
           s.flying = false;
           spawnSplash(s, c.x, c.z);
           s.shake = 1;
@@ -418,11 +516,16 @@ function Splashes({ state }: { state: PongState }) {
     for (let i = list.length - 1; i >= 0; i--) {
       const p = list[i];
       p.life += dt;
-      p.vy -= 7.5 * dt;
+      /* foam is light and drifty, beer droplets fall fast */
+      p.vy -= (p.foam ? 3.4 : 7.8) * dt;
+      if (p.foam) {
+        p.vx *= Math.exp(-dt * 2.2);
+        p.vz *= Math.exp(-dt * 2.2);
+      }
       p.x += p.vx * dt;
       p.y += p.vy * dt;
       p.z += p.vz * dt;
-      if (p.life > p.max || p.y < 0) list.splice(i, 1);
+      if (p.life > p.max || p.y < 0.002) list.splice(i, 1);
     }
     if (!inst.current) return;
     const n = Math.min(list.length, MAX);

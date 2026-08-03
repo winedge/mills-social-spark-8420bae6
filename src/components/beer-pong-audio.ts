@@ -155,6 +155,36 @@ export const sfx = {
     o.stop(c.currentTime + 0.85);
   },
 
+  /* cup tipping over and settling on the table - glass clink */
+  clink(strength = 1) {
+    const c = ac();
+    if (!c || !master) return;
+    [2380, 3160, 4270].forEach((freq, i) => {
+      const o = c.createOscillator();
+      const g = c.createGain();
+      o.type = "sine";
+      o.frequency.setValueAtTime(freq * (0.99 + Math.random() * 0.02), c.currentTime);
+      const t = c.currentTime + i * 0.012;
+      const peak = (0.11 - i * 0.03) * Math.min(1, strength);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(Math.max(peak, 0.0005), t + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.45 - i * 0.08);
+      o.connect(g).connect(master!);
+      o.start(t);
+      o.stop(t + 0.5);
+    });
+    /* soft body thud of the cup meeting wood */
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = "triangle";
+    o.frequency.setValueAtTime(180, c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(90, c.currentTime + 0.12);
+    env(g, c, 0.09 * Math.min(1, strength), 0.003, 0.16);
+    o.connect(g).connect(master);
+    o.start();
+    o.stop(c.currentTime + 0.3);
+  },
+
   whoosh() {
     const c = ac();
     if (!c || !master) return;
