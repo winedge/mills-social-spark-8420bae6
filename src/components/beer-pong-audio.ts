@@ -303,16 +303,19 @@ export const sfx = {
     o.stop(c.currentTime + 0.85);
   },
 
-  /* cup tipping over and settling on the table - glass clink */
+  /* cup tipping over and settling on the table - glass clink.
+     Fired on the exact frame the rim meets the wood, so it uses only the
+     minimum scheduling lookahead and no artistic delay. */
   clink(strength = 1) {
     const c = ac();
     if (!c || !master) return;
+    const t0 = c.currentTime + SCHED;
     [2380, 3160, 4270].forEach((freq, i) => {
       const o = c.createOscillator();
       const g = c.createGain();
       o.type = "sine";
-      o.frequency.setValueAtTime(freq * (0.99 + Math.random() * 0.02), c.currentTime);
-      const t = c.currentTime + i * 0.012;
+      o.frequency.setValueAtTime(freq * (0.99 + Math.random() * 0.02), t0);
+      const t = t0 + i * 0.012;
       const peak = (0.11 - i * 0.03) * Math.min(1, strength);
       g.gain.setValueAtTime(0.0001, t);
       g.gain.exponentialRampToValueAtTime(Math.max(peak, 0.0005), t + 0.004);
@@ -325,12 +328,12 @@ export const sfx = {
     const o = c.createOscillator();
     const g = c.createGain();
     o.type = "triangle";
-    o.frequency.setValueAtTime(180, c.currentTime);
-    o.frequency.exponentialRampToValueAtTime(90, c.currentTime + 0.12);
-    env(g, c, 0.09 * Math.min(1, strength), 0.003, 0.16);
+    o.frequency.setValueAtTime(180, t0);
+    o.frequency.exponentialRampToValueAtTime(90, t0 + 0.12);
+    env(g, c, 0.09 * Math.min(1, strength), 0.003, 0.16, t0);
     o.connect(g).connect(master);
-    o.start();
-    o.stop(c.currentTime + 0.3);
+    o.start(t0);
+    o.stop(t0 + 0.3);
   },
 
   whoosh() {
