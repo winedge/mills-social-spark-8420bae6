@@ -863,6 +863,9 @@ function NeonSign({
   );
 }
 
+/* live arena intensity, published by StadiumFX so ambient props can read it */
+const arena = { hype: 0, pulse: 0 };
+
 /* blurred crowd silhouettes far behind (DoF blurs them further) */
 function Crowd() {
   const people = useMemo(
@@ -879,9 +882,14 @@ function Crowd() {
   const g = useRef<THREE.Group>(null);
   useFrame((st) => {
     if (!g.current) return;
+    /* the hotter the run, the more the crowd sways and jumps */
+    const h = arena.hype + arena.pulse * 0.6;
+    const t = st.clock.elapsedTime * (0.6 + h * 2.4);
     g.current.children.forEach((c, i) => {
-      c.position.x = people[i].x + Math.sin(st.clock.elapsedTime * 0.6 + people[i].s) * 0.05;
-      c.rotation.z = Math.sin(st.clock.elapsedTime * 0.9 + people[i].s) * 0.02;
+      const p = people[i];
+      c.position.x = p.x + Math.sin(t + p.s) * (0.05 + h * 0.07);
+      c.position.y = Math.abs(Math.sin(t * 1.6 + p.s)) * h * 0.16;
+      c.rotation.z = Math.sin(st.clock.elapsedTime * 0.9 + p.s) * (0.02 + h * 0.06);
     });
   });
   return (
