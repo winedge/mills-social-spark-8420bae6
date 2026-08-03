@@ -1,6 +1,6 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { MeshReflectorMaterial, Environment } from "@react-three/drei";
-import { EffectComposer, Bloom, Vignette, DepthOfField } from "@react-three/postprocessing";
+import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { sfx } from "./beer-pong-audio";
@@ -780,7 +780,6 @@ function Scene({ state }: { state: PongState }) {
       <AimGuide state={state} />
       <CameraRig state={state} />
       <EffectComposer enableNormalPass={false}>
-        <DepthOfField focusDistance={0.022} focalLength={0.1} bokehScale={2.6} height={480} />
         <Bloom intensity={0.5} luminanceThreshold={0.72} luminanceSmoothing={0.28} mipmapBlur />
         <Vignette eskil={false} offset={0.22} darkness={0.85} />
       </EffectComposer>
