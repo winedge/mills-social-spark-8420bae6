@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { Target, Dices, Gamepad2, CircleDot, Trophy, Clock, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { BeerChallenge } from "@/components/beer-challenge";
-import { CocktailChallenge } from "@/components/cocktail-challenge";
+import { BeerPong } from "@/components/beer-pong";
 import playHero from "@/assets/play-hero.jpg";
 import poolImg from "@/assets/play-pool.jpg";
 import dartsImg from "@/assets/play-darts.jpg";
@@ -38,8 +37,7 @@ function PlayPage() {
       <DartsSection />
       <BoardSection />
       <ArcadeSection />
-      <BeerChallenge />
-      <CocktailChallenge />
+      <BeerPong />
       <HouseRules />
 
       <SiteFooter />
