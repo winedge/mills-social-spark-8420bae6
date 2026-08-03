@@ -168,6 +168,10 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
       comboRef.current += 1;
       const c = comboRef.current;
       const pts = 100 * c;
+      /* arena intensity scales with the streak */
+      s.hype = Math.min(1, 0.28 + c * 0.2);
+      s.hypePulse = 1;
+      if (c >= 2) sfx.cheer(Math.min(1.6, 0.8 + c * 0.25), 0.32);
       setSunk(sunkRef.current);
       setCombo(c);
       setBestCombo((b) => Math.max(b, c));
