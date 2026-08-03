@@ -254,6 +254,8 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
       }
       s.power = 0;
       setPower(0);
+      lockedRef.current = false;
+      setAimClose(0);
     },
   };
 
