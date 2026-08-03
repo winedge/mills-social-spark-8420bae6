@@ -112,6 +112,7 @@ function Cup({ x, z, alive }: { x: number; z: number; alive: boolean }) {
 /* ------------------------------------------------------------------ */
 
 function Ball({ state }: { state: PongState }) {
+  console.log("BALL RENDER");
   const ref = useRef<THREE.Mesh>(null);
   const restTimer = useRef(0);
   const dbg = useRef(0);
