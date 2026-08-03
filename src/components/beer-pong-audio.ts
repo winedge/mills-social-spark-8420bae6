@@ -229,22 +229,24 @@ export const sfx = {
     o.stop(c.currentTime + 0.2);
   },
 
-  /* beer splash + glass clink */
-  splash() {
+  /* beer splash + glass clink, optionally scheduled `at` seconds from now so
+     it lands exactly on the foam burst leaving the rim */
+  splash(at = 0) {
     const c = ac();
     if (!c || !master) return;
+    const t0 = c.currentTime + SCHED + Math.max(0, at);
     const src = c.createBufferSource();
     src.buffer = noiseBuffer(c, 0.5);
     const f = c.createBiquadFilter();
     f.type = "bandpass";
-    f.frequency.setValueAtTime(1800, c.currentTime);
-    f.frequency.exponentialRampToValueAtTime(420, c.currentTime + 0.35);
+    f.frequency.setValueAtTime(1800, t0);
+    f.frequency.exponentialRampToValueAtTime(420, t0 + 0.35);
     f.Q.value = 1.1;
     const g = c.createGain();
-    env(g, c, 0.34, 0.006, 0.42);
+    env(g, c, 0.34, 0.006, 0.42, t0);
     src.connect(f).connect(g).connect(master);
-    src.start();
-    src.stop(c.currentTime + 0.5);
+    src.start(t0);
+    src.stop(t0 + 0.5);
 
     /* glass clink */
     [1860, 2640].forEach((freq, i) => {
@@ -252,7 +254,7 @@ export const sfx = {
       const gg = c.createGain();
       o.type = "sine";
       o.frequency.value = freq;
-      const t = c.currentTime + 0.03 + i * 0.02;
+      const t = t0 + 0.03 + i * 0.02;
       gg.gain.setValueAtTime(0.0001, t);
       gg.gain.exponentialRampToValueAtTime(0.09, t + 0.004);
       gg.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
@@ -263,23 +265,23 @@ export const sfx = {
   },
 
   /* crowd cheer swell */
-  cheer(intensity = 1) {
+  cheer(intensity = 1, at = 0) {
     const c = ac();
     if (!c || !master) return;
     const src = c.createBufferSource();
     src.buffer = noiseBuffer(c, 1.6);
     const f = c.createBiquadFilter();
+    const t = c.currentTime + SCHED + Math.max(0, at);
     f.type = "bandpass";
-    f.frequency.setValueAtTime(700, c.currentTime);
-    f.frequency.linearRampToValueAtTime(1500, c.currentTime + 0.45);
+    f.frequency.setValueAtTime(700, t);
+    f.frequency.linearRampToValueAtTime(1500, t + 0.45);
     f.Q.value = 0.8;
     const g = c.createGain();
-    const t = c.currentTime;
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(0.22 * intensity, t + 0.18);
     g.gain.exponentialRampToValueAtTime(0.0001, t + 1.3 * intensity);
     src.connect(f).connect(g).connect(master);
-    src.start();
+    src.start(t);
     src.stop(t + 1.7);
   },
 
