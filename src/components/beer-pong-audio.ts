@@ -22,7 +22,9 @@ function ac() {
   if (!ctx) {
     const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AC) return null;
-    ctx = new AC();
+    /* "interactive" asks the platform for the smallest output buffer it can
+       give us, which keeps game cues tight against the on-screen action */
+    ctx = new AC({ latencyHint: "interactive" });
     master = ctx.createGain();
     master.gain.value = 0.9;
     master.connect(ctx.destination);
@@ -39,8 +41,22 @@ function noiseBuffer(c: AudioContext, seconds = 1) {
   return buf;
 }
 
-function env(g: GainNode, c: AudioContext, peak: number, attack: number, decay: number) {
-  const t = c.currentTime;
+/* smallest safe scheduling lookahead - keeps starts sample-accurate without
+   adding audible latency against the visuals */
+const SCHED = 0.004;
+
+/** visual choreography offsets (seconds after the ball drops into the cup) */
+export const SINK_TIMELINE = {
+  /** rim wobble / glass ring - immediate */
+  ring: 0,
+  /** beer column + foam burst leaves the rim a couple of frames later */
+  foam: 0.055,
+  /** crowd reacts once they see it went in */
+  cheer: 0.22,
+};
+
+function env(g: GainNode, c: AudioContext, peak: number, attack: number, decay: number, at?: number) {
+  const t = at ?? c.currentTime + SCHED;
   g.gain.cancelScheduledValues(t);
   g.gain.setValueAtTime(0.0001, t);
   g.gain.exponentialRampToValueAtTime(Math.max(peak, 0.0002), t + attack);
@@ -104,9 +120,10 @@ export const sfx = {
 
     const att = attenuation(distance);
     const amp = att * Math.min(1.2, Math.max(0.2, strength));
-    const t0 = c.currentTime;
-    /* speed of sound delay - far cups read fractionally late */
-    const delay = Math.max(0, (distance - SINK_REF_DIST) * 0.0029);
+    const t0 = c.currentTime + SCHED;
+    /* speed of sound delay - far cups read fractionally late (capped so it
+       never drifts audibly behind the cup wobble on screen) */
+    const delay = Math.min(0.02, Math.max(0, (distance - SINK_REF_DIST) * 0.0029));
 
     /* per-cue chain: panner -> air-absorption lowpass -> bus */
     const panner = c.createStereoPanner();
@@ -213,22 +230,24 @@ export const sfx = {
     o.stop(c.currentTime + 0.2);
   },
 
-  /* beer splash + glass clink */
-  splash() {
+  /* beer splash + glass clink, optionally scheduled `at` seconds from now so
+     it lands exactly on the foam burst leaving the rim */
+  splash(at = 0) {
     const c = ac();
     if (!c || !master) return;
+    const t0 = c.currentTime + SCHED + Math.max(0, at);
     const src = c.createBufferSource();
     src.buffer = noiseBuffer(c, 0.5);
     const f = c.createBiquadFilter();
     f.type = "bandpass";
-    f.frequency.setValueAtTime(1800, c.currentTime);
-    f.frequency.exponentialRampToValueAtTime(420, c.currentTime + 0.35);
+    f.frequency.setValueAtTime(1800, t0);
+    f.frequency.exponentialRampToValueAtTime(420, t0 + 0.35);
     f.Q.value = 1.1;
     const g = c.createGain();
-    env(g, c, 0.34, 0.006, 0.42);
+    env(g, c, 0.34, 0.006, 0.42, t0);
     src.connect(f).connect(g).connect(master);
-    src.start();
-    src.stop(c.currentTime + 0.5);
+    src.start(t0);
+    src.stop(t0 + 0.5);
 
     /* glass clink */
     [1860, 2640].forEach((freq, i) => {
@@ -236,7 +255,7 @@ export const sfx = {
       const gg = c.createGain();
       o.type = "sine";
       o.frequency.value = freq;
-      const t = c.currentTime + 0.03 + i * 0.02;
+      const t = t0 + 0.03 + i * 0.02;
       gg.gain.setValueAtTime(0.0001, t);
       gg.gain.exponentialRampToValueAtTime(0.09, t + 0.004);
       gg.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
@@ -247,23 +266,23 @@ export const sfx = {
   },
 
   /* crowd cheer swell */
-  cheer(intensity = 1) {
+  cheer(intensity = 1, at = 0) {
     const c = ac();
     if (!c || !master) return;
     const src = c.createBufferSource();
     src.buffer = noiseBuffer(c, 1.6);
     const f = c.createBiquadFilter();
+    const t = c.currentTime + SCHED + Math.max(0, at);
     f.type = "bandpass";
-    f.frequency.setValueAtTime(700, c.currentTime);
-    f.frequency.linearRampToValueAtTime(1500, c.currentTime + 0.45);
+    f.frequency.setValueAtTime(700, t);
+    f.frequency.linearRampToValueAtTime(1500, t + 0.45);
     f.Q.value = 0.8;
     const g = c.createGain();
-    const t = c.currentTime;
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(0.22 * intensity, t + 0.18);
     g.gain.exponentialRampToValueAtTime(0.0001, t + 1.3 * intensity);
     src.connect(f).connect(g).connect(master);
-    src.start();
+    src.start(t);
     src.stop(t + 1.7);
   },
 
@@ -285,16 +304,19 @@ export const sfx = {
     o.stop(c.currentTime + 0.85);
   },
 
-  /* cup tipping over and settling on the table - glass clink */
+  /* cup tipping over and settling on the table - glass clink.
+     Fired on the exact frame the rim meets the wood, so it uses only the
+     minimum scheduling lookahead and no artistic delay. */
   clink(strength = 1) {
     const c = ac();
     if (!c || !master) return;
+    const t0 = c.currentTime + SCHED;
     [2380, 3160, 4270].forEach((freq, i) => {
       const o = c.createOscillator();
       const g = c.createGain();
       o.type = "sine";
-      o.frequency.setValueAtTime(freq * (0.99 + Math.random() * 0.02), c.currentTime);
-      const t = c.currentTime + i * 0.012;
+      o.frequency.setValueAtTime(freq * (0.99 + Math.random() * 0.02), t0);
+      const t = t0 + i * 0.012;
       const peak = (0.11 - i * 0.03) * Math.min(1, strength);
       g.gain.setValueAtTime(0.0001, t);
       g.gain.exponentialRampToValueAtTime(Math.max(peak, 0.0005), t + 0.004);
@@ -307,12 +329,12 @@ export const sfx = {
     const o = c.createOscillator();
     const g = c.createGain();
     o.type = "triangle";
-    o.frequency.setValueAtTime(180, c.currentTime);
-    o.frequency.exponentialRampToValueAtTime(90, c.currentTime + 0.12);
-    env(g, c, 0.09 * Math.min(1, strength), 0.003, 0.16);
+    o.frequency.setValueAtTime(180, t0);
+    o.frequency.exponentialRampToValueAtTime(90, t0 + 0.12);
+    env(g, c, 0.09 * Math.min(1, strength), 0.003, 0.16, t0);
     o.connect(g).connect(master);
-    o.start();
-    o.stop(c.currentTime + 0.3);
+    o.start(t0);
+    o.stop(t0 + 0.3);
   },
 
   whoosh() {

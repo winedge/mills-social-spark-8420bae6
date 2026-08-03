@@ -3,7 +3,7 @@ import { MeshReflectorMaterial, Environment } from "@react-three/drei";
 import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { sfx } from "./beer-pong-audio";
+import { sfx, SINK_TIMELINE } from "./beer-pong-audio";
 
 /* ------------------------------------------------------------------ */
 /*  Shared mutable game state (driven by the React UI layer)           */
@@ -415,8 +415,10 @@ function Ball({ state }: { state: PongState }) {
             pan: Math.max(-1, Math.min(1, c.x * 2.2)),
             strength: 0.8 + Math.min(0.4, Math.abs(b.vy) * 0.1),
           });
-          sfx.splash();
-          sfx.cheer(1);
+          /* splash lands with the foam burst leaving the rim, crowd reacts
+             once the sink visually reads as a make */
+          sfx.splash(SINK_TIMELINE.foam);
+          sfx.cheer(1, SINK_TIMELINE.cheer);
           s.onSink?.(i);
           resetBall(s);
           return;
