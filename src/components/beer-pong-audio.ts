@@ -47,6 +47,34 @@ function env(g: GainNode, c: AudioContext, peak: number, attack: number, decay: 
   g.gain.exponentialRampToValueAtTime(0.0001, t + attack + decay);
 }
 
+
+/* lazily build the sink bus: [bus gain] -> master */
+function bus(c: AudioContext) {
+  if (!master) return null;
+  if (!sinkBus) {
+    sinkBus = c.createGain();
+    sinkBus.gain.value = sinkVolume;
+    sinkBus.connect(master);
+  }
+  return sinkBus;
+}
+
+export type SinkCue = {
+  /** distance from the listener/camera to the cup, in world units */
+  distance?: number;
+  /** -1 (hard left) .. 1 (hard right) */
+  pan?: number;
+  /** 0..1 impact strength */
+  strength?: number;
+};
+
+/* inverse-square-ish rolloff, clamped, matching a small indoor bar space */
+function attenuation(distance: number) {
+  const d = Math.max(SINK_REF_DIST, Math.min(SINK_MAX_DIST, distance));
+  const rolloff = SINK_REF_DIST / (SINK_REF_DIST + 1.15 * (d - SINK_REF_DIST));
+  return rolloff * rolloff * 0.65 + rolloff * 0.35;
+}
+
 export const sfx = {
   setMuted(v: boolean) {
     muted = v;
@@ -54,9 +82,102 @@ export const sfx = {
   },
   isMuted: () => muted,
 
+  /** 0..1.5 - level of the glass-and-beer sink layer only */
+  setSinkVolume(v: number) {
+    sinkVolume = Math.max(0, Math.min(1.5, v));
+    if (sinkBus && ctx) sinkBus.gain.setTargetAtTime(sinkVolume, ctx.currentTime, 0.05);
+  },
+  getSinkVolume: () => sinkVolume,
+
   unlock() {
     ac();
   },
+
+  /* ---------------------------------------------------------------- */
+  /*  Dedicated glass + beer layer for a successful sink               */
+  /*  distance-attenuated, stereo-panned, air-absorption filtered      */
+  /* ---------------------------------------------------------------- */
+  sink({ distance = SINK_REF_DIST, pan = 0, strength = 1 }: SinkCue = {}) {
+    const c = ac();
+    const b = bus(c!);
+    if (!c || !b) return;
+
+    const att = attenuation(distance);
+    const amp = att * Math.min(1.2, Math.max(0.2, strength));
+    const t0 = c.currentTime;
+    /* speed of sound delay - far cups read fractionally late */
+    const delay = Math.max(0, (distance - SINK_REF_DIST) * 0.0029);
+
+    /* per-cue chain: panner -> air-absorption lowpass -> bus */
+    const panner = c.createStereoPanner();
+    panner.pan.value = Math.max(-1, Math.min(1, pan));
+    const air = c.createBiquadFilter();
+    air.type = "lowpass";
+    /* distant sounds lose their highs */
+    air.frequency.value = 16000 - Math.min(11000, (distance - SINK_REF_DIST) * 1500);
+    air.Q.value = 0.4;
+    air.connect(panner).connect(b);
+
+    /* 1. glass ring - the ball dropping through the rim into the cup */
+    [1740, 2490, 3380, 4720].forEach((freq, i) => {
+      const o = c.createOscillator();
+      const g = c.createGain();
+      o.type = "sine";
+      o.frequency.setValueAtTime(freq * (0.995 + Math.random() * 0.01), t0);
+      const t = t0 + delay + i * 0.009;
+      const peak = amp * (0.13 - i * 0.026);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(Math.max(peak, 0.0002), t + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.7 - i * 0.12);
+      o.connect(g).connect(air);
+      o.start(t);
+      o.stop(t + 0.8);
+    });
+
+    /* 2. beer plunge - a filtered noise burst sweeping down as it displaces */
+    const plunge = c.createBufferSource();
+    plunge.buffer = noiseBuffer(c, 0.6);
+    const pf = c.createBiquadFilter();
+    pf.type = "bandpass";
+    pf.frequency.setValueAtTime(2200, t0 + delay);
+    pf.frequency.exponentialRampToValueAtTime(320, t0 + delay + 0.4);
+    pf.Q.value = 0.9;
+    const pg = c.createGain();
+    pg.gain.setValueAtTime(0.0001, t0 + delay);
+    pg.gain.exponentialRampToValueAtTime(Math.max(amp * 0.4, 0.0002), t0 + delay + 0.012);
+    pg.gain.exponentialRampToValueAtTime(0.0001, t0 + delay + 0.5);
+    plunge.connect(pf).connect(pg).connect(air);
+    plunge.start(t0 + delay);
+    plunge.stop(t0 + delay + 0.6);
+
+    /* 3. liquid body - low "gloop" of beer swallowing the ball */
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = "sine";
+    o.frequency.setValueAtTime(420, t0 + delay);
+    o.frequency.exponentialRampToValueAtTime(110, t0 + delay + 0.18);
+    g.gain.setValueAtTime(0.0001, t0 + delay + 0.005);
+    g.gain.exponentialRampToValueAtTime(Math.max(amp * 0.22, 0.0002), t0 + delay + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + delay + 0.32);
+    o.connect(g).connect(air);
+    o.start(t0 + delay);
+    o.stop(t0 + delay + 0.4);
+
+    /* 4. carbonation fizz - sparse high crackle lingering after the hit */
+    const fizz = c.createBufferSource();
+    fizz.buffer = noiseBuffer(c, 1.2);
+    const ff = c.createBiquadFilter();
+    ff.type = "highpass";
+    ff.frequency.value = 5200;
+    const fg = c.createGain();
+    fg.gain.setValueAtTime(0.0001, t0 + delay + 0.06);
+    fg.gain.exponentialRampToValueAtTime(Math.max(amp * 0.09, 0.0002), t0 + delay + 0.15);
+    fg.gain.exponentialRampToValueAtTime(0.0001, t0 + delay + 1.1);
+    fizz.connect(ff).connect(fg).connect(air);
+    fizz.start(t0 + delay);
+    fizz.stop(t0 + delay + 1.2);
+  },
+
 
   /* ping-pong ball on wood */
   bounce(strength = 1) {
