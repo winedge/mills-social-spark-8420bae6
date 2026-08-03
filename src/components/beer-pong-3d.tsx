@@ -3,7 +3,7 @@ import { MeshReflectorMaterial, Environment } from "@react-three/drei";
 import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { sfx } from "./beer-pong-audio";
+import { sfx, SINK_TIMELINE } from "./beer-pong-audio";
 
 /* ------------------------------------------------------------------ */
 /*  Shared mutable game state (driven by the React UI layer)           */
