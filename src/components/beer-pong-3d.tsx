@@ -109,7 +109,12 @@ export function makeCups(formation: "triangle" | "diamond" | "line" | "tight" = 
       slide: 0,
       spinY: 0,
       landed: false,
+      hits: 0,
+      level: BASE_LEVEL,
+      levelTarget: BASE_LEVEL,
+      overflow: 0,
     });
+
 
   if (formation === "triangle") {
     const rows = [4, 3, 2, 1];
