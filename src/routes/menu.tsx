@@ -685,30 +685,72 @@ function DailySpecialsStrip() {
   const specials = useDailySpecials();
   if (specials.length === 0) return null;
   return (
-    <section className="border-b border-border bg-card/40">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-14">
-        <div className="flex items-baseline justify-between mb-6 pb-4 border-b border-border">
-          <h2 className="font-display text-3xl md:text-4xl uppercase">Daily Specials</h2>
-          <span className="font-mono text-[10px] tracking-widest text-muted-foreground">EVERY WEEK</span>
+    <section className="relative border-y-2 border-accent/40 bg-card/50 overflow-hidden">
+      <div className="pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full bg-accent/[0.07] blur-3xl" />
+      <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-16">
+        <div className="flex flex-wrap items-end justify-between gap-3 mb-8 pb-4 border-b border-accent/30">
+          <div>
+            <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-accent block mb-2">
+              ★ Featured // Week Long
+            </span>
+            <h2 className="font-display text-4xl md:text-6xl uppercase leading-[0.9]">
+              Daily <span className="text-accent">Specials</span>
+            </h2>
+          </div>
+          <span className="font-mono text-[10px] tracking-widest text-muted-foreground">
+            {String(specials.length).padStart(2, "0")} DEALS
+          </span>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+        <div className="space-y-5">
           {specials.map((s) => (
-            <article key={s.id} className="group border border-border bg-background p-5 hover:border-accent/60 transition-colors">
-              <div className="flex items-center justify-between mb-3">
-                <span className="font-mono text-[10px] tracking-widest text-accent uppercase">{s.day}</span>
-                {s.badge && (
-                  <span className="font-mono text-[10px] tracking-widest border border-border px-2 py-0.5 text-muted-foreground uppercase">
-                    {s.badge}
-                  </span>
+            <article
+              key={s.id}
+              className="group grid gap-0 sm:grid-cols-[minmax(0,14rem)_1fr] md:grid-cols-[minmax(0,20rem)_1fr] border border-border bg-background hover:border-accent/60 transition-colors overflow-hidden"
+            >
+              {/* Image left */}
+              <div className="relative aspect-[16/10] sm:aspect-auto sm:min-h-44 bg-surface overflow-hidden border-b sm:border-b-0 sm:border-r border-border">
+                {s.image_url ? (
+                  <img
+                    src={s.image_url}
+                    alt={`${s.title} - ${s.day} special`}
+                    loading="lazy"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_30%_20%,color-mix(in_oklab,var(--accent)_18%,transparent),transparent_70%)]">
+                    <span className="font-display text-5xl uppercase text-accent/30">{s.day.slice(0, 3)}</span>
+                  </div>
+                )}
+                <span className="absolute left-0 top-0 font-mono text-[10px] tracking-[0.25em] uppercase bg-accent text-primary-foreground px-3 py-1.5">
+                  {s.day}
+                </span>
+              </div>
+
+              {/* Info right */}
+              <div className="p-5 md:p-7 flex flex-col justify-center">
+                <div className="flex items-center gap-3 mb-2 flex-wrap">
+                  <h3 className="font-display text-2xl md:text-3xl uppercase group-hover:text-accent transition-colors">
+                    {s.title}
+                  </h3>
+                  {s.badge && (
+                    <span className="font-mono text-[10px] tracking-widest border border-accent/50 text-accent px-2 py-0.5 uppercase">
+                      {s.badge}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-2xl">
+                  {s.description}
+                </p>
+                {s.price && (
+                  <div className="mt-4 font-mono text-accent text-xl md:text-2xl">{s.price}</div>
                 )}
               </div>
-              <h3 className="font-display text-xl uppercase mb-1.5">{s.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-4">{s.description}</p>
-              <div className="font-mono text-accent text-lg">{s.price}</div>
             </article>
           ))}
         </div>
       </div>
     </section>
+
   );
 }
