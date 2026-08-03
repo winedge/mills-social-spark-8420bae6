@@ -118,8 +118,9 @@ export function makeCups(formation: "triangle" | "diamond" | "line" | "tight" = 
       spinY: 0,
       landed: false,
       hits: 0,
-      level: BASE_LEVEL,
-      levelTarget: BASE_LEVEL,
+      level: 0.2,
+      levelTarget: pourLevel(),
+
       overflow: 0,
     });
 
