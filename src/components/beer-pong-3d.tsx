@@ -835,21 +835,43 @@ function CameraRig({ state }: { state: PongState }) {
     target.x += Math.sin(t * 0.55) * 0.012;
     target.y += Math.sin(t * 0.83) * 0.008;
 
-    /* impact shake */
-    if (state.shake > 0.001) {
-      const k = state.shake * 0.035;
-      target.x += (Math.random() - 0.5) * k;
-      target.y += (Math.random() - 0.5) * k;
-    }
-
     const lerp = 1 - Math.exp(-dt * (state.flying ? 5.5 : 3.4));
     pos.current.lerp(target, lerp);
     look.current.lerp(lookAt, lerp);
-    cam.position.copy(pos.current);
-    cam.lookAt(look.current);
+
+    /* ------------------------------------------------------------ */
+    /*  Handheld operator: constant micro-jitter + cinematic impact  */
+    /* ------------------------------------------------------------ */
+    const s = state.shake;
+    /* smooth layered noise reads as a real camera operator, not static */
+    const n = (f: number, o: number) =>
+      Math.sin(t * f + o) * 0.6 + Math.sin(t * f * 2.37 + o * 1.7) * 0.4;
+
+    const micro = 0.0022; // always-on breathing handheld drift
+    const punch = s * s * 0.055; // sharp, quickly-falling impact kick
+    const ax = n(11.3, 0.0) * micro + n(37.1, 1.3) * punch;
+    const ay = n(9.7, 2.1) * micro + n(41.7, 0.4) * punch;
+    const az = n(7.9, 4.2) * micro * 0.6 + n(29.3, 2.8) * punch * 0.5;
+
+    cam.position.set(
+      pos.current.x + ax,
+      pos.current.y + ay,
+      pos.current.z + az,
+    );
+
+    /* nudge the look target too so the shake reads as rotation, not slide */
+    cam.lookAt(
+      look.current.x + n(13.1, 3.4) * micro * 1.4 + n(33.7, 5.1) * punch * 0.9,
+      look.current.y + n(10.9, 1.1) * micro * 1.4 + n(39.1, 2.2) * punch * 0.9,
+      look.current.z,
+    );
+
+    /* subtle dutch roll - the strongest single cue that a hit landed */
+    cam.rotateZ(n(8.3, 0.7) * micro * 1.6 + n(27.9, 3.9) * s * 0.03);
 
     const targetFov = state.charging ? 46 - state.power * 5 : state.flying ? 48 : 47;
-    cam.fov += (targetFov - cam.fov) * Math.min(1, dt * 4);
+    /* quick punch-in on impact, eased back out */
+    cam.fov += (targetFov - s * 1.8 - cam.fov) * Math.min(1, dt * 4);
     cam.updateProjectionMatrix();
   });
   return null;
