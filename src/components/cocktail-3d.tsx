@@ -712,9 +712,13 @@ function Scene({ simRef, phase }: { simRef: React.RefObject<Sim>; phase: Phase }
 
       <Counter />
       <BackBar />
-      <Shaker simRef={simRef} phase={phase} />
-      <Drink simRef={simRef} phase={phase} />
-      <PourStream simRef={simRef} />
+      {/* props are authored at ~1 unit tall; scale them to real barware size */}
+      <group position={[0, BAR_Y * (1 - PROP), 0]} scale={PROP}>
+        <Shaker simRef={simRef} phase={phase} />
+        <Drink simRef={simRef} phase={phase} />
+        <PourStream simRef={simRef} />
+      </group>
+
 
       <ContactShadows
         position={[0, BAR_Y + 0.002, 0]}
