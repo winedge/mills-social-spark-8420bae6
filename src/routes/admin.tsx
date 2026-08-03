@@ -1243,6 +1243,7 @@ function SettingsSection() {
   if (loading) return <LoaderBlock />;
   return (
     <div className="max-w-2xl space-y-6">
+      <FeatureToggles />
       <HeroVideoUploader />
       <form onSubmit={save} className="space-y-6 border border-border bg-surface/40 p-6">
         <div>
