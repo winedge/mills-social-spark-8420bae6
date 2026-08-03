@@ -324,14 +324,8 @@ function Scene({ state }: { state: PongState }) {
   return (
     <>
       <color attach="background" args={["#080a0e"]} />
-      <fog attach="fog" args={["#080a0e", 7, 16]} />
-
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[2, 4, 2]} intensity={1.5} castShadow shadow-mapSize={[1024, 1024]} />
-      <pointLight position={[-1.4, 1.7, -3.4]} intensity={6} color="#ffb347" distance={6} />
-      <pointLight position={[1.3, 1.9, -3.9]} intensity={5} color="#38bdf8" distance={6} />
-
-      <spotLight position={[0, 3, -1.6]} angle={0.8} penumbra={0.6} intensity={26} color="#fff1d8" castShadow />
+      <ambientLight intensity={0.8} />
+      <directionalLight position={[2, 4, 2]} intensity={2} />
       <Probe />
       <Table />
       {state.cups.map((c, i) => (
