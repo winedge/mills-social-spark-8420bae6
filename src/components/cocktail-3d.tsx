@@ -20,6 +20,8 @@ import { POUR_TARGET, type Phase, type Sim } from "./cocktail-sim";
 
 const GOLD = "#c8a24a";
 const BAR_Y = 1.0;
+const PROP = 0.3; // barware scale: authored props are ~1 unit tall
+const GLASS_X = 0.36; // local X of the coupe inside the prop group
 
 /* ---------------- geometry helpers ---------------- */
 
@@ -212,7 +214,7 @@ function Shaker({ simRef, phase }: { simRef: React.RefObject<Sim>; phase: Phase 
 
     const shakeAmp = phase === "shake" ? s.shakeLevel : 0;
     g.position.set(
-      (pouring ? -0.42 : 0) + Math.sin(t * 17) * 0.05 * shakeAmp,
+      (pouring ? GLASS_X - 0.16 : 0) + Math.sin(t * 17) * 0.05 * shakeAmp,
       BAR_Y + (pouring ? 0.72 : 0.0) + Math.cos(t * 21) * 0.035 * shakeAmp + (pouring ? Math.sin(t * 1.4) * 0.01 : 0),
       Math.sin(t * 0.6) * 0.004,
     );
@@ -401,9 +403,9 @@ function PourStream({ simRef }: { simRef: React.RefObject<Sim> }) {
     const flow = s.pourFlow;
     m.visible = flow > 0.02;
 
-    const from = new THREE.Vector3(-0.42 + 0.16, BAR_Y + 0.72 + 0.42, 0);
+    const from = new THREE.Vector3(GLASS_X, BAR_Y + 0.72 + 0.42, 0);
     const surfaceY = BAR_Y + BOWL_BOTTOM + (BOWL_TOP - BOWL_BOTTOM) * s.glassFill;
-    const to = new THREE.Vector3(0, surfaceY, 0);
+    const to = new THREE.Vector3(GLASS_X, surfaceY, 0);
 
     if (m.visible) {
       const pts = curve.points;
@@ -571,7 +573,7 @@ function Drink({ simRef, phase }: { simRef: React.RefObject<Sim>; phase: Phase }
   const iceCount = Math.min(4, Math.max(0, simRef.current?.ice.length ?? 0));
 
   return (
-    <group ref={group} position={[0, BAR_Y, 0]}>
+    <group ref={group} position={[GLASS_X, BAR_Y, 0]}>
       {/* body of the drink */}
       <mesh ref={liquid} visible={false}>
         <coneGeometry args={[1, 1, 56, 1, false]} />
@@ -632,12 +634,12 @@ function Drink({ simRef, phase }: { simRef: React.RefObject<Sim>; phase: Phase }
 /* ---------------- camera director ---------------- */
 
 const SHOTS: Record<Phase, { pos: [number, number, number]; look: [number, number, number]; fov: number }> = {
-  intro: { pos: [0.05, BAR_Y + 0.62, 1.15], look: [0, BAR_Y + 0.45, 0], fov: 32 },
-  recipe: { pos: [0.3, BAR_Y + 0.7, 1.3], look: [0, BAR_Y + 0.45, 0], fov: 34 },
-  ingredients: { pos: [0.1, BAR_Y + 0.66, 1.25], look: [0, BAR_Y + 0.45, 0], fov: 33 },
-  shake: { pos: [0, BAR_Y + 0.72, 1.55], look: [0, BAR_Y + 0.5, 0], fov: 36 },
-  pour: { pos: [0.18, BAR_Y + 0.78, 1.32], look: [-0.06, BAR_Y + 0.5, 0], fov: 31 },
-  result: { pos: [0, BAR_Y + 0.5, 1.05], look: [0, BAR_Y + 0.42, 0], fov: 30 },
+  intro: { pos: [0.06, BAR_Y + 0.26, 0.62], look: [0.05, BAR_Y + 0.12, 0], fov: 34 },
+  recipe: { pos: [0.12, BAR_Y + 0.3, 0.7], look: [0.05, BAR_Y + 0.12, 0], fov: 36 },
+  ingredients: { pos: [0.06, BAR_Y + 0.28, 0.64], look: [0.03, BAR_Y + 0.12, 0], fov: 35 },
+  shake: { pos: [0, BAR_Y + 0.3, 0.78], look: [0, BAR_Y + 0.14, 0], fov: 38 },
+  pour: { pos: [0.14, BAR_Y + 0.34, 0.68], look: [0.1, BAR_Y + 0.16, 0], fov: 34 },
+  result: { pos: [0.11, BAR_Y + 0.22, 0.5], look: [0.11, BAR_Y + 0.11, 0], fov: 30 },
 };
 
 function CameraRig({ phase }: { phase: Phase }) {
@@ -653,9 +655,9 @@ function CameraRig({ phase }: { phase: Phase }) {
     if (phase === "result") {
       // slow cinematic orbit around the finished drink
       const a = t * 0.28;
-      px = Math.sin(a) * 1.02;
-      pz = Math.cos(a) * 1.02;
-      py = BAR_Y + 0.5 + Math.sin(t * 0.4) * 0.05;
+      px = GLASS_X * PROP + Math.sin(a) * 0.46;
+      pz = Math.cos(a) * 0.46;
+      py = BAR_Y + 0.2 + Math.sin(t * 0.4) * 0.03;
     }
 
     // parallax + tiny handheld drift
@@ -663,7 +665,7 @@ function CameraRig({ phase }: { phase: Phase }) {
     py += pointer.y * 0.03 + Math.cos(t * 1.7) * 0.005;
 
     camera.position.lerp(new THREE.Vector3(px, py, pz), Math.min(1, d * (phase === "result" ? 4 : 2.2)));
-    look.current.lerp(new THREE.Vector3(...shot.look), Math.min(1, d * 2.5));
+    look.current.lerp(new THREE.Vector3(shot.look[0], shot.look[1], shot.look[2]), Math.min(1, d * 2.5));
     camera.lookAt(look.current);
 
     const cam = camera as THREE.PerspectiveCamera;
