@@ -516,11 +516,16 @@ function Splashes({ state }: { state: PongState }) {
     for (let i = list.length - 1; i >= 0; i--) {
       const p = list[i];
       p.life += dt;
-      p.vy -= 7.5 * dt;
+      /* foam is light and drifty, beer droplets fall fast */
+      p.vy -= (p.foam ? 3.4 : 7.8) * dt;
+      if (p.foam) {
+        p.vx *= Math.exp(-dt * 2.2);
+        p.vz *= Math.exp(-dt * 2.2);
+      }
       p.x += p.vx * dt;
       p.y += p.vy * dt;
       p.z += p.vz * dt;
-      if (p.life > p.max || p.y < 0) list.splice(i, 1);
+      if (p.life > p.max || p.y < 0.002) list.splice(i, 1);
     }
     if (!inst.current) return;
     const n = Math.min(list.length, MAX);
