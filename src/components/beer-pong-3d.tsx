@@ -114,6 +114,7 @@ function Cup({ x, z, alive }: { x: number; z: number; alive: boolean }) {
 function Ball({ state }: { state: PongState }) {
   const ref = useRef<THREE.Mesh>(null);
   const restTimer = useRef(0);
+  const dbg = useRef(0);
 
   useFrame((_, delta) => {
     const s = state;
@@ -193,6 +194,7 @@ function Ball({ state }: { state: PongState }) {
 
     if (ref.current) {
       ref.current.position.set(b.x, b.y, b.z);
+      dbg.current += dt; if (dbg.current > 1) { dbg.current = 0; console.log("BALL", b.x.toFixed(2), b.y.toFixed(2), b.z.toFixed(2), ref.current.visible, ref.current.parent?.type); }
       ref.current.rotation.x += (b.vz || 0) * dt * 6;
       ref.current.rotation.z -= (b.vx || 0) * dt * 6;
     }
