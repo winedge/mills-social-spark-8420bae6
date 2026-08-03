@@ -514,6 +514,32 @@ function Ball({ state }: { state: PongState }) {
         if (Math.abs(b.vy) < 0.32) b.vy = 0;
       }
 
+      /* swept rim-plane crossing, resolved once against ALL cups so a ball
+         dropping into the gap between two cups is always claimed by the
+         nearest one instead of slipping through */
+      let captureIdx = -1;
+      let capX = 0;
+      let capZ = 0;
+      if (b.vy < 0 && py >= CUP_H && b.y < CUP_H) {
+        const t = (py - CUP_H) / Math.max(1e-6, py - b.y);
+        const cx = px + (b.x - px) * t;
+        const cz = pz + (b.z - pz) * t;
+        let best = Infinity;
+        for (let i = 0; i < s.cups.length; i++) {
+          const c = s.cups[i];
+          if (!c.alive) continue;
+          const dd = Math.hypot(cx - c.x, cz - c.z);
+          if (dd < best) {
+            best = dd;
+            captureIdx = i;
+          }
+        }
+        /* capture radius reaches into the gap between neighbouring cups */
+        if (best > CUP_R * 1.32) captureIdx = -1;
+        capX = cx;
+        capZ = cz;
+      }
+
       /* cups */
       for (let i = 0; i < s.cups.length; i++) {
         const c = s.cups[i];
@@ -522,17 +548,8 @@ function Ball({ state }: { state: PongState }) {
         const dz = b.z - c.z;
         const d = Math.hypot(dx, dz);
 
-        /* swept mouth crossing: find where the ball crossed the rim plane this
-           frame so a fast ball can never tunnel through the opening */
-        let mouthHit = false;
-        let mx = dx;
-        let mz = dz;
-        if (b.vy < 0 && py >= CUP_H && b.y < CUP_H) {
-          const t = (py - CUP_H) / Math.max(1e-6, py - b.y);
-          mx = px + (b.x - px) * t - c.x;
-          mz = pz + (b.z - pz) * t - c.z;
-          mouthHit = Math.hypot(mx, mz) < CUP_R * 0.95;
-        }
+        const mouthHit = captureIdx === i;
+        const mx = mouthHit ? capX - c.x : dx;
         const insideNow = b.vy < 0 && d < CUP_R * 0.9 && b.y < CUP_H && b.y > CUP_H * 0.25;
 
         if (mouthHit || insideNow) {
@@ -563,7 +580,15 @@ function Ball({ state }: { state: PongState }) {
           sfx.splash(SINK_TIMELINE.foam);
           sfx.cheer(1, SINK_TIMELINE.cheer);
           s.onSink?.(i);
-          resetBall(s);
+          /* hand the ball to the drop-in animation instead of teleporting it */
+          b.vx = b.vy = b.vz = 0;
+          b.squash = 0;
+          b.y = Math.max(b.y, CUP_H * 0.98);
+          s.sink.active = true;
+          s.sink.t = 0;
+          s.sink.x = c.x;
+          s.sink.z = c.z;
+          s.sink.y0 = b.y;
           return;
         }
         /* don't deflect a ball that's dropping straight over the opening */
