@@ -402,6 +402,16 @@ function Splashes({ state }: { state: PongState }) {
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const MAX = 220;
 
+  /* hide every instance before the first frame renders */
+  useEffect(() => {
+    if (!inst.current) return;
+    dummy.scale.setScalar(0);
+    dummy.updateMatrix();
+    for (let i = 0; i < MAX; i++) inst.current.setMatrixAt(i, dummy.matrix);
+    inst.current.instanceMatrix.needsUpdate = true;
+  }, [dummy]);
+
+
   useFrame((_, delta) => {
     const dt = Math.min(delta, 1 / 40);
     const list = state.splashes;
