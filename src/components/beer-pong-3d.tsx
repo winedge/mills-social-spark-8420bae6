@@ -70,6 +70,8 @@ export const BALL_R = 0.03;
 export const CUP_R = 0.065; // +30% vs previous
 export const CUP_H = 0.17;
 const RACK_Z = -1.75;
+/* approximate resting camera position - used as the audio listener */
+const LISTENER = { x: 0, y: 1.02, z: 2.2 };
 const BALL_HOME = { y: 0.34, z: 0.42 };
 
 /* cup formations, chosen by how many cups remain */
@@ -405,6 +407,13 @@ function Ball({ state }: { state: PongState }) {
           s.flying = false;
           spawnSplash(s, c.x, c.z);
           s.shake = 1;
+          /* dedicated glass + beer layer, positioned relative to the camera */
+          const dist = Math.hypot(c.x - LISTENER.x, LISTENER.y, c.z - LISTENER.z);
+          sfx.sink({
+            distance: dist,
+            pan: Math.max(-1, Math.min(1, c.x * 2.2)),
+            strength: 0.8 + Math.min(0.4, Math.abs(b.vy) * 0.1),
+          });
           sfx.splash();
           sfx.cheer(1);
           s.onSink?.(i);
