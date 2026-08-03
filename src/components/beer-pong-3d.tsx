@@ -23,7 +23,16 @@ export type Cup = {
   slide: number; // how far the cup has skidded while falling
   spinY: number; // yaw spin while it tumbles
   landed: boolean; // has it hit the table yet (clink played)
+  /* how many balls have landed in this cup */
+  hits: number;
+  /* animated beer level (1 = full to the normal fill line) */
+  level: number;
+  /* level the beer is easing towards - each ball displaces more beer */
+  levelTarget: number;
+  /* 0..1 spill animation running down the outside of the cup */
+  overflow: number;
 };
+
 
 
 export type Splash = {
