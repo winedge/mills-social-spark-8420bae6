@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Beer, X, Trophy, Copy, Check, RotateCcw, Volume2, VolumeX, Target, Flame, Wind } from "lucide-react";
-import { makePong, makeCups, launchVector, type PongState } from "./beer-pong-3d";
+import { makePong, makeCups, launchVector, predictAim, type PongState } from "./beer-pong-3d";
 import { sfx } from "./beer-pong-audio";
 import { haptics } from "./haptics";
 
