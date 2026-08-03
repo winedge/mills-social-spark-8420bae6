@@ -693,8 +693,8 @@ function Scene({ simRef, phase }: { simRef: React.RefObject<Sim>; phase: Phase }
       <fogExp2 attach="fog" args={["#120b06", 0.16]} />
 
       <Environment resolution={256}>
-        <Lightformer form="rect" intensity={2.6} color="#ffb26b" position={[-2, 3, -1]} scale={[6, 3, 1]} />
-        <Lightformer form="circle" intensity={4} color="#ffd7a1" position={[0, 2.4, 1.4]} scale={2} />
+        <Lightformer form="rect" intensity={4.2} color="#ffb26b" position={[-2, 3, -1]} scale={[6, 3, 1]} />
+        <Lightformer form="circle" intensity={7} color="#ffd7a1" position={[0, 2.4, 1.4]} scale={2} />
         <Lightformer form="rect" intensity={1.4} color="#4a7fb5" position={[3, 1.6, -2]} scale={[4, 3, 1]} />
         <Lightformer form="ring" intensity={2} color="#ffffff" position={[1.4, 1.4, 1.8]} scale={1.2} />
       </Environment>
@@ -709,6 +709,7 @@ function Scene({ simRef, phase }: { simRef: React.RefObject<Sim>; phase: Phase }
         castShadow
         shadow-mapSize={[1024, 1024]}
       />
+      <ambientLight intensity={0.5} color="#ffd9b0" />
       <EdisonBulb x={-1.15} z={-0.5} delay={0} />
       <EdisonBulb x={1.15} z={-0.5} delay={2.3} />
 
@@ -749,7 +750,7 @@ function Scene({ simRef, phase }: { simRef: React.RefObject<Sim>; phase: Phase }
       <CameraRig phase={phase} />
 
       <EffectComposer enableNormalPass={false} multisampling={0}>
-        <DepthOfField focusDistance={0.032} focalLength={0.16} bokehScale={3} height={480} />
+        <DepthOfField focusDistance={0.028} focalLength={0.3} bokehScale={2} height={480} />
         <Bloom intensity={done ? 1.25 : 0.75} luminanceThreshold={0.62} luminanceSmoothing={0.3} mipmapBlur />
         <Vignette eskil={false} offset={0.25} darkness={0.85} />
       </EffectComposer>
@@ -772,7 +773,7 @@ export default function CocktailScene({
       camera={{ position: [0.05, BAR_Y + 0.62, 1.15], fov: 32, near: 0.05, far: 40 }}
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping;
-        gl.toneMappingExposure = 1.1;
+        gl.toneMappingExposure = 1.45;
       }}
       className="absolute inset-0 size-full touch-none"
     >
