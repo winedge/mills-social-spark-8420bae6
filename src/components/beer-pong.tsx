@@ -303,17 +303,54 @@ function PongGame({ onClose }: { onClose: (score: number | null) => void }) {
             <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/45">Score</p>
             <p className="font-display text-lg leading-none text-white tabular-nums">{score}</p>
           </div>
-          <button
-            onClick={() => {
-              const m = !muted;
-              setMuted(m);
-              sfx.setMuted(m);
-            }}
-            className={glass("rounded-2xl size-10 grid place-items-center text-white/80 hover:text-accent transition-colors")}
-            aria-label="Toggle sound"
-          >
-            {muted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => {
+                const m = !muted;
+                setMuted(m);
+                sfx.setMuted(m);
+              }}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                setShowSinkMix((v) => !v);
+              }}
+              className={glass("rounded-2xl size-10 grid place-items-center text-white/80 hover:text-accent transition-colors")}
+              aria-label="Toggle sound"
+            >
+              {muted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
+            </button>
+            <button
+              onClick={() => setShowSinkMix((v) => !v)}
+              className="absolute -bottom-1 -right-1 size-4 rounded-full bg-accent/90 text-[8px] font-bold text-black grid place-items-center"
+              aria-label="Sink sound volume"
+            >
+              <Beer className="size-2.5" />
+            </button>
+            {showSinkMix && (
+              <div className={glass("absolute right-0 top-12 w-44 rounded-2xl px-3 py-2.5 z-20")}>
+                <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/45 mb-1.5">
+                  Glass &amp; Beer FX - {Math.round(sinkVol * 100)}%
+                </p>
+                <input
+                  type="range"
+                  min={0}
+                  max={1.5}
+                  step={0.05}
+                  value={sinkVol}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    setSinkVol(v);
+                    sfx.setSinkVolume(v);
+                  }}
+                  onMouseUp={() => sfx.sink({ distance: 2.4, strength: 1 })}
+                  onTouchEnd={() => sfx.sink({ distance: 2.4, strength: 1 })}
+                  className="w-full accent-accent"
+                  aria-label="Sink sound volume"
+                />
+              </div>
+            )}
+          </div>
+
           <button
             onClick={() => onClose(shots > 0 ? sunk : null)}
             className={glass("rounded-2xl size-10 grid place-items-center text-white/80 hover:text-accent transition-colors")}
