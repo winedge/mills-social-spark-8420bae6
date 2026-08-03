@@ -58,6 +58,7 @@ export function makePong(): PongState {
 function Cup({ x, z, alive }: { x: number; z: number; alive: boolean }) {
   const g = useRef<THREE.Group>(null);
   useFrame((_, dt) => {
+    if (Math.random() < 0.002) console.log("CUPTICK");
     if (!g.current) return;
     const target = alive ? 1 : 0;
     g.current.scale.y += (target - g.current.scale.y) * Math.min(1, dt * 8);
@@ -225,6 +226,7 @@ function AimGuide({ state }: { state: PongState }) {
   const ref = useRef<THREE.Group>(null);
   const dots = useMemo(() => new Array(14).fill(0), []);
   useFrame(() => {
+    if (Math.random() < 0.01) console.log("GUIDETICK");
     if (!ref.current) return;
     ref.current.visible = state.charging && !state.flying;
     if (!ref.current.visible) return;
