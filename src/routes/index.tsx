@@ -151,8 +151,22 @@ function useHeroVideo() {
   return url;
 }
 
+function useMarqueeImages() {
+  const [images, setImages] = React.useState<string[]>([]);
+  React.useEffect(() => {
+    supabase.from("marquee_images").select("image_url").order("display_order")
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setImages(data.map(d => d.image_url));
+        }
+      });
+  }, []);
+  return images;
+}
+
 function Home() {
   const heroSrc = useHeroVideo();
+  const marqueeImages = useMarqueeImages();
   const { items: dbSpecials, loading: specialsLoading } = useDailySpecialsState();
   const specialImgs = [menuBurger, menuWings, menuCocktail];
   const dailySpecials = dbSpecials.length
@@ -313,10 +327,10 @@ function Home() {
       {/* Full-Width Image Marquee Slider - Completely edge-to-edge */}
       <div className="w-full overflow-hidden relative border-y border-accent/20 bg-black py-0">
         <div className="flex animate-marquee whitespace-nowrap">
-          {[...Array(6)].map((_, i) => (
+          {(marqueeImages.length > 0 ? [...marqueeImages, ...marqueeImages] : [marqueeImagesAsset.url, marqueeImagesAsset.url]).map((url, i) => (
             <div key={i} className="flex shrink-0 items-center">
               <img 
-                src={marqueeImagesAsset.url} 
+                src={url} 
                 alt="Mill's Social Atmosphere" 
                 className="h-[300px] md:h-[400px] lg:h-[500px] w-auto object-cover"
               />

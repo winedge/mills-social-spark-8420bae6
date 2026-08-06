@@ -29,7 +29,7 @@ export const Route = createFileRoute("/admin")({
 
 type Section =
   | "overview" | "reservations" | "spaces" | "menu" | "categories"
-  | "party" | "sports" | "ufc" | "nfl" | "specials" | "pulse"
+  | "party" | "sports" | "ufc" | "nfl" | "specials" | "pulse" | "marquee"
   | "messages" | "subscribers" | "contactinfo" | "settings";
 
 type NavItem = { id: Section; label: string; icon: any };
@@ -56,6 +56,7 @@ const NAV: NavEntry[] = [
     label: "Homepage", icon: Sparkles, children: [
       { id: "specials", label: "Daily Specials", icon: UtensilsCrossed },
       { id: "pulse", label: "Weekly Pulse", icon: CalendarClock },
+      { id: "marquee", label: "Marquee Slider", icon: Tv },
     ],
   },
   { id: "party", label: "Party & Shows", icon: PartyPopper },
@@ -240,6 +241,7 @@ function Dashboard({ email }: { email: string }) {
           {section === "contactinfo" && <ContactInfoSection />}
           {section === "specials" && <SpecialsSection />}
           {section === "pulse" && <PulseSection />}
+          {section === "marquee" && <MarqueeSection />}
           {section === "settings" && <SettingsSection />}
         </main>
       </div>
@@ -1496,6 +1498,73 @@ function Empty({ label }: { label: string }) {
   return <div className="border border-dashed border-border p-16 text-center">
     <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest">{label}</p></div>;
 }
+function MarqueeSection() {
+  const [rows, setRows] = useState<{ id: string; image_url: string; display_order: number }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+
+  const refresh = async () => {
+    setLoading(true);
+    const { data } = await supabase.from("marquee_images").select("*").order("display_order");
+    setRows(data ?? []);
+    setLoading(false);
+  };
+
+  useEffect(() => { refresh(); }, []);
+
+  const addImage = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const url = String(fd.get("image_url")).trim();
+    if (!url) return;
+    setBusy(true);
+    await supabase.from("marquee_images").insert({ image_url: url, display_order: rows.length });
+    (e.target as HTMLFormElement).reset();
+    setBusy(false);
+    refresh();
+  };
+
+  const remove = async (id: string) => {
+    if (!confirm("Remove this image?")) return;
+    await supabase.from("marquee_images").delete().eq("id", id);
+    refresh();
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="border border-border bg-surface/40 p-6">
+        <h3 className="font-display text-lg uppercase mb-4">Add Slider Image</h3>
+        <form onSubmit={addImage} className="flex gap-3">
+          <div className="flex-1">
+            <Input name="image_url" label="Local Asset Path" placeholder="/src/assets/slider/image.png" required />
+          </div>
+          <button disabled={busy} className="self-end h-10 px-6 bg-accent text-primary-foreground font-bold uppercase tracking-widest text-xs disabled:opacity-50">
+            {busy ? "Adding..." : "Add"}
+          </button>
+        </form>
+        <p className="mt-2 text-[10px] text-muted-foreground font-mono uppercase">
+          Tip: Use paths like /src/assets/slider/marquee-images.png
+        </p>
+      </div>
+
+      {loading ? <LoaderBlock /> : rows.length === 0 ? <Empty label="No slider images yet." /> : (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {rows.map((r) => (
+            <div key={r.id} className="group relative aspect-video border border-border bg-surface overflow-hidden">
+              <img src={r.image_url} alt="" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity grid place-items-center">
+                <button onClick={() => remove(r.id)} className="size-10 bg-red-500 text-white grid place-items-center rounded-full hover:scale-110 transition-transform">
+                  <Trash2 className="size-5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function FilterBar({ children }: { children: React.ReactNode }) {
   return <div className="flex flex-wrap items-end gap-3 border border-border bg-surface/40 p-4">{children}</div>;
 }
