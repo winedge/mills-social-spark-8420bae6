@@ -104,7 +104,10 @@ function AddOverrideModal({ onClose, onSuccess }: { onClose: () => void, onSucce
       const ext = file.name.split('.').pop();
       const path = `fighters/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       
-      const { data, error } = await supabase.storage.from("site_assets").upload(path, file);
+      const { data, error } = await supabase.storage.from("site_assets").upload(path, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
       if (error) throw error;
       
       const { data: { publicUrl } } = supabase.storage.from("site_assets").getPublicUrl(path);
