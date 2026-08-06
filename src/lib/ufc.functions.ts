@@ -93,9 +93,9 @@ function mapFighter(f: RawFighter | undefined): UfcFighter | null {
   const name = [f.FirstName, f.LastName].map((x) => cleanStr(x ?? null)).filter(Boolean).join(" ").trim();
   if (!name) return null;
 
-  // The MMA API often doesn't include ImageUrl in the Event Detail.
-  // We can construct it from the FighterId if available, or look for common patterns.
   // Pattern: https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/{FighterId}.png
+  // Pattern 2: https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/thumbs/{FighterId}.png
+  // Pattern 3: Use the provided ImageUrl if available
   const imageUrl = f.FighterId 
     ? `https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/${f.FighterId}.png`
     : null;
