@@ -131,6 +131,27 @@ export type Database = {
         }
         Relationships: []
       }
+      marquee_images: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          image_url: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          image_url: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string
+        }
+        Relationships: []
+      }
       menu_categories: {
         Row: {
           active: boolean
