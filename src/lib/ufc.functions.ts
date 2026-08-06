@@ -34,6 +34,7 @@ export type UfcEvent = {
 };
 
 type RawFighter = {
+  FighterId?: number | null;
   FirstName?: string | null;
   LastName?: string | null;
   PreFightWins?: number | null;
@@ -43,7 +44,6 @@ type RawFighter = {
   Losses?: number | null;
   Draws?: number | null;
   Winner?: boolean | null;
-  ImageUrl?: string | null;
 };
 
 type RawFight = {
@@ -93,16 +93,20 @@ function mapFighter(f: RawFighter | undefined): UfcFighter | null {
   const name = [f.FirstName, f.LastName].map((x) => cleanStr(x ?? null)).filter(Boolean).join(" ").trim();
   if (!name) return null;
 
-  // The SportsDataIO MMA API often uses "ImageUrl" or "FighterId" to resolve images.
-  // If f.ImageUrl is null, it might be because the endpoint doesn't provide it directly in the Event Detail.
-  // In some versions of the API, it's just "ImageUrl".
+  // The MMA API often doesn't include ImageUrl in the Event Detail.
+  // We can construct it from the FighterId if available, or look for common patterns.
+  // Pattern: https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/{FighterId}.png
+  const imageUrl = f.FighterId 
+    ? `https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/${f.FighterId}.png`
+    : null;
+
   return {
     name,
     wins: cleanNum(f.PreFightWins ?? f.Wins ?? null),
     losses: cleanNum(f.PreFightLosses ?? f.Losses ?? null),
     draws: cleanNum(f.PreFightDraws ?? f.Draws ?? null),
     winner: Boolean(f.Winner),
-    imageUrl: cleanStr(f.ImageUrl) || null,
+    imageUrl,
   };
 }
 
