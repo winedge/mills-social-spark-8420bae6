@@ -168,7 +168,7 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
                   src={a.imageUrl} 
                   alt={a.name} 
                   className="w-full h-full object-cover" 
-                  onError={(e) => {
+                  onError={async (e) => {
                     const target = e.currentTarget;
                     const ufcFallback = a.ufcFallbackUrl;
                     const ufcAlt = a.ufcAltUrl;
@@ -195,7 +195,20 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
                       // 4. Try official UFC.com third pattern
                       target.src = ufcThird;
                     } else {
-                      // 5. Final fallback: Hide and show initials
+                      // 5. Try ESPN Search/Headshot
+                      try {
+                        const searchRes = await fetch(`https://site.api.espn.com/apis/common/v3/search?query=${encodeURIComponent(a.name)}&type=athlete`);
+                        const data = await searchRes.json();
+                        const athlete = data.results?.[0]?.contents?.[0]?.items?.[0];
+                        if (athlete?.id) {
+                          target.src = `https://a.espncdn.com/i/headshots/mma/players/full/${athlete.id}.png`;
+                          return;
+                        }
+                      } catch (err) {
+                        console.error("ESPN fallback failed", err);
+                      }
+                      
+                      // Final fallback: Hide and show initials
                       target.style.display = 'none';
                       target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');
                     }
@@ -230,7 +243,7 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
                   src={b.imageUrl} 
                   alt={b.name} 
                   className="w-full h-full object-cover" 
-                  onError={(e) => {
+                  onError={async (e) => {
                     const target = e.currentTarget;
                     const ufcFallback = b.ufcFallbackUrl;
                     const ufcAlt = b.ufcAltUrl;
@@ -253,6 +266,19 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
                     } else if (ufcThird && !target.dataset.failedUrls.includes(ufcThird)) {
                       target.src = ufcThird;
                     } else {
+                      // 5. Try ESPN Search/Headshot
+                      try {
+                        const searchRes = await fetch(`https://site.api.espn.com/apis/common/v3/search?query=${encodeURIComponent(b.name)}&type=athlete`);
+                        const data = await searchRes.json();
+                        const athlete = data.results?.[0]?.contents?.[0]?.items?.[0];
+                        if (athlete?.id) {
+                          target.src = `https://a.espncdn.com/i/headshots/mma/players/full/${athlete.id}.png`;
+                          return;
+                        }
+                      } catch (err) {
+                        console.error("ESPN fallback failed", err);
+                      }
+
                       target.style.display = 'none';
                       target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');
                     }

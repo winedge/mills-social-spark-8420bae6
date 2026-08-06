@@ -10,6 +10,7 @@ export type UfcFighter = {
   ufcFallbackUrl?: string | null;
   ufcAltUrl?: string | null;
   ufcThirdUrl?: string | null;
+  espnId?: string | null;
 };
 
 export type UfcFight = {
@@ -132,6 +133,7 @@ function mapFighter(f: RawFighter | undefined): UfcFighter | null {
     ufcFallbackUrl: ufcOfficialUrl,
     ufcAltUrl: ufcOfficialAltUrl,
     ufcThirdUrl: ufcOfficialCdnUrl,
+    espnId: null, // To be potentially hydrated if we find a way to map IDs
   };
 }
 
