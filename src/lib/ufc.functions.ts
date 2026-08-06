@@ -34,6 +34,7 @@ export type UfcEvent = {
 };
 
 type RawFighter = {
+  FighterId?: number | null;
   FirstName?: string | null;
   LastName?: string | null;
   PreFightWins?: number | null;
@@ -43,7 +44,6 @@ type RawFighter = {
   Losses?: number | null;
   Draws?: number | null;
   Winner?: boolean | null;
-  ImageUrl?: string | null;
 };
 
 type RawFight = {
@@ -92,13 +92,21 @@ function mapFighter(f: RawFighter | undefined): UfcFighter | null {
   if (!f) return null;
   const name = [f.FirstName, f.LastName].map((x) => cleanStr(x ?? null)).filter(Boolean).join(" ").trim();
   if (!name) return null;
+
+  // Pattern: https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/{FighterId}.png
+  // Pattern 2: https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/thumbs/{FighterId}.png
+  // Pattern 3: Use the provided ImageUrl if available
+  const imageUrl = f.FighterId 
+    ? `https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/${f.FighterId}.png`
+    : null;
+
   return {
     name,
     wins: cleanNum(f.PreFightWins ?? f.Wins ?? null),
     losses: cleanNum(f.PreFightLosses ?? f.Losses ?? null),
     draws: cleanNum(f.PreFightDraws ?? f.Draws ?? null),
     winner: Boolean(f.Winner),
-    imageUrl: cleanStr(f.ImageUrl),
+    imageUrl,
   };
 }
 
@@ -126,6 +134,8 @@ function parseTs(iso: string | null | undefined): number | null {
 
 async function fetchEventDetail(eventId: number, apiKey: string): Promise<RawEvent | null> {
   try {
+    // We use the Fight Detail endpoint because it's more likely to have FighterId and ImageUrl 
+    // populated correctly than the high-level Event endpoint.
     const res = await fetch(`${BASE}/Event/${eventId}?key=${apiKey}`, {
       headers: { Accept: "application/json" },
     });

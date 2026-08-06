@@ -164,12 +164,25 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
             <div className="absolute inset-0 bg-accent/20 rounded-full blur-xl group-hover/fighter:bg-accent/30 transition-colors" />
             <div className="relative size-20 md:size-24 rounded-full border-2 border-border overflow-hidden bg-surface flex items-center justify-center">
               {a?.imageUrl ? (
-                <img src={a.imageUrl} alt={a.name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="font-display text-2xl text-muted-foreground/30">
-                  {a?.name?.charAt(0) || "?"}
-                </div>
-              )}
+                <img 
+                  src={a.imageUrl} 
+                  alt={a.name} 
+                  className="w-full h-full object-cover" 
+                  onError={(e) => {
+                    // Try thumbnail fallback if main image fails
+                    const target = e.currentTarget;
+                    if (!target.src.includes('/thumbs/')) {
+                      target.src = target.src.replace('/fighters/', '/fighters/thumbs/');
+                    } else {
+                      target.style.display = 'none';
+                      target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');
+                    }
+                  }}
+                />
+              ) : null}
+              <div className={`fallback-initial font-display text-2xl text-muted-foreground/30 ${a?.imageUrl ? 'hidden' : ''}`}>
+                {a?.name?.charAt(0) || "?"}
+              </div>
             </div>
           </div>
           <div className="min-w-0">
@@ -191,12 +204,24 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
             <div className="absolute inset-0 bg-accent/20 rounded-full blur-xl group-hover/fighter:bg-accent/30 transition-colors" />
             <div className="relative size-20 md:size-24 rounded-full border-2 border-border overflow-hidden bg-surface flex items-center justify-center">
               {b?.imageUrl ? (
-                <img src={b.imageUrl} alt={b.name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="font-display text-2xl text-muted-foreground/30">
-                  {b?.name?.charAt(0) || "?"}
-                </div>
-              )}
+                <img 
+                  src={b.imageUrl} 
+                  alt={b.name} 
+                  className="w-full h-full object-cover" 
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (!target.src.includes('/thumbs/')) {
+                      target.src = target.src.replace('/fighters/', '/fighters/thumbs/');
+                    } else {
+                      target.style.display = 'none';
+                      target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');
+                    }
+                  }}
+                />
+              ) : null}
+              <div className={`fallback-initial font-display text-2xl text-muted-foreground/30 ${b?.imageUrl ? 'hidden' : ''}`}>
+                {b?.name?.charAt(0) || "?"}
+              </div>
             </div>
           </div>
           <div className="min-w-0">
