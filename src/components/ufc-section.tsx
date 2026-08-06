@@ -172,18 +172,22 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
                     const target = e.currentTarget;
                     const ufcFallback = a.ufcFallbackUrl;
                     const ufcAlt = a.ufcAltUrl;
+                    const ufcThird = a.ufcThirdUrl;
                     
-                    if (target.src.includes('sportsdata-images') && target.src.includes('/thumbs/')) {
-                      // 1. Try high-res SportsDataIO
-                      target.src = target.src.replace('/thumbs/', '/');
+                    if (target.src.includes('sportsdata-images') && !target.src.includes('/thumbs/')) {
+                      // 1. Try thumbs SportsDataIO if full fails
+                      target.src = target.src.replace('/fighters/', '/fighters/thumbs/');
                     } else if (target.src.includes('sportsdata-images') && ufcFallback) {
                       // 2. Try official UFC.com primary
                       target.src = ufcFallback;
                     } else if (target.src === ufcFallback && ufcAlt) {
                       // 3. Try official UFC.com secondary
                       target.src = ufcAlt;
+                    } else if (target.src === ufcAlt && ufcThird) {
+                      // 4. Try official UFC.com third pattern
+                      target.src = ufcThird;
                     } else {
-                      // 4. Final fallback: Hide and show initials
+                      // 5. Final fallback: Hide and show initials
                       target.style.display = 'none';
                       target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');
                     }
@@ -222,13 +226,16 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
                     const target = e.currentTarget;
                     const ufcFallback = b.ufcFallbackUrl;
                     const ufcAlt = b.ufcAltUrl;
+                    const ufcThird = b.ufcThirdUrl;
                     
-                    if (target.src.includes('sportsdata-images') && target.src.includes('/thumbs/')) {
-                      target.src = target.src.replace('/thumbs/', '/');
+                    if (target.src.includes('sportsdata-images') && !target.src.includes('/thumbs/')) {
+                      target.src = target.src.replace('/fighters/', '/fighters/thumbs/');
                     } else if (target.src.includes('sportsdata-images') && ufcFallback) {
                       target.src = ufcFallback;
                     } else if (target.src === ufcFallback && ufcAlt) {
                       target.src = ufcAlt;
+                    } else if (target.src === ufcAlt && ufcThird) {
+                      target.src = ufcThird;
                     } else {
                       target.style.display = 'none';
                       target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');

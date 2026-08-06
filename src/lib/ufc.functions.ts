@@ -9,6 +9,7 @@ export type UfcFighter = {
   imageUrl: string | null;
   ufcFallbackUrl?: string | null;
   ufcAltUrl?: string | null;
+  ufcThirdUrl?: string | null;
 };
 
 export type UfcFight = {
@@ -105,14 +106,16 @@ function mapFighter(f: RawFighter | undefined): UfcFighter | null {
     .replace(/-+/g, "-") // collapse multiple hyphens
     .replace(/^-|-$/g, ""); // trim hyphens
     
+  // Official UFC headshot pattern
   const ufcOfficialUrl = `https://dmxg5wxfqgb4u.cloudfront.net/styles/fighter_stats_headshot/s3/image/fighter/profile/${slug}.png`;
   
-  // We'll also try the secondary pattern UFC sometimes uses for profile shots
+  // Secondary UFC patterns
   const ufcOfficialAltUrl = `https://dmxg5wxfqgb4u.cloudfront.net/styles/event_results_athlete_headshot/s3/image/fighter/profile/${slug}.png`;
+  const ufcOfficialThirdUrl = `https://dmxg5wxfqgb4u.cloudfront.net/s3/image/fighter/profile/${slug}.png`;
 
   // Use SportsDataIO S3 as primary if FighterId exists
   const imageUrl = f.FighterId 
-    ? `https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/thumbs/${f.FighterId}.png`
+    ? `https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/${f.FighterId}.png`
     : ufcOfficialUrl;
 
   return {
@@ -124,6 +127,7 @@ function mapFighter(f: RawFighter | undefined): UfcFighter | null {
     imageUrl,
     ufcFallbackUrl: ufcOfficialUrl,
     ufcAltUrl: ufcOfficialAltUrl,
+    ufcThirdUrl: ufcOfficialThirdUrl,
   };
 }
 
