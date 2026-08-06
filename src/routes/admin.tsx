@@ -1499,7 +1499,7 @@ function Empty({ label }: { label: string }) {
     <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest">{label}</p></div>;
 }
 function MarqueeSection() {
-  const [rows, setRows] = useState<{ id: string; image_url: string; display_order: number }[]>([]);
+  const [rows, setRows] = useState<{ id: string; image_url: string; display_order: number | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
 
