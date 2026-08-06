@@ -158,27 +158,57 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
         )}
       </div>
 
-      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-4 my-1 sm:my-2 min-h-[72px]">
-        <div className="text-right min-w-0">
-          <div className={`font-display text-base sm:text-xl uppercase leading-tight break-words ${a?.winner ? "text-accent" : ""}`}>
-            {a?.name || "TBD"}
-          </div>
-          {a && (a.wins !== null || a.losses !== null) && (
-            <div className="font-mono text-[10px] text-muted-foreground mt-1">
-              {a.wins ?? 0}-{a.losses ?? 0}-{a.draws ?? 0}
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 my-4">
+        <div className="flex flex-col items-center text-center gap-2">
+          <div className="relative group/fighter">
+            <div className="absolute inset-0 bg-accent/20 rounded-full blur-xl group-hover/fighter:bg-accent/30 transition-colors" />
+            <div className="relative size-20 md:size-24 rounded-full border-2 border-border overflow-hidden bg-surface flex items-center justify-center">
+              {a?.imageUrl ? (
+                <img src={a.imageUrl} alt={a.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="font-display text-2xl text-muted-foreground/30">
+                  {a?.name?.charAt(0) || "?"}
+                </div>
+              )}
             </div>
-          )}
+          </div>
+          <div className="min-w-0">
+            <div className={`font-display text-sm sm:text-lg uppercase leading-tight truncate px-1 ${a?.winner ? "text-accent" : ""}`}>
+              {a?.name || "TBD"}
+            </div>
+            {a && (a.wins !== null || a.losses !== null) && (
+              <div className="font-mono text-[9px] text-muted-foreground mt-0.5">
+                {a.wins ?? 0}-{a.losses ?? 0}-{a.draws ?? 0}
+              </div>
+            )}
+          </div>
         </div>
-        <div className="font-display text-accent text-base sm:text-lg shrink-0">VS</div>
-        <div className="text-left min-w-0">
-          <div className={`font-display text-base sm:text-xl uppercase leading-tight break-words ${b?.winner ? "text-accent" : ""}`}>
-            {b?.name || "TBD"}
-          </div>
-          {b && (b.wins !== null || b.losses !== null) && (
-            <div className="font-mono text-[10px] text-muted-foreground mt-1">
-              {b.wins ?? 0}-{b.losses ?? 0}-{b.draws ?? 0}
+
+        <div className="font-display text-accent text-xl sm:text-2xl shrink-0 italic tracking-tighter self-center mb-6">VS</div>
+
+        <div className="flex flex-col items-center text-center gap-2">
+          <div className="relative group/fighter">
+            <div className="absolute inset-0 bg-accent/20 rounded-full blur-xl group-hover/fighter:bg-accent/30 transition-colors" />
+            <div className="relative size-20 md:size-24 rounded-full border-2 border-border overflow-hidden bg-surface flex items-center justify-center">
+              {b?.imageUrl ? (
+                <img src={b.imageUrl} alt={b.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="font-display text-2xl text-muted-foreground/30">
+                  {b?.name?.charAt(0) || "?"}
+                </div>
+              )}
             </div>
-          )}
+          </div>
+          <div className="min-w-0">
+            <div className={`font-display text-sm sm:text-lg uppercase leading-tight truncate px-1 ${b?.winner ? "text-accent" : ""}`}>
+              {b?.name || "TBD"}
+            </div>
+            {b && (b.wins !== null || b.losses !== null) && (
+              <div className="font-mono text-[9px] text-muted-foreground mt-0.5">
+                {b.wins ?? 0}-{b.losses ?? 0}-{b.draws ?? 0}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
