@@ -11,7 +11,7 @@ export function UfcFighterImageManager() {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase.from("ufc_fighter_overrides").select("*").order("updated_at", { ascending: false });
+    const { data } = await supabase.from("ufc_fighter_overrides" as any).select("*").order("updated_at", { ascending: false });
     setOverrides(data || []);
     setLoading(false);
   };
@@ -20,7 +20,7 @@ export function UfcFighterImageManager() {
 
   const remove = async (name: string) => {
     if (!confirm(`Remove override for ${name}?`)) return;
-    const { error } = await supabase.from("ufc_fighter_overrides").delete().eq("fighter_name", name);
+    const { error } = await supabase.from("ufc_fighter_overrides" as any).delete().eq("fighter_name", name);
     if (error) alert(error.message);
     else load();
   };
@@ -122,7 +122,7 @@ function AddOverrideModal({ onClose, onSuccess }: { onClose: () => void, onSucce
     
     setBusy(true);
     try {
-      const { error } = await supabase.from("ufc_fighter_overrides").upsert({
+      const { error } = await supabase.from("ufc_fighter_overrides" as any).upsert({
         fighter_name: name.trim(),
         image_url: url.trim()
       });
