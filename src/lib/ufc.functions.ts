@@ -7,6 +7,7 @@ export type UfcFighter = {
   draws: number | null;
   winner: boolean;
   imageUrl: string | null;
+  ufcFallbackUrl?: string | null;
 };
 
 export type UfcFight = {
@@ -90,17 +91,19 @@ function cleanNum(v: number | null | undefined): number | null {
 
 function mapFighter(f: RawFighter | undefined): UfcFighter | null {
   if (!f) return null;
-  const name = [f.FirstName, f.LastName].map((x) => cleanStr(x ?? null)).filter(Boolean).join(" ").trim();
+  const first = cleanStr(f.FirstName) || "";
+  const last = cleanStr(f.LastName) || "";
+  const name = `${first} ${last}`.trim();
   if (!name) return null;
 
-  // Pattern: https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/{FighterId}.png
-  // Pattern 2: https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/thumbs/{FighterId}.png
-  // Pattern 3: Use the provided ImageUrl if available
-  // We use the https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/thumbs/{FighterId}.png
-  // as the primary URL because it is much more reliably populated than the full-res version.
+  // Primary: SportsDataIO S3 Thumbnails
+  // Secondary: UFC.com official image structure as a backup
+  const slug = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z-]/g, "");
+  const ufcOfficialUrl = `https://dmxg5wxfqgb4u.cloudfront.net/styles/fighter_stats_headshot/s3/image/fighter/profile/${slug}.png`;
+  
   const imageUrl = f.FighterId 
     ? `https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/thumbs/${f.FighterId}.png`
-    : null;
+    : ufcOfficialUrl;
 
   return {
     name,
@@ -109,6 +112,7 @@ function mapFighter(f: RawFighter | undefined): UfcFighter | null {
     draws: cleanNum(f.PreFightDraws ?? f.Draws ?? null),
     winner: Boolean(f.Winner),
     imageUrl,
+    ufcFallbackUrl: ufcOfficialUrl,
   };
 }
 
