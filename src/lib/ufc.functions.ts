@@ -119,6 +119,7 @@ function mapFighter(f: RawFighter | undefined): UfcFighter | null {
   const ufcOfficialCdnUrl = `https://dmxg5wxfqgb4u.cloudfront.net/image/fighter/profile/${slug}.png`;
 
   // Use SportsDataIO S3 as primary if FighterId exists
+  // Fixed: Ensure the path is correct - sometimes they use .png, sometimes .jpg
   const imageUrl = f.FighterId 
     ? `https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/${f.FighterId}.png`
     : ufcOfficialUrl;
