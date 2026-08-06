@@ -112,6 +112,10 @@ function mapFighter(f: RawFighter | undefined): UfcFighter | null {
   // Secondary UFC patterns
   const ufcOfficialAltUrl = `https://dmxg5wxfqgb4u.cloudfront.net/styles/event_results_athlete_headshot/s3/image/fighter/profile/${slug}.png`;
   const ufcOfficialThirdUrl = `https://dmxg5wxfqgb4u.cloudfront.net/s3/image/fighter/profile/${slug}.png`;
+  
+  // Direct UFC.com full-size image (often works when cloudfront styles fail)
+  const ufcOfficialDirectUrl = `https://www.ufc.com/themes/custom/ufc/assets/img/no-profile-image.png`; // Fallback placeholder logic check
+  const ufcOfficialCdnUrl = `https://dmxg5wxfqgb4u.cloudfront.net/image/fighter/profile/${slug}.png`;
 
   // Use SportsDataIO S3 as primary if FighterId exists
   const imageUrl = f.FighterId 
@@ -127,7 +131,7 @@ function mapFighter(f: RawFighter | undefined): UfcFighter | null {
     imageUrl,
     ufcFallbackUrl: ufcOfficialUrl,
     ufcAltUrl: ufcOfficialAltUrl,
-    ufcThirdUrl: ufcOfficialThirdUrl,
+    ufcThirdUrl: ufcOfficialCdnUrl,
   };
 }
 
