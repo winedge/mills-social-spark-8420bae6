@@ -92,13 +92,17 @@ function mapFighter(f: RawFighter | undefined): UfcFighter | null {
   if (!f) return null;
   const name = [f.FirstName, f.LastName].map((x) => cleanStr(x ?? null)).filter(Boolean).join(" ").trim();
   if (!name) return null;
+
+  // The SportsDataIO MMA API often uses "ImageUrl" or "FighterId" to resolve images.
+  // If f.ImageUrl is null, it might be because the endpoint doesn't provide it directly in the Event Detail.
+  // In some versions of the API, it's just "ImageUrl".
   return {
     name,
     wins: cleanNum(f.PreFightWins ?? f.Wins ?? null),
     losses: cleanNum(f.PreFightLosses ?? f.Losses ?? null),
     draws: cleanNum(f.PreFightDraws ?? f.Draws ?? null),
     winner: Boolean(f.Winner),
-    imageUrl: cleanStr(f.ImageUrl),
+    imageUrl: cleanStr(f.ImageUrl) || null,
   };
 }
 
