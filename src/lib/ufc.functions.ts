@@ -120,11 +120,11 @@ async function mapFighter(f: RawFighter | undefined): Promise<UfcFighter | null>
   const ufcOfficialCdnUrl = `https://dmxg5wxfqgb4u.cloudfront.net/image/fighter/profile/${slug}.png`;
 
   // Check for admin override first
-  const { data: override } = await supabase.from("ufc_fighter_overrides").select("image_url").eq("fighter_name", name).maybeSingle();
+  const { data: override } = await supabase.from("ufc_fighter_overrides" as any).select("image_url").eq("fighter_name", name).maybeSingle();
 
   // Use override if exists, otherwise SportsDataIO S3 as primary if FighterId exists
-  const imageUrl = override?.image_url 
-    ? override.image_url
+  const imageUrl = (override as any)?.image_url 
+    ? (override as any).image_url
     : (f.FighterId 
       ? `https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/${f.FighterId}.png`
       : ufcOfficialUrl);
