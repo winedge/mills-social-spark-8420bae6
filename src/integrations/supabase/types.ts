@@ -591,6 +591,27 @@ export type Database = {
         }
         Relationships: []
       }
+      ufc_fighter_overrides: {
+        Row: {
+          created_at: string
+          fighter_name: string
+          image_url: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fighter_name: string
+          image_url: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fighter_name?: string
+          image_url?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ufc_streamed_events: {
         Row: {
           created_at: string
