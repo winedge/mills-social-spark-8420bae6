@@ -169,11 +169,17 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
                   alt={a.name} 
                   className="w-full h-full object-cover" 
                   onError={(e) => {
-                    // If thumb fails, try high-res as a backup
                     const target = e.currentTarget;
-                    if (target.src.includes('/thumbs/')) {
+                    const ufcFallback = a.ufcFallbackUrl;
+                    
+                    if (target.src.includes('sportsdata-images') && target.src.includes('/thumbs/')) {
+                      // 1. Try high-res SportsDataIO
                       target.src = target.src.replace('/thumbs/', '/');
+                    } else if (target.src.includes('sportsdata-images') && ufcFallback) {
+                      // 2. Try official UFC.com CDN
+                      target.src = ufcFallback;
                     } else {
+                      // 3. Final fallback: Hide and show initials
                       target.style.display = 'none';
                       target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');
                     }
@@ -210,8 +216,12 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
                   className="w-full h-full object-cover" 
                   onError={(e) => {
                     const target = e.currentTarget;
-                    if (target.src.includes('/thumbs/')) {
+                    const ufcFallback = b.ufcFallbackUrl;
+                    
+                    if (target.src.includes('sportsdata-images') && target.src.includes('/thumbs/')) {
                       target.src = target.src.replace('/thumbs/', '/');
+                    } else if (target.src.includes('sportsdata-images') && ufcFallback) {
+                      target.src = ufcFallback;
                     } else {
                       target.style.display = 'none';
                       target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');

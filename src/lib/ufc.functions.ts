@@ -7,6 +7,7 @@ export type UfcFighter = {
   draws: number | null;
   winner: boolean;
   imageUrl: string | null;
+  ufcFallbackUrl?: string | null;
 };
 
 export type UfcFight = {
