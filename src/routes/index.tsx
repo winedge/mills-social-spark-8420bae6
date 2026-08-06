@@ -309,19 +309,29 @@ function Home() {
           </div>
         </div>
 
-        {/* Image Marquee Slider */}
-        <div className="mt-20 overflow-hidden relative border-y-2 border-border/50 bg-surface/30 py-4">
+        {/* Full-Width Image Marquee Slider */}
+        <div className="mt-20 overflow-hidden relative border-y border-accent/20 bg-black py-0">
           <div className="flex animate-marquee whitespace-nowrap">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="flex shrink-0 items-center gap-4 px-2">
-                <img 
-                  src={marqueeImagesAsset.url} 
-                  alt="Mill's Social Atmosphere" 
-                  className="h-48 md:h-64 lg:h-80 w-auto object-cover rounded-sm grayscale hover:grayscale-0 transition-all duration-500 cursor-pointer"
-                />
+              <div key={i} className="flex shrink-0 items-center">
+                <div className="relative group overflow-hidden">
+                  <img 
+                    src={marqueeImagesAsset.url} 
+                    alt="Mill's Social Atmosphere" 
+                    className="h-[300px] md:h-[400px] lg:h-[500px] w-auto object-cover transition-all duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-8">
+                    <span className="font-display text-2xl uppercase tracking-tighter text-white translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                      The Mill's Experience
+                    </span>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
+          
+          {/* Decorative frame overlay */}
+          <div className="absolute inset-0 pointer-events-none border-[12px] border-black/10 z-10" />
         </div>
       </section>
 
