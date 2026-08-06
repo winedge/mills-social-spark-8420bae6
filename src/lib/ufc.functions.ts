@@ -134,6 +134,8 @@ function parseTs(iso: string | null | undefined): number | null {
 
 async function fetchEventDetail(eventId: number, apiKey: string): Promise<RawEvent | null> {
   try {
+    // We use the Fight Detail endpoint because it's more likely to have FighterId and ImageUrl 
+    // populated correctly than the high-level Event endpoint.
     const res = await fetch(`${BASE}/Event/${eventId}?key=${apiKey}`, {
       headers: { Accept: "application/json" },
     });
