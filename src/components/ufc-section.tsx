@@ -174,16 +174,24 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
                     const ufcAlt = a.ufcAltUrl;
                     const ufcThird = a.ufcThirdUrl;
                     
+                    // Prevent infinite loops if the same URL fails twice
+                    if (target.dataset.failedUrls?.includes(target.src)) {
+                      target.style.display = 'none';
+                      target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');
+                      return;
+                    }
+                    target.dataset.failedUrls = (target.dataset.failedUrls || '') + target.src + '|';
+
                     if (target.src.includes('sportsdata-images') && !target.src.includes('/thumbs/')) {
                       // 1. Try thumbs SportsDataIO if full fails
                       target.src = target.src.replace('/fighters/', '/fighters/thumbs/');
-                    } else if (target.src.includes('sportsdata-images') && ufcFallback) {
+                    } else if (ufcFallback && !target.dataset.failedUrls.includes(ufcFallback)) {
                       // 2. Try official UFC.com primary
                       target.src = ufcFallback;
-                    } else if (target.src === ufcFallback && ufcAlt) {
+                    } else if (ufcAlt && !target.dataset.failedUrls.includes(ufcAlt)) {
                       // 3. Try official UFC.com secondary
                       target.src = ufcAlt;
-                    } else if (target.src === ufcAlt && ufcThird) {
+                    } else if (ufcThird && !target.dataset.failedUrls.includes(ufcThird)) {
                       // 4. Try official UFC.com third pattern
                       target.src = ufcThird;
                     } else {
@@ -228,13 +236,21 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
                     const ufcAlt = b.ufcAltUrl;
                     const ufcThird = b.ufcThirdUrl;
                     
+                    // Prevent infinite loops if the same URL fails twice
+                    if (target.dataset.failedUrls?.includes(target.src)) {
+                      target.style.display = 'none';
+                      target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');
+                      return;
+                    }
+                    target.dataset.failedUrls = (target.dataset.failedUrls || '') + target.src + '|';
+
                     if (target.src.includes('sportsdata-images') && !target.src.includes('/thumbs/')) {
                       target.src = target.src.replace('/fighters/', '/fighters/thumbs/');
-                    } else if (target.src.includes('sportsdata-images') && ufcFallback) {
+                    } else if (ufcFallback && !target.dataset.failedUrls.includes(ufcFallback)) {
                       target.src = ufcFallback;
-                    } else if (target.src === ufcFallback && ufcAlt) {
+                    } else if (ufcAlt && !target.dataset.failedUrls.includes(ufcAlt)) {
                       target.src = ufcAlt;
-                    } else if (target.src === ufcAlt && ufcThird) {
+                    } else if (ufcThird && !target.dataset.failedUrls.includes(ufcThird)) {
                       target.src = ufcThird;
                     } else {
                       target.style.display = 'none';
