@@ -171,15 +171,19 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
                   onError={(e) => {
                     const target = e.currentTarget;
                     const ufcFallback = a.ufcFallbackUrl;
+                    const ufcAlt = a.ufcAltUrl;
                     
                     if (target.src.includes('sportsdata-images') && target.src.includes('/thumbs/')) {
                       // 1. Try high-res SportsDataIO
                       target.src = target.src.replace('/thumbs/', '/');
                     } else if (target.src.includes('sportsdata-images') && ufcFallback) {
-                      // 2. Try official UFC.com CDN
+                      // 2. Try official UFC.com primary
                       target.src = ufcFallback;
+                    } else if (target.src === ufcFallback && ufcAlt) {
+                      // 3. Try official UFC.com secondary
+                      target.src = ufcAlt;
                     } else {
-                      // 3. Final fallback: Hide and show initials
+                      // 4. Final fallback: Hide and show initials
                       target.style.display = 'none';
                       target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');
                     }
@@ -217,11 +221,14 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
                   onError={(e) => {
                     const target = e.currentTarget;
                     const ufcFallback = b.ufcFallbackUrl;
+                    const ufcAlt = b.ufcAltUrl;
                     
                     if (target.src.includes('sportsdata-images') && target.src.includes('/thumbs/')) {
                       target.src = target.src.replace('/thumbs/', '/');
                     } else if (target.src.includes('sportsdata-images') && ufcFallback) {
                       target.src = ufcFallback;
+                    } else if (target.src === ufcFallback && ufcAlt) {
+                      target.src = ufcAlt;
                     } else {
                       target.style.display = 'none';
                       target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');

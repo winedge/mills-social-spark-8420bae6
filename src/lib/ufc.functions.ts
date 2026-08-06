@@ -8,6 +8,7 @@ export type UfcFighter = {
   winner: boolean;
   imageUrl: string | null;
   ufcFallbackUrl?: string | null;
+  ufcAltUrl?: string | null;
 };
 
 export type UfcFight = {
@@ -96,11 +97,20 @@ function mapFighter(f: RawFighter | undefined): UfcFighter | null {
   const name = `${first} ${last}`.trim();
   if (!name) return null;
 
-  // Primary: SportsDataIO S3 Thumbnails
-  // Secondary: UFC.com official image structure as a backup
-  const slug = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z-]/g, "");
+  // The slug for UFC.com images is strictly lowercase, no spaces, no special characters, just hyphens
+  // Example: "Mateusz Gamrot" -> "mateusz-gamrot"
+  const slug = name.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove accents
+    .replace(/[^a-z0-9]/g, "-") // replace non-alphanumeric with hyphen
+    .replace(/-+/g, "-") // collapse multiple hyphens
+    .replace(/^-|-$/g, ""); // trim hyphens
+    
   const ufcOfficialUrl = `https://dmxg5wxfqgb4u.cloudfront.net/styles/fighter_stats_headshot/s3/image/fighter/profile/${slug}.png`;
   
+  // We'll also try the secondary pattern UFC sometimes uses for profile shots
+  const ufcOfficialAltUrl = `https://dmxg5wxfqgb4u.cloudfront.net/styles/event_results_athlete_headshot/s3/image/fighter/profile/${slug}.png`;
+
+  // Use SportsDataIO S3 as primary if FighterId exists
   const imageUrl = f.FighterId 
     ? `https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/thumbs/${f.FighterId}.png`
     : ufcOfficialUrl;
@@ -113,6 +123,7 @@ function mapFighter(f: RawFighter | undefined): UfcFighter | null {
     winner: Boolean(f.Winner),
     imageUrl,
     ufcFallbackUrl: ufcOfficialUrl,
+    ufcAltUrl: ufcOfficialAltUrl,
   };
 }
 
