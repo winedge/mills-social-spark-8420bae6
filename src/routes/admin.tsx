@@ -13,6 +13,7 @@ import logo from "@/assets/mills-logo.png";
 import { estimateCalories } from "@/lib/menu-ai.functions";
 import { sendCustomerConfirmation } from "@/lib/notify.functions";
 import { AdminUfcSection } from "@/components/admin-ufc-section";
+import { UfcFighterImageManager } from "@/components/admin-ufc-image-manager";
 import { AdminNflSection } from "@/components/admin-nfl-section";
 import { getAnalytics, type AnalyticsStats } from "@/lib/analytics.functions";
 
@@ -234,7 +235,7 @@ function Dashboard({ email }: { email: string }) {
           {section === "categories" && <CategoriesSection />}
           {section === "party" && <PartySection />}
           {section === "sports" && <SportsSection />}
-          {section === "ufc" && <AdminUfcSection />}
+          {section === "ufc" && <UfcAdminWrapper />}
           {section === "nfl" && <AdminNflSection />}
           {section === "messages" && <MessagesSection />}
           {section === "subscribers" && <SubscribersSection />}

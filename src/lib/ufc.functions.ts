@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { supabase } from "@/integrations/supabase/client";
 
 export type UfcFighter = {
   name: string;
@@ -92,7 +93,7 @@ function cleanNum(v: number | null | undefined): number | null {
   return null;
 }
 
-function mapFighter(f: RawFighter | undefined): UfcFighter | null {
+async function mapFighter(f: RawFighter | undefined): Promise<UfcFighter | null> {
   if (!f) return null;
   const first = cleanStr(f.FirstName) || "";
   const last = cleanStr(f.LastName) || "";
@@ -118,11 +119,15 @@ function mapFighter(f: RawFighter | undefined): UfcFighter | null {
   const ufcOfficialDirectUrl = `https://www.ufc.com/themes/custom/ufc/assets/img/no-profile-image.png`; // Fallback placeholder logic check
   const ufcOfficialCdnUrl = `https://dmxg5wxfqgb4u.cloudfront.net/image/fighter/profile/${slug}.png`;
 
-  // Use SportsDataIO S3 as primary if FighterId exists
-  // Fixed: Ensure the path is correct - sometimes they use .png, sometimes .jpg
-  const imageUrl = f.FighterId 
-    ? `https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/${f.FighterId}.png`
-    : ufcOfficialUrl;
+  // Check for admin override first
+  const { data: override } = await supabase.from("ufc_fighter_overrides").select("image_url").eq("fighter_name", name).maybeSingle();
+
+  // Use override if exists, otherwise SportsDataIO S3 as primary if FighterId exists
+  const imageUrl = override?.image_url 
+    ? override.image_url
+    : (f.FighterId 
+      ? `https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/${f.FighterId}.png`
+      : ufcOfficialUrl);
 
   return {
     name,
@@ -138,7 +143,7 @@ function mapFighter(f: RawFighter | undefined): UfcFighter | null {
   };
 }
 
-function mapFight(fight: RawFight): UfcFight {
+async function mapFight(fight: RawFight): Promise<UfcFight> {
   return {
     fightId: fight.FightId,
     order: fight.Order ?? null,
@@ -146,8 +151,8 @@ function mapFight(fight: RawFight): UfcFight {
     weightClass: cleanStr(fight.WeightClass),
     cardSegment: cleanStr(fight.CardSegment),
     rounds: cleanNum(fight.Rounds),
-    fighterA: mapFighter(fight.Fighters?.[0]),
-    fighterB: mapFighter(fight.Fighters?.[1]),
+    fighterA: await mapFighter(fight.Fighters?.[0]),
+    fighterB: await mapFighter(fight.Fighters?.[1]),
     resultType: cleanStr(fight.ResultType),
     resultRound: cleanNum(fight.ResultRound),
   };
@@ -174,8 +179,8 @@ async function fetchEventDetail(eventId: number, apiKey: string): Promise<RawEve
   }
 }
 
-function mapEvent(raw: RawEvent): UfcEvent {
-  const fights = (raw.Fights ?? []).map(mapFight);
+async function mapEvent(raw: RawEvent): Promise<UfcEvent> {
+  const fights = await Promise.all((raw.Fights ?? []).map(mapFight));
   const byOrder = [...fights].sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
   const mainEvent =
     fights.find((f) => (f.cardSegment || "").toLowerCase() === "main event") ||
@@ -261,10 +266,10 @@ export const getUfcFights = createServerFn({ method: "GET" }).handler(async (): 
     const sources = [...liveRaw, ...upcomingRaw, ...recentRaw];
     const details = await Promise.all(sources.map(({ e }) => fetchEventDetail(e.EventId, apiKey)));
 
-    const events = details.map((raw, i) => {
+    const events = await Promise.all(details.map(async (raw, i) => {
       const source = sources[i].e;
-      return raw ? mapEvent({ ...source, ...raw }) : mapEvent(source);
-    });
+      return raw ? await mapEvent({ ...source, ...raw }) : await mapEvent(source);
+    }));
 
     return {
       live: events.slice(0, liveRaw.length),
