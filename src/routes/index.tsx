@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 
 import heroBar from "@/assets/hero-bar.jpg";
 import heroVideo from "@/assets/hero-loop.mp4.asset.json";
+import marqueeImagesAsset from "@/assets/marquee-images.png.asset.json";
 
 /** Absolute so the default hero video also resolves on self-hosted domains. */
 const DEFAULT_HERO_VIDEO = `https://mills-social-spark.lovable.app${heroVideo.url}`;
@@ -305,6 +306,21 @@ function Home() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Image Marquee Slider */}
+        <div className="mt-20 overflow-hidden relative border-y-2 border-border/50 bg-surface/30 py-4">
+          <div className="flex animate-marquee whitespace-nowrap">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="flex shrink-0 items-center gap-4 px-2">
+                <img 
+                  src={marqueeImagesAsset.url} 
+                  alt="Mill's Social Atmosphere" 
+                  className="h-48 md:h-64 lg:h-80 w-auto object-cover rounded-sm grayscale hover:grayscale-0 transition-all duration-500 cursor-pointer"
+                />
+              </div>
+            ))}
           </div>
         </div>
       </section>
