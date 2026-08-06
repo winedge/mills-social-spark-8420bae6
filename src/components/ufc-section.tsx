@@ -174,13 +174,20 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
                     const ufcAlt = a.ufcAltUrl;
                     const ufcThird = a.ufcThirdUrl;
                     
+                    // Initialize failedUrls if missing
+                    if (!target.dataset.failedUrls) target.dataset.failedUrls = '';
+
                     // Prevent infinite loops if the same URL fails twice
-                    if (target.dataset.failedUrls?.includes(target.src)) {
-                      target.style.display = 'none';
-                      target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');
-                      return;
+                    if (target.dataset.failedUrls.includes(target.src)) {
+                      // If we've tried everything, show initials
+                      if (target.dataset.failedUrls.includes('espn-tried')) {
+                        target.style.display = 'none';
+                        target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');
+                        return;
+                      }
+                    } else {
+                      target.dataset.failedUrls += target.src + '|';
                     }
-                    target.dataset.failedUrls = (target.dataset.failedUrls || '') + target.src + '|';
 
                     if (target.src.includes('sportsdata-images') && !target.src.includes('/thumbs/')) {
                       // 1. Try thumbs SportsDataIO if full fails
@@ -194,20 +201,25 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
                     } else if (ufcThird && !target.dataset.failedUrls.includes(ufcThird)) {
                       // 4. Try official UFC.com third pattern
                       target.src = ufcThird;
-                    } else {
+                    } else if (!target.dataset.failedUrls.includes('espn-tried')) {
                       // 5. Try ESPN Search/Headshot
+                      target.dataset.failedUrls += 'espn-tried|';
                       try {
                         const searchRes = await fetch(`https://site.api.espn.com/apis/common/v3/search?query=${encodeURIComponent(a.name)}&type=athlete`);
                         const data = await searchRes.json();
+                        // ESPN's search response structure for athletes
                         const athlete = data.results?.[0]?.contents?.[0]?.items?.[0];
                         if (athlete?.id) {
                           target.src = `https://a.espncdn.com/i/headshots/mma/players/full/${athlete.id}.png`;
-                          return;
+                        } else {
+                          throw new Error("No athlete ID found");
                         }
                       } catch (err) {
-                        console.error("ESPN fallback failed", err);
+                        console.error("ESPN fallback failed for", a.name, err);
+                        target.style.display = 'none';
+                        target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');
                       }
-                      
+                    } else {
                       // Final fallback: Hide and show initials
                       target.style.display = 'none';
                       target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');
@@ -249,13 +261,20 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
                     const ufcAlt = b.ufcAltUrl;
                     const ufcThird = b.ufcThirdUrl;
                     
+                    // Initialize failedUrls if missing
+                    if (!target.dataset.failedUrls) target.dataset.failedUrls = '';
+
                     // Prevent infinite loops if the same URL fails twice
-                    if (target.dataset.failedUrls?.includes(target.src)) {
-                      target.style.display = 'none';
-                      target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');
-                      return;
+                    if (target.dataset.failedUrls.includes(target.src)) {
+                      // If we've tried everything, show initials
+                      if (target.dataset.failedUrls.includes('espn-tried')) {
+                        target.style.display = 'none';
+                        target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');
+                        return;
+                      }
+                    } else {
+                      target.dataset.failedUrls += target.src + '|';
                     }
-                    target.dataset.failedUrls = (target.dataset.failedUrls || '') + target.src + '|';
 
                     if (target.src.includes('sportsdata-images') && !target.src.includes('/thumbs/')) {
                       target.src = target.src.replace('/fighters/', '/fighters/thumbs/');
@@ -265,20 +284,24 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
                       target.src = ufcAlt;
                     } else if (ufcThird && !target.dataset.failedUrls.includes(ufcThird)) {
                       target.src = ufcThird;
-                    } else {
+                    } else if (!target.dataset.failedUrls.includes('espn-tried')) {
                       // 5. Try ESPN Search/Headshot
+                      target.dataset.failedUrls += 'espn-tried|';
                       try {
                         const searchRes = await fetch(`https://site.api.espn.com/apis/common/v3/search?query=${encodeURIComponent(b.name)}&type=athlete`);
                         const data = await searchRes.json();
                         const athlete = data.results?.[0]?.contents?.[0]?.items?.[0];
                         if (athlete?.id) {
                           target.src = `https://a.espncdn.com/i/headshots/mma/players/full/${athlete.id}.png`;
-                          return;
+                        } else {
+                          throw new Error("No athlete ID found");
                         }
                       } catch (err) {
-                        console.error("ESPN fallback failed", err);
+                        console.error("ESPN fallback failed for", b.name, err);
+                        target.style.display = 'none';
+                        target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');
                       }
-
+                    } else {
                       target.style.display = 'none';
                       target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');
                     }
