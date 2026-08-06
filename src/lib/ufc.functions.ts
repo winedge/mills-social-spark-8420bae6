@@ -6,6 +6,7 @@ export type UfcFighter = {
   losses: number | null;
   draws: number | null;
   winner: boolean;
+  imageUrl: string | null;
 };
 
 export type UfcFight = {
@@ -42,6 +43,7 @@ type RawFighter = {
   Losses?: number | null;
   Draws?: number | null;
   Winner?: boolean | null;
+  ImageUrl?: string | null;
 };
 
 type RawFight = {
@@ -96,6 +98,7 @@ function mapFighter(f: RawFighter | undefined): UfcFighter | null {
     losses: cleanNum(f.PreFightLosses ?? f.Losses ?? null),
     draws: cleanNum(f.PreFightDraws ?? f.Draws ?? null),
     winner: Boolean(f.Winner),
+    imageUrl: cleanStr(f.ImageUrl),
   };
 }
 
