@@ -169,10 +169,10 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
                   alt={a.name} 
                   className="w-full h-full object-cover" 
                   onError={(e) => {
-                    // Try thumbnail fallback if main image fails
+                    // If thumb fails, try high-res as a backup
                     const target = e.currentTarget;
-                    if (!target.src.includes('/thumbs/')) {
-                      target.src = target.src.replace('/fighters/', '/fighters/thumbs/');
+                    if (target.src.includes('/thumbs/')) {
+                      target.src = target.src.replace('/thumbs/', '/');
                     } else {
                       target.style.display = 'none';
                       target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');
@@ -210,8 +210,8 @@ function EventCard({ event, live }: { event: UfcEvent; live?: boolean }) {
                   className="w-full h-full object-cover" 
                   onError={(e) => {
                     const target = e.currentTarget;
-                    if (!target.src.includes('/thumbs/')) {
-                      target.src = target.src.replace('/fighters/', '/fighters/thumbs/');
+                    if (target.src.includes('/thumbs/')) {
+                      target.src = target.src.replace('/thumbs/', '/');
                     } else {
                       target.style.display = 'none';
                       target.parentElement?.querySelector('.fallback-initial')?.classList.remove('hidden');

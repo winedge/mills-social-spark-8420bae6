@@ -96,8 +96,10 @@ function mapFighter(f: RawFighter | undefined): UfcFighter | null {
   // Pattern: https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/{FighterId}.png
   // Pattern 2: https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/thumbs/{FighterId}.png
   // Pattern 3: Use the provided ImageUrl if available
+  // We use the https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/thumbs/{FighterId}.png
+  // as the primary URL because it is much more reliably populated than the full-res version.
   const imageUrl = f.FighterId 
-    ? `https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/${f.FighterId}.png`
+    ? `https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/thumbs/${f.FighterId}.png`
     : null;
 
   return {
