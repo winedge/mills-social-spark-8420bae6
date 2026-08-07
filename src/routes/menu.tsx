@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useMemo, useState, useEffect } from "react";
-import { Search, SlidersHorizontal, X, ChevronRight, Maximize2 } from "lucide-react";
+import { Search, SlidersHorizontal, X, ChevronRight, Maximize2, Info } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { useMenuItems, useMenuCategories, useDailySpecials, type DbMenuCategory } from "@/lib/content";
