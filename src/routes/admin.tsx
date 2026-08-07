@@ -30,7 +30,7 @@ export const Route = createFileRoute("/admin")({
 type Section =
   | "overview" | "reservations" | "spaces" | "menu" | "categories"
   | "party" | "sports" | "ufc" | "nfl" | "specials" | "pulse" | "marquee"
-  | "messages" | "subscribers" | "contactinfo" | "settings";
+  | "messages" | "subscribers" | "contactinfo" | "settings" | "careers" | "applications";
 
 type NavItem = { id: Section; label: string; icon: any };
 type NavGroup = { label: string; icon: any; children: NavItem[] };
