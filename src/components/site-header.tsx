@@ -58,21 +58,6 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
                 className="h-10 md:h-16 w-auto object-contain"
               />
             </Link>
-            
-            <div className="hidden lg:flex items-center gap-4 pl-6 border-l border-border/50">
-              {socialLinks.map((s) => (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-muted-foreground hover:text-accent transition-colors"
-                  aria-label={s.label}
-                >
-                  <s.icon className="size-4" />
-                </a>
-              ))}
-            </div>
           </div>
           <div className="hidden md:flex items-center gap-8 text-[17px] font-semibold uppercase tracking-widest md:justify-self-center">
             {navLinks.map((l) => (
@@ -87,14 +72,19 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
               </Link>
             ))}
           </div>
-          <div className="hidden md:flex md:justify-self-end">
-            <button
-              type="button"
-              onClick={() => openReservation()}
-              className="bg-primary text-primary-foreground px-7 py-3.5 text-sm font-bold uppercase tracking-widest hover:bg-accent transition-colors"
-            >
-              Reserve A Table
-            </button>
+          <div className="hidden md:flex md:justify-self-end items-center gap-4">
+            {socialLinks.map((s) => (
+              <a
+                key={s.label}
+                href={s.href}
+                target="_blank"
+                rel="noreferrer"
+                className="text-muted-foreground hover:text-accent transition-colors"
+                aria-label={s.label}
+              >
+                <s.icon className="size-5" />
+              </a>
+            ))}
           </div>
 
 
