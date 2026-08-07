@@ -668,7 +668,7 @@ function MenuSection() {
         ]} />
         <button onClick={() => setEditing({
           id: "", name: "", description: "", price: "", calories: null,
-          category: "", category_id: null, tag: null, sort_order: 0, active: true,
+          category: "", category_id: null, tag: null, image_url: null, sort_order: 0, active: true,
         })}
           className="ml-auto inline-flex items-center gap-2 px-4 h-10 bg-accent text-primary-foreground text-xs font-bold uppercase tracking-widest hover:brightness-110">
           <Plus className="size-3.5" /> Add item
