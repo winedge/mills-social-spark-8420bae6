@@ -697,26 +697,24 @@ function MenuPage() {
                       </div>
                       <div className="flex-1 min-w-0 flex flex-col justify-between">
                         <div>
-                          <div className="flex flex-col gap-1.5 mb-1.5">
-                            {i.tag && (
-                              <div className="flex">
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <button className="flex items-center justify-center size-5 rounded-full border border-accent/40 text-accent hover:bg-accent hover:text-primary-foreground transition-colors">
-                                        <Info className="size-3" />
-                                      </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="right" className="bg-surface border border-border text-foreground font-mono text-[10px] uppercase tracking-widest">
-                                      {i.tag}
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </div>
-                            )}
+                          <div className="flex flex-wrap items-center gap-2 mb-1.5">
                             <h3 className="font-display text-lg md:text-xl uppercase tracking-wide group-hover:text-accent transition-colors">
                               {i.name}
                             </h3>
+                            {i.tag && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button className="flex items-center justify-center size-5 rounded-full border border-accent/40 text-accent hover:bg-accent hover:text-primary-foreground transition-colors shrink-0">
+                                      <Info className="size-3" />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="bg-surface border border-border text-foreground font-mono text-[10px] uppercase tracking-widest">
+                                    {i.tag}
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
                           </div>
                           <p className="text-[13px] leading-relaxed text-muted-foreground line-clamp-2 md:line-clamp-none text-pretty">
                             {i.description}
@@ -794,26 +792,24 @@ function DailySpecialsStrip() {
 
               {/* Info bottom */}
               <div className="p-5 flex flex-col flex-1">
-                <div className="flex flex-col gap-1.5 mb-2">
-                  {s.badge && (
-                    <div className="flex">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button className="flex items-center justify-center size-5 rounded-full border border-accent/40 text-accent hover:bg-accent hover:text-primary-foreground transition-colors">
-                              <Info className="size-3" />
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent side="right" className="bg-surface border border-border text-foreground font-mono text-[10px] uppercase tracking-widest">
-                            {s.badge}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  )}
+                <div className="flex flex-wrap items-center gap-2 mb-2">
                   <h3 className="font-display text-xl uppercase group-hover:text-accent transition-colors">
                     {s.title}
                   </h3>
+                  {s.badge && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button className="flex items-center justify-center size-5 rounded-full border border-accent/40 text-accent hover:bg-accent hover:text-primary-foreground transition-colors shrink-0">
+                            <Info className="size-3" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="right" className="bg-surface border border-border text-foreground font-mono text-[10px] uppercase tracking-widest">
+                          {s.badge}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed">{s.description}</p>
                 {s.price && (
