@@ -190,7 +190,8 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
                   href={s.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-muted-foreground hover:text-accent transition-colors"
+                  className="text-muted-foreground hover:brightness-125 transition-all duration-300"
+                  style={{ color: s.color }}
                 >
                   <s.icon className="size-6" />
                 </a>
