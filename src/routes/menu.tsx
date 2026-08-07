@@ -690,23 +690,25 @@ function MenuPage() {
                       </div>
                       <div className="flex-1 min-w-0 flex flex-col justify-between">
                         <div>
-                          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                          <div className="flex flex-col gap-1.5 mb-1.5">
+                            {i.tag && (
+                              <div className="flex">
+                                <span
+                                  className={`font-mono text-[10px] uppercase tracking-widest px-2 py-0.5 border ${
+                                    i.tag === "Spicy"
+                                      ? "border-red-500/40 text-red-400"
+                                      : i.tag === "New"
+                                      ? "border-accent text-accent"
+                                      : "border-foreground/20 text-muted-foreground"
+                                  }`}
+                                >
+                                  {i.tag}
+                                </span>
+                              </div>
+                            )}
                             <h3 className="font-display text-lg md:text-xl uppercase tracking-wide group-hover:text-accent transition-colors">
                               {i.name}
                             </h3>
-                            {i.tag && (
-                              <span
-                                className={`font-mono text-[10px] uppercase tracking-widest px-2 py-0.5 border ${
-                                  i.tag === "Spicy"
-                                    ? "border-red-500/40 text-red-400"
-                                    : i.tag === "New"
-                                    ? "border-accent text-accent"
-                                    : "border-foreground/20 text-muted-foreground"
-                                }`}
-                              >
-                                {i.tag}
-                              </span>
-                            )}
                           </div>
                           <p className="text-[13px] leading-relaxed text-muted-foreground line-clamp-2 md:line-clamp-none text-pretty">
                             {i.description}
