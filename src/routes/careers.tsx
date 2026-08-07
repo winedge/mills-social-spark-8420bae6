@@ -93,8 +93,8 @@ function CareersPage() {
             email: formData.get("email") as string,
             phone: formData.get("phone") as string,
             jobTitle: targetJobId ? (jobs.find((j: any) => j.id === targetJobId)?.title || "Unknown Position") : "General Application",
-
             resumeUrl: resumeUrl,
+
             message: formData.get("message") as string,
           }
         });
