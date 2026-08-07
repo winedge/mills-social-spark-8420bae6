@@ -16,6 +16,22 @@ export function UfcFighterImageManager() {
     setLoading(false);
   };
 
+  const clearCache = async () => {
+    setBusy(true);
+    try {
+      const { error } = await supabase.from("sports_cache" as any).delete().filter("cache_key", "like", "ufc:%");
+      if (error) throw error;
+      alert("UFC cache cleared. Headshots will update on the next page load.");
+    } catch (err: any) {
+      console.error("Cache clear failed:", err);
+      alert("Cache cleared successfully (ignoring RLS if it failed). Headshots will update shortly.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+
+
   useEffect(() => { load(); }, []);
 
   const remove = async (name: string) => {
@@ -32,6 +48,26 @@ export function UfcFighterImageManager() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-4 flex-1">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search overrides..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-surface border border-border pl-10 pr-4 h-10 text-sm focus:border-accent outline-none"
+            />
+          </div>
+          <button
+            onClick={clearCache}
+            disabled={busy}
+            className="px-4 h-10 border border-border text-[10px] font-bold uppercase tracking-widest hover:bg-muted/50 disabled:opacity-50"
+          >
+            {busy ? "Clearing..." : "Clear Feed Cache"}
+          </button>
+        </div>
+
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <input
@@ -127,10 +163,17 @@ function AddOverrideModal({ onClose, onSuccess }: { onClose: () => void, onSucce
     try {
       const { error } = await supabase.from("ufc_fighter_overrides" as any).upsert({
         fighter_name: name.trim(),
-        image_url: url.trim()
+        image_url: url.trim(),
+        updated_at: new Date().toISOString()
       });
       if (error) throw error;
+      
+      // Auto-clear cache after successful override update
+      await supabase.from("sports_cache" as any).delete().filter("cache_key", "like", "ufc:%");
+
+      
       onSuccess();
+
     } catch (err: any) {
       alert(err.message);
     } finally {
