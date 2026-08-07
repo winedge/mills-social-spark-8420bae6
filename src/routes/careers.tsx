@@ -6,6 +6,9 @@ import { useJobListings, type DbJobListing } from "@/lib/content";
 import { supabase } from "@/integrations/supabase/client";
 import { Briefcase, MapPin, Clock, Send, CheckCircle2, Loader2, Users, Heart, Star, Upload, FileText, X as CloseIcon } from "lucide-react";
 import { toast } from "sonner";
+import { submitCareerApplication } from "@/lib/careers.functions";
+import { useServerFn } from "@tanstack/react-start";
+
 import WarpText from "@/components/ui/warp-text";
 
 
@@ -24,6 +27,8 @@ function CareersPage() {
   const [selectedJob, setSelectedJob] = useState<DbJobListing | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const notifyAdmin = useServerFn(submitCareerApplication);
+
 
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -80,9 +85,27 @@ function CareersPage() {
 
       if (error) throw error;
       
+      // Notify admin via server function
+      try {
+        await notifyAdmin({
+          data: {
+            fullName: formData.get("fullName") as string,
+            email: formData.get("email") as string,
+            phone: formData.get("phone") as string,
+            jobTitle: targetJobId ? (jobs.find(j => j.id === targetJobId)?.title || "Unknown Position") : "General Application",
+            resumeUrl: resumeUrl,
+            message: formData.get("message") as string,
+          }
+        });
+      } catch (notifyErr) {
+        console.error("Admin notification error:", notifyErr);
+        // Don't fail the user submission if just the notification fails
+      }
+
       setSubmitted(true);
       setResumeFile(null);
       toast.success("Application submitted successfully!");
+
     } catch (err) {
       console.error(err);
       toast.error("Failed to submit application. Please try again.");
