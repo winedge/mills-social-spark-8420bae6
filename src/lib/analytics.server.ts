@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin } from "../integrations/supabase/client.server";
 
 export async function logPageView(path: string, referrer?: string, userAgent?: string, sessionId?: string) {
   if (!sessionId) return;
@@ -22,8 +22,8 @@ export async function notifyAdminAction(title: string, details: string) {
     .eq("id", 1)
     .maybeSingle();
 
-  const email = settings?.notification_email;
-  const whatsapp = settings?.whatsapp_number?.replace(/[^\d]/g, "");
+  const email = (settings as any)?.notification_email;
+  const whatsapp = (settings as any)?.whatsapp_number?.replace(/[^\d]/g, "");
 
   if (email) {
     try {
