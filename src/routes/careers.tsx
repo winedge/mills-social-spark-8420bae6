@@ -96,7 +96,7 @@ function CareersPage() {
       <SiteHeader showTicker={false} />
 
       {/* Hero / Why Join Section */}
-      <section className="relative pt-16 pb-12 px-6 overflow-hidden border-b border-border">
+      <section className="relative pt-8 pb-6 px-6 overflow-hidden border-b border-border">
         <div className="absolute inset-0 pointer-events-none opacity-20">
             <div className="absolute top-0 right-0 w-96 h-96 bg-accent/20 blur-[120px] rounded-full" />
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/10 blur-[120px] rounded-full" />
