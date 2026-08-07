@@ -277,7 +277,7 @@ function MenuPage() {
         <span className="font-mono text-accent text-xs tracking-[0.3em] block mb-4">
           KITCHEN · BAR · DRAFTS
         </span>
-        <h1 className="font-display text-5xl md:text-8xl uppercase leading-[0.9] mb-6">
+        <h1 className="font-display text-5xl md:text-8xl lg:text-9xl uppercase leading-[0.9] mb-6 whitespace-nowrap overflow-hidden text-ellipsis">
           The <span className="text-accent">Menu</span>
         </h1>
         <p className="text-muted-foreground max-w-xl text-pretty">
