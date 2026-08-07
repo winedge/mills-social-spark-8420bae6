@@ -18,6 +18,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 
 const calorieRanges = [
   { id: "all", label: "All Calories", min: 0, max: Infinity },
@@ -693,17 +700,18 @@ function MenuPage() {
                           <div className="flex flex-col gap-1.5 mb-1.5">
                             {i.tag && (
                               <div className="flex">
-                                <span
-                                  className={`font-mono text-[10px] uppercase tracking-widest px-2 py-0.5 border ${
-                                    i.tag === "Spicy"
-                                      ? "border-red-500/40 text-red-400"
-                                      : i.tag === "New"
-                                      ? "border-accent text-accent"
-                                      : "border-foreground/20 text-muted-foreground"
-                                  }`}
-                                >
-                                  {i.tag}
-                                </span>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button className="flex items-center justify-center size-5 rounded-full border border-accent/40 text-accent hover:bg-accent hover:text-primary-foreground transition-colors">
+                                        <Info className="size-3" />
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="right" className="bg-surface border border-border text-foreground font-mono text-[10px] uppercase tracking-widest">
+                                      {i.tag}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
                               </div>
                             )}
                             <h3 className="font-display text-lg md:text-xl uppercase tracking-wide group-hover:text-accent transition-colors">
@@ -789,9 +797,18 @@ function DailySpecialsStrip() {
                 <div className="flex flex-col gap-1.5 mb-2">
                   {s.badge && (
                     <div className="flex">
-                      <span className="font-mono text-[10px] tracking-widest border border-accent/50 text-accent px-2 py-0.5 uppercase">
-                        {s.badge}
-                      </span>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button className="flex items-center justify-center size-5 rounded-full border border-accent/40 text-accent hover:bg-accent hover:text-primary-foreground transition-colors">
+                              <Info className="size-3" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="bg-surface border border-border text-foreground font-mono text-[10px] uppercase tracking-widest">
+                            {s.badge}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   )}
                   <h3 className="font-display text-xl uppercase group-hover:text-accent transition-colors">
