@@ -66,7 +66,8 @@ function ContactPage() {
       value: `${contact?.hours_weekday ?? "SUN–THU · 11AM – 12AM"}\n${contact?.hours_weekend ?? "FRI–SAT · 11AM – 2AM"}`,
     },
     { icon: Phone, label: "Phone", value: contact?.phone ?? "(480) 555-0142" },
-    { icon: Mail, label: "Email", value: contact?.email ?? "hello@millsmodernsocial.com" },
+    { icon: Mail, label: "Email", value: contact?.email ?? "info@millsmodernsocial.com" },
+    { icon: Mail, label: "Parties", value: "party@millsmodernsocial.com" },
   ];
 
   return (

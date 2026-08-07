@@ -65,7 +65,7 @@ export function formatTableConfirmation(r: TableBooking): string {
     `📅 ${r.date}  •  🕒 ${r.time}`,
     `👥 ${r.party_size} guests`,
     "",
-    "📍 Mill Ave & Broadway, Tempe, AZ",
+    "📍 83 E Broadway Rd, Tempe, AZ",
     "Reply to this message if anything changes. See you soon!",
   ].join("\n");
 }

@@ -167,7 +167,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
               Book a Table
             </button>
             <p className="font-mono text-[10px] text-muted-foreground text-center uppercase tracking-widest">
-              Mill Ave &amp; Broadway · Tempe, AZ
+              83 E Broadway Rd · Tempe, AZ
             </p>
           </div>
         </div>

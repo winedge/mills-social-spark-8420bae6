@@ -237,7 +237,7 @@ export function ReservationModal() {
                 {status === "submitting" ? "Reserving…" : "Confirm Reservation"}
               </button>
               <p className="text-center font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
-                Mill Ave &amp; Broadway · Tempe, AZ
+                83 E Broadway Rd · Tempe, AZ
               </p>
             </form>
 
