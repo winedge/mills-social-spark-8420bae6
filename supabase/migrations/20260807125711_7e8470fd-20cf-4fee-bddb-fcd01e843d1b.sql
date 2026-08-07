@@ -1,0 +1,3 @@
+CREATE POLICY "Public read fighter headshots" ON storage.objects FOR SELECT TO anon, authenticated USING (bucket_id = 'site_assets' AND (storage.foldername(name))[1] = 'fighters');
+UPDATE public.ufc_fighter_overrides SET image_url = 'storage://site_assets/' || split_part(image_url, '/storage/v1/object/public/site_assets/', 2) WHERE image_url LIKE '%/storage/v1/object/public/site_assets/%';
+DELETE FROM public.sports_cache WHERE cache_key LIKE 'ufc:%';
