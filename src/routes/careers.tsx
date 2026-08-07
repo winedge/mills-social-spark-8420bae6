@@ -110,8 +110,9 @@ function CareersPage() {
             <div className="mb-8">
               <WarpText
                 text="WORK WITH US"
-                color="#38bdf8"
+                color="#ffffff"
                 warpStrength={0.08}
+
                 warpScale={1.7}
                 speed={0.55}
                 pointerInfluence={0.42}
