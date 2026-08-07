@@ -1,8 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Instagram, Facebook, Twitter, Music2 } from "lucide-react";
 import millsLogo from "@/assets/mills-logo.png";
 import { openReservation } from "@/components/reservation-modal";
+import { useContactInfo } from "@/lib/content";
 
 const tickerItems = [
   "LIVE: SUNS @ BUCKS · Q3 84-79",
