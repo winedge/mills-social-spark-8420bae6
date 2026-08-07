@@ -119,7 +119,7 @@ async function applyCurrentFighterOverrides(data: {
     .select("fighter_name,image_url");
   const overrides = new Map<string, string>();
   await Promise.all(
-    ((rows ?? []) as { fighter_name: string; image_url: string }[]).map(async (row) => {
+    ((rows ?? []) as unknown as { fighter_name: string; image_url: string }[]).map(async (row) => {
       overrides.set(row.fighter_name.trim().toLowerCase(), await resolveOverrideUrl(row.image_url));
     }),
   );
