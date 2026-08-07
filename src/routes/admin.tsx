@@ -2161,27 +2161,36 @@ function CareersSection() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4">
-        {rows.map((r) => (
-          <div key={r.id} className={`p-6 border bg-surface/40 flex flex-wrap items-start justify-between gap-4 ${r.is_active ? "border-border" : "border-dashed opacity-60"}`}>
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h4 className="font-display text-2xl uppercase tracking-tight">{r.title}</h4>
-                {!r.is_active && <span className="font-mono text-[9px] bg-muted px-1.5 py-0.5">INACTIVE</span>}
-              </div>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
-                <span>{r.department}</span>
-                <span>{r.type}</span>
-                <span>{r.location}</span>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => setEditing(r)} className="p-2 border border-border hover:border-accent hover:text-accent transition-colors"><Pencil className="size-4" /></button>
-              <button onClick={() => remove(r.id)} className="p-2 border border-border hover:border-red-500 hover:text-red-500 transition-colors"><Trash2 className="size-4" /></button>
-            </div>
-          </div>
-        ))}
+      <div className="border border-border overflow-x-auto bg-surface/40">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/30 text-[10px] uppercase tracking-widest font-mono text-muted-foreground">
+            <tr>
+              <th className="text-left px-4 py-3">Position</th>
+              <th className="text-left px-4 py-3">Dept</th>
+              <th className="text-left px-4 py-3">Type</th>
+              <th className="text-left px-4 py-3 text-center">Active</th>
+              <th className="text-right px-4 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.id} className={`border-t border-border ${!r.is_active ? "opacity-60" : ""}`}>
+                <td className="px-4 py-3 font-medium uppercase">{r.title}</td>
+                <td className="px-4 py-3 font-mono text-[10px] text-muted-foreground uppercase">{r.department}</td>
+                <td className="px-4 py-3 font-mono text-[10px] text-muted-foreground uppercase">{r.type}</td>
+                <td className="px-4 py-3 text-center">
+                  <span className={`inline-block w-2 h-2 rounded-full ${r.is_active ? "bg-green-500" : "bg-muted"}`} />
+                </td>
+                <td className="px-4 py-3 text-right space-x-1">
+                  <button onClick={() => setEditing(r)} className="p-1.5 border border-border hover:border-accent hover:text-accent transition-colors"><Pencil className="size-3.5" /></button>
+                  <button onClick={() => remove(r.id)} className="p-1.5 border border-border hover:border-red-500 hover:text-red-500 transition-colors"><Trash2 className="size-3.5" /></button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
+
     </div>
   );
 }
