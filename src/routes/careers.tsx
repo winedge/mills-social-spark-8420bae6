@@ -23,21 +23,21 @@ function CareersPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>, jobId?: string) => {
     e.preventDefault();
-    if (!selectedJob) return;
+    const targetJobId = jobId || selectedJob?.id;
 
     setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
     
     try {
       const { error } = await supabase.from("job_applications").insert({
-        job_id: selectedJob.id,
+        job_id: targetJobId || null,
         full_name: formData.get("fullName") as string,
         email: formData.get("email") as string,
         phone: formData.get("phone") as string,
         cover_letter: formData.get("message") as string,
-        // Resume upload would go here in a full implementation with storage
+        resume_url: formData.get("resumeUrl") as string,
         status: "pending",
       });
 
