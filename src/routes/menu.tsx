@@ -1,11 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
-import { useMemo, useState } from "react";
-import { Search, SlidersHorizontal, X, ChevronRight } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { Search, SlidersHorizontal, X, ChevronRight, Maximize2 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { useMenuItems, useMenuCategories, useDailySpecials, type DbMenuCategory } from "@/lib/content";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Sheet,
   SheetContent,
@@ -644,22 +649,44 @@ function MenuPage() {
                       className="group flex gap-4 pb-6 border-b border-border/60"
                     >
                       <div className="shrink-0">
-                        <div className="size-20 md:size-24 bg-surface border border-border overflow-hidden relative">
-                          {i.image_url ? (
-                            <img
-                              src={i.image_url}
-                              alt={i.name}
-                              loading="lazy"
-                              className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center bg-accent/[0.03]">
-                              <span className="font-display text-2xl text-accent/20 uppercase">
-                                {i.name.slice(0, 1)}
-                              </span>
-                            </div>
-                          )}
-                        </div>
+                        {i.image_url ? (
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <button className="size-20 md:size-24 bg-surface border border-border overflow-hidden relative group/img cursor-zoom-in">
+                                <img
+                                  src={i.image_url}
+                                  alt={i.name}
+                                  loading="lazy"
+                                  className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover/img:scale-110"
+                                />
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
+                                  <Maximize2 className="size-5 text-white" />
+                                </div>
+                              </button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-[95vw] md:max-w-3xl p-0 border-none bg-transparent shadow-none [&>button]:text-white [&>button]:bg-black/40 [&>button]:rounded-full [&>button]:size-10 [&>button]:hover:bg-black/60">
+                              <div className="relative aspect-square w-full overflow-hidden rounded-lg">
+                                <img
+                                  src={i.image_url}
+                                  alt={i.name}
+                                  className="size-full object-cover animate-in zoom-in-95 duration-300"
+                                />
+                                <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+                                  <h3 className="font-display text-2xl text-white uppercase">{i.name}</h3>
+                                  {i.description && (
+                                    <p className="text-white/80 text-sm mt-1 max-w-lg">{i.description}</p>
+                                  )}
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        ) : (
+                          <div className="size-20 md:size-24 bg-surface border border-border overflow-hidden relative flex items-center justify-center bg-accent/[0.03]">
+                            <span className="font-display text-2xl text-accent/20 uppercase">
+                              {i.name.slice(0, 1)}
+                            </span>
+                          </div>
+                        )}
                       </div>
                       <div className="flex-1 min-w-0 flex flex-col justify-between">
                         <div>
@@ -681,7 +708,7 @@ function MenuPage() {
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground line-clamp-2 md:line-clamp-none text-pretty">
+                          <p className="text-[13px] leading-relaxed text-muted-foreground line-clamp-2 md:line-clamp-none text-pretty">
                             {i.description}
                           </p>
                         </div>
