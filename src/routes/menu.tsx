@@ -318,7 +318,7 @@ function MenuPage() {
 
             {/* Headline */}
             <div className="min-w-0">
-              <h2 className="font-display uppercase text-2xl md:text-4xl leading-[0.95]">
+              <h2 className="font-display uppercase text-2xl md:text-4xl leading-[0.95] whitespace-nowrap overflow-hidden text-ellipsis">
                 Happy Hour <span className="text-accent">Specials</span>
               </h2>
               <p className="font-mono text-[11px] md:text-xs tracking-[0.22em] uppercase text-muted-foreground mt-2">
