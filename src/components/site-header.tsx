@@ -48,15 +48,32 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
           </div>
         )}
         <div className="w-full px-4 md:px-8 h-20 md:h-28 flex md:grid md:grid-cols-[1fr_auto_1fr] items-center justify-between gap-4 md:gap-8">
-          <Link to="/" className="flex items-center min-w-0 md:justify-self-start" aria-label="Mills Modern Social - Home">
-            <img
-              src={millsLogo}
-              alt="Mill's Modern Social"
-              width={260}
-              height={60}
-              className="h-10 md:h-16 w-auto object-contain"
-            />
-          </Link>
+          <div className="flex items-center gap-6 md:justify-self-start">
+            <Link to="/" className="flex items-center min-w-0" aria-label="Mills Modern Social - Home">
+              <img
+                src={millsLogo}
+                alt="Mill's Modern Social"
+                width={260}
+                height={60}
+                className="h-10 md:h-16 w-auto object-contain"
+              />
+            </Link>
+            
+            <div className="hidden lg:flex items-center gap-4 pl-6 border-l border-border/50">
+              {socialLinks.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-muted-foreground hover:text-accent transition-colors"
+                  aria-label={s.label}
+                >
+                  <s.icon className="size-4" />
+                </a>
+              ))}
+            </div>
+          </div>
           <div className="hidden md:flex items-center gap-8 text-[17px] font-semibold uppercase tracking-widest md:justify-self-center">
             {navLinks.map((l) => (
               <Link
