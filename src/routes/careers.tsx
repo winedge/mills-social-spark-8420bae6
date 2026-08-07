@@ -96,34 +96,34 @@ function CareersPage() {
       <SiteHeader showTicker={false} />
 
       {/* Hero / Why Join Section */}
-      <section className="relative pt-24 pb-20 px-6 overflow-hidden border-b border-border">
+      <section className="relative pt-16 pb-12 px-6 overflow-hidden border-b border-border">
         <div className="absolute inset-0 pointer-events-none opacity-20">
             <div className="absolute top-0 right-0 w-96 h-96 bg-accent/20 blur-[120px] rounded-full" />
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/10 blur-[120px] rounded-full" />
         </div>
         
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center max-w-4xl mx-auto mb-16">
-            <span className="font-mono text-accent text-xs tracking-[0.3em] block mb-4 uppercase">
+          <div className="text-center max-w-4xl mx-auto mb-10">
+            <span className="font-mono text-accent text-sm md:text-base tracking-[0.4em] block mb-2 uppercase font-bold">
               Join The Circle
             </span>
-            <div className="mb-8">
+            <div className="mb-4">
               <WarpText
                 text="WORK WITH US"
                 color="#ffffff"
                 warpStrength={0.08}
-
                 warpScale={1.7}
                 speed={0.55}
                 pointerInfluence={0.42}
                 pointerStrength={0.38}
                 refraction={0.018}
                 ripple
-                fontSize="clamp(3rem, 10vw, 9rem)"
+                fontSize="clamp(3.5rem, 12vw, 10rem)"
                 fontWeight={800}
-                style={{ height: '240px' }}
+                style={{ height: '200px' }}
               />
             </div>
+
             <p className="text-muted-foreground text-lg md:text-xl text-pretty">
               We aren't just a sports bar; we're a community. We're looking for passionate individuals who love high-energy environments and exceptional hospitality.
             </p>
