@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { useJobListings, type DbJobListing } from "@/lib/content";
 import { supabase } from "@/integrations/supabase/client";
-import { Briefcase, MapPin, Clock, Send, CheckCircle2, Loader2, Users, Heart, Star } from "lucide-react";
+import { Briefcase, MapPin, Clock, Send, CheckCircle2, Loader2, Users, Heart, Star, Upload, FileText, X as CloseIcon } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/careers")({
@@ -23,6 +23,21 @@ function CareersPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const generalFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("File size exceeds 5MB limit");
+        return;
+      }
+      setResumeFile(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>, jobId?: string) => {
     e.preventDefault();
     const targetJobId = jobId || selectedJob?.id;
@@ -31,19 +46,40 @@ function CareersPage() {
     const formData = new FormData(e.currentTarget);
     
     try {
+      let resumeUrl = "";
+      
+      if (resumeFile) {
+        const fileExt = resumeFile.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+        const filePath = `resumes/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("site_assets")
+          .upload(filePath, resumeFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from("site_assets")
+          .getPublicUrl(filePath);
+        
+        resumeUrl = urlData.publicUrl;
+      }
+
       const { error } = await supabase.from("job_applications").insert({
         job_id: targetJobId || null,
         full_name: formData.get("fullName") as string,
         email: formData.get("email") as string,
         phone: formData.get("phone") as string,
         cover_letter: formData.get("message") as string,
-        resume_url: formData.get("resumeUrl") as string,
+        resume_url: resumeUrl,
         status: "pending",
       });
 
       if (error) throw error;
       
       setSubmitted(true);
+      setResumeFile(null);
       toast.success("Application submitted successfully!");
     } catch (err) {
       console.error(err);
@@ -221,11 +257,44 @@ function CareersPage() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Resume (Link)</label>
+                          <label className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Resume (PDF, Max 5MB)</label>
+                          <div 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-full bg-background border border-border border-dashed p-3 min-h-[46px] flex items-center justify-between cursor-pointer hover:border-accent transition-colors"
+                          >
+                            <div className="flex items-center gap-2 overflow-hidden">
+                              {resumeFile ? (
+                                <>
+                                  <FileText className="size-4 text-accent shrink-0" />
+                                  <span className="text-xs truncate">{resumeFile.name}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="size-4 text-muted-foreground shrink-0" />
+                                  <span className="text-xs text-muted-foreground">Click to upload resume</span>
+                                </>
+                              )}
+                            </div>
+                            {resumeFile && (
+                              <button 
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setResumeFile(null);
+                                  if (fileInputRef.current) fileInputRef.current.value = "";
+                                }}
+                                className="text-muted-foreground hover:text-red-500"
+                              >
+                                <CloseIcon className="size-3" />
+                              </button>
+                            )}
+                          </div>
                           <input 
-                            name="resumeUrl"
-                            className="w-full bg-background border border-border p-3 outline-none focus:border-accent transition-colors" 
-                            placeholder="Link to PDF or Cloud Drive"
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            onChange={handleFileChange}
+                            className="hidden"
                           />
                         </div>
                       </div>
@@ -338,11 +407,44 @@ function CareersPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Resume (Link)</label>
+                    <label className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Resume (PDF, Max 5MB)</label>
+                    <div 
+                      onClick={() => generalFileInputRef.current?.click()}
+                      className="w-full bg-background border border-border border-dashed p-3 min-h-[46px] flex items-center justify-between cursor-pointer hover:border-accent transition-colors"
+                    >
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        {resumeFile ? (
+                          <>
+                            <FileText className="size-4 text-accent shrink-0" />
+                            <span className="text-xs truncate">{resumeFile.name}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="size-4 text-muted-foreground shrink-0" />
+                            <span className="text-xs text-muted-foreground">Click to upload resume</span>
+                          </>
+                        )}
+                      </div>
+                      {resumeFile && (
+                        <button 
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setResumeFile(null);
+                            if (generalFileInputRef.current) generalFileInputRef.current.value = "";
+                          }}
+                          className="text-muted-foreground hover:text-red-500"
+                        >
+                          <CloseIcon className="size-3" />
+                        </button>
+                      )}
+                    </div>
                     <input 
-                      name="resumeUrl"
-                      className="w-full bg-background border border-border p-3 outline-none focus:border-accent transition-colors" 
-                      placeholder="Link to PDF or Portfolio"
+                      ref={generalFileInputRef}
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleFileChange}
+                      className="hidden"
                     />
                   </div>
                 </div>
