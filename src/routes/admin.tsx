@@ -284,10 +284,12 @@ function Overview({ onNav }: { onNav: (s: Section) => void }) {
 
   useEffect(() => {
     (async () => {
-      const [r, s, m] = await Promise.all([
+      const [r, s, m, j, a] = await Promise.all([
         supabase.from("reservations").select("id,status"),
         supabase.from("space_reservations").select("id,status"),
         supabase.from("menu_items").select("id"),
+        supabase.from("job_listings").select("id"),
+        supabase.from("job_applications").select("id,status"),
       ]);
       setStats({
         res: r.data?.length ?? 0,
@@ -295,6 +297,8 @@ function Overview({ onNav }: { onNav: (s: Section) => void }) {
         sp: s.data?.length ?? 0,
         newSp: s.data?.filter((x: any) => x.status === "new").length ?? 0,
         menu: m.data?.length ?? 0,
+        jobs: j.data?.length ?? 0,
+        apps: a.data?.length ?? 0,
       });
     })();
   }, []);
