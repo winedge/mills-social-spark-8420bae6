@@ -641,36 +641,58 @@ function MenuPage() {
                   {list.map((i) => (
                     <article
                       key={i.id}
-                      className="group grid grid-cols-[1fr_auto] items-start gap-4 pb-6 border-b border-border/60"
+                      className="group flex gap-4 pb-6 border-b border-border/60"
                     >
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                          <h3 className="font-display text-xl uppercase tracking-wide group-hover:text-accent transition-colors">
-                            {i.name}
-                          </h3>
-                          {i.tag && (
-                            <span
-                              className={`font-mono text-[10px] uppercase tracking-widest px-2 py-0.5 border ${
-                                i.tag === "Spicy"
-                                  ? "border-red-500/40 text-red-400"
-                                  : i.tag === "New"
-                                  ? "border-accent text-accent"
-                                  : "border-foreground/20 text-muted-foreground"
-                              }`}
-                            >
-                              {i.tag}
-                            </span>
+                      <div className="shrink-0">
+                        <div className="size-20 md:size-24 bg-surface border border-border overflow-hidden relative">
+                          {i.image_url ? (
+                            <img
+                              src={i.image_url}
+                              alt={i.name}
+                              loading="lazy"
+                              className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center bg-accent/[0.03]">
+                              <span className="font-display text-2xl text-accent/20 uppercase">
+                                {i.name.slice(0, 1)}
+                              </span>
+                            </div>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground text-pretty">{i.description}</p>
                       </div>
-                      <div className="flex flex-col items-end gap-1 shrink-0">
-                        <div className="font-mono text-accent text-lg">{i.price}</div>
-                        {i.calories != null && i.calories > 0 && (
-                          <div className="font-mono text-[10px] text-muted-foreground tracking-widest">
-                            {i.calories} CAL
+                      <div className="flex-1 min-w-0 flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                            <h3 className="font-display text-lg md:text-xl uppercase tracking-wide group-hover:text-accent transition-colors">
+                              {i.name}
+                            </h3>
+                            {i.tag && (
+                              <span
+                                className={`font-mono text-[10px] uppercase tracking-widest px-2 py-0.5 border ${
+                                  i.tag === "Spicy"
+                                    ? "border-red-500/40 text-red-400"
+                                    : i.tag === "New"
+                                    ? "border-accent text-accent"
+                                    : "border-foreground/20 text-muted-foreground"
+                                }`}
+                              >
+                                {i.tag}
+                              </span>
+                            )}
                           </div>
-                        )}
+                          <p className="text-sm text-muted-foreground line-clamp-2 md:line-clamp-none text-pretty">
+                            {i.description}
+                          </p>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between">
+                          <div className="font-mono text-accent text-lg">{i.price}</div>
+                          {i.calories != null && i.calories > 0 && (
+                            <div className="font-mono text-[10px] text-muted-foreground tracking-widest">
+                              {i.calories} CAL
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </article>
                   ))}
