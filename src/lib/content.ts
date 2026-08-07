@@ -205,6 +205,7 @@ export type DbContactInfo = {
   phone: string;
   email: string;
   instagram_url: string;
+  facebook_url: string;
   x_url: string;
   tiktok_url: string;
   map_embed_url: string;
