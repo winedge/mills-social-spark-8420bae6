@@ -80,13 +80,16 @@ export function SiteFooter() {
                 </a>
               </p>
             )}
-            {contact?.email && (
-              <p className="text-muted-foreground">
-                <a href={`mailto:${contact.email}`} className="hover:text-accent">
-                  {contact.email}
-                </a>
+            <div className="text-muted-foreground space-y-1">
+              <p>
+                <span className="text-[10px] uppercase opacity-50 mr-2">Info</span>
+                <a href="mailto:info@millsmodernsocial.com" className="hover:text-accent uppercase">info@millsmodernsocial.com</a>
               </p>
-            )}
+              <p>
+                <span className="text-[10px] uppercase opacity-50 mr-2">Parties</span>
+                <a href="mailto:party@millsmodernsocial.com" className="hover:text-accent uppercase">party@millsmodernsocial.com</a>
+              </p>
+            </div>
           </div>
         </div>
         <div className="bg-accent/5 p-10 md:p-12 border border-accent/20 flex flex-col justify-between gap-12">
