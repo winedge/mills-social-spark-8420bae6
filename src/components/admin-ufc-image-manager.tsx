@@ -162,10 +162,16 @@ function AddOverrideModal({ onClose, onSuccess }: { onClose: () => void, onSucce
     try {
       const { error } = await supabase.from("ufc_fighter_overrides" as any).upsert({
         fighter_name: name.trim(),
-        image_url: url.trim()
+        image_url: url.trim(),
+        updated_at: new Date().toISOString()
       });
       if (error) throw error;
+      
+      // Auto-clear cache after successful override update
+      await supabase.from("sports_cache" as any).delete().like("cache_key", "ufc:%").catch(() => {});
+      
       onSuccess();
+
     } catch (err: any) {
       alert(err.message);
     } finally {
