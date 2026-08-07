@@ -786,15 +786,17 @@ function DailySpecialsStrip() {
 
               {/* Info bottom */}
               <div className="p-5 flex flex-col flex-1">
-                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <div className="flex flex-col gap-1.5 mb-2">
+                  {s.badge && (
+                    <div className="flex">
+                      <span className="font-mono text-[10px] tracking-widest border border-accent/50 text-accent px-2 py-0.5 uppercase">
+                        {s.badge}
+                      </span>
+                    </div>
+                  )}
                   <h3 className="font-display text-xl uppercase group-hover:text-accent transition-colors">
                     {s.title}
                   </h3>
-                  {s.badge && (
-                    <span className="font-mono text-[10px] tracking-widest border border-accent/50 text-accent px-2 py-0.5 uppercase">
-                      {s.badge}
-                    </span>
-                  )}
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed">{s.description}</p>
                 {s.price && (
