@@ -571,7 +571,7 @@ function SpacesSection() {
 type MenuRow = {
   id: string; name: string; description: string; price: string;
   calories: number | null; category: string; category_id: string | null;
-  tag: string | null; sort_order: number; active: boolean;
+  tag: string | null; image_url: string | null; sort_order: number; active: boolean;
 };
 
 type CategoryRow = {
