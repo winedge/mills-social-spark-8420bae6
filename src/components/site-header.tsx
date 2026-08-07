@@ -26,6 +26,14 @@ const navLinks = [
 
 export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
   const [open, setOpen] = useState(false);
+  const contact = useContactInfo();
+
+  const socialLinks = [
+    { icon: Instagram, href: contact?.instagram_url || "#", label: "Instagram" },
+    { icon: Facebook, href: "#", label: "Facebook" },
+    { icon: Twitter, href: contact?.x_url || "#", label: "X" },
+    { icon: Music2, href: contact?.tiktok_url || "#", label: "TikTok" },
+  ];
 
   return (
     <>
