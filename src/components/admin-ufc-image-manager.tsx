@@ -12,7 +12,20 @@ export function UfcFighterImageManager() {
   const load = async () => {
     setLoading(true);
     const { data } = await supabase.from("ufc_fighter_overrides" as any).select("*").order("updated_at", { ascending: false });
-    setOverrides(data || []);
+    const hydrated = await Promise.all((data || []).map(async (row: any) => {
+      const prefix = "storage://site_assets/";
+      const legacyMarker = "/storage/v1/object/public/site_assets/";
+      const legacyIndex = row.image_url.indexOf(legacyMarker);
+      const path = row.image_url.startsWith(prefix)
+        ? row.image_url.slice(prefix.length)
+        : legacyIndex >= 0
+          ? decodeURIComponent(row.image_url.slice(legacyIndex + legacyMarker.length))
+          : null;
+      if (!path) return { ...row, display_url: row.image_url };
+      const { data: signed } = await supabase.storage.from("site_assets").createSignedUrl(path, 3600);
+      return { ...row, display_url: signed?.signedUrl || row.image_url };
+    }));
+    setOverrides(hydrated);
     setLoading(false);
   };
 
@@ -104,7 +117,7 @@ export function UfcFighterImageManager() {
           {filtered.map((o) => (
             <div key={o.fighter_name} className="bg-surface border border-border p-4 flex flex-col gap-3 group relative">
               <div className="size-20 rounded-full border border-border overflow-hidden bg-background mx-auto">
-                <img src={o.image_url} alt={o.fighter_name} className="w-full h-full object-cover" />
+                <img src={o.display_url || o.image_url} alt={o.fighter_name} className="w-full h-full object-cover" />
               </div>
               <div className="text-center">
                 <div className="font-display text-sm uppercase truncate">{o.fighter_name}</div>
@@ -146,8 +159,9 @@ function AddOverrideModal({ onClose, onSuccess }: { onClose: () => void, onSucce
       });
       if (error) throw error;
       
-      const { data: { publicUrl } } = supabase.storage.from("site_assets").getPublicUrl(path);
-      setUrl(publicUrl);
+      const { data: signed, error: signedError } = await supabase.storage.from("site_assets").createSignedUrl(path, 3600);
+      if (signedError) throw signedError;
+      setUrl(`storage://site_assets/${path}`);
     } catch (err: any) {
       alert(err.message);
     } finally {
