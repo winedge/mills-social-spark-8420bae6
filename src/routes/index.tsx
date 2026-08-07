@@ -27,6 +27,8 @@ import { openReservation } from "@/components/reservation-modal";
 import { SiteFooter } from "@/components/site-footer";
 import { UfcSection, ufcQueryOptions } from "@/components/ufc-section";
 import { NflSection, nflQueryOptions } from "@/components/nfl-section";
+import WarpText from "@/components/ui/warp-text";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({

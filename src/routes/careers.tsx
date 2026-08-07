@@ -6,6 +6,8 @@ import { useJobListings, type DbJobListing } from "@/lib/content";
 import { supabase } from "@/integrations/supabase/client";
 import { Briefcase, MapPin, Clock, Send, CheckCircle2, Loader2, Users, Heart, Star, Upload, FileText, X as CloseIcon } from "lucide-react";
 import { toast } from "sonner";
+import WarpText from "@/components/ui/warp-text";
+
 
 export const Route = createFileRoute("/careers")({
   head: () => ({
@@ -101,17 +103,31 @@ function CareersPage() {
         </div>
         
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="text-center max-w-4xl mx-auto mb-16">
             <span className="font-mono text-accent text-xs tracking-[0.3em] block mb-4 uppercase">
               Join The Circle
             </span>
-            <h1 className="font-display text-5xl md:text-8xl lg:text-9xl uppercase leading-[0.9] mb-8">
-              Work With <span className="text-accent">Us</span>
-            </h1>
+            <div className="mb-8">
+              <WarpText
+                text="WORK WITH US"
+                color="#38bdf8"
+                warpStrength={0.08}
+                warpScale={1.7}
+                speed={0.55}
+                pointerInfluence={0.42}
+                pointerStrength={0.38}
+                refraction={0.018}
+                ripple
+                fontSize="clamp(3rem, 10vw, 9rem)"
+                fontWeight={800}
+                style={{ height: '240px' }}
+              />
+            </div>
             <p className="text-muted-foreground text-lg md:text-xl text-pretty">
               We aren't just a sports bar; we're a community. We're looking for passionate individuals who love high-energy environments and exceptional hospitality.
             </p>
           </div>
+
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="p-8 bg-surface border border-border group hover:border-accent transition-colors">
