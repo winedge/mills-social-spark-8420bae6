@@ -2240,7 +2240,7 @@ function ApplicationsSection() {
                       <a href={`tel:${r.phone}`} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-accent"><Phone className="size-3" /> {r.phone}</a>
                     </div>
                     {r.resume_url && (
-                       <a href={r.resume_url} target="_blank" rel="noopener" className="inline-block mt-4 px-4 py-2 border border-accent text-accent font-mono text-[10px] uppercase tracking-widest hover:bg-accent hover:text-white transition-colors">View Resume</a>
+                       <a href={r.resume_url} target="_blank" rel="noopener noreferrer" className="inline-block mt-4 px-4 py-2 border border-accent text-accent font-mono text-[10px] uppercase tracking-widest hover:bg-accent hover:text-white transition-colors">Download Resume</a>
                     )}
                   </div>
                   <div>
