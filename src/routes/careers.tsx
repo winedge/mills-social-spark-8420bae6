@@ -1,0 +1,282 @@
+import React, { useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
+import { useJobListings, type DbJobListing } from "@/lib/content";
+import { supabase } from "@/integrations/supabase/client";
+import { Briefcase, MapPin, Clock, Send, CheckCircle2, Loader2, Users, Heart, Star } from "lucide-react";
+import { toast } from "sonner";
+
+export const Route = createFileRoute("/careers")({
+  head: () => ({
+    meta: [
+      { title: "Careers - Mill's Modern Social" },
+      { name: "description", content: "Join the team at Mill's Modern Social. View open positions and apply to become part of Tempe's favorite sports bar and kitchen." },
+    ],
+  }),
+  component: CareersPage,
+});
+
+function CareersPage() {
+  const { items: jobs, loading: jobsLoading } = useJobListings();
+  const [selectedJob, setSelectedJob] = useState<DbJobListing | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!selectedJob) return;
+
+    setIsSubmitting(true);
+    const formData = new FormData(e.currentTarget);
+    
+    try {
+      const { error } = await supabase.from("job_applications").insert({
+        job_id: selectedJob.id,
+        full_name: formData.get("fullName") as string,
+        email: formData.get("email") as string,
+        phone: formData.get("phone") as string,
+        cover_letter: formData.get("message") as string,
+        // Resume upload would go here in a full implementation with storage
+        status: "pending",
+      });
+
+      if (error) throw error;
+      
+      setSubmitted(true);
+      toast.success("Application submitted successfully!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to submit application. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="bg-background text-foreground font-body min-h-screen">
+      <SiteHeader showTicker={false} />
+
+      {/* Hero / Why Join Section */}
+      <section className="relative pt-24 pb-20 px-6 overflow-hidden border-b border-border">
+        <div className="absolute inset-0 pointer-events-none opacity-20">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-accent/20 blur-[120px] rounded-full" />
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/10 blur-[120px] rounded-full" />
+        </div>
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="font-mono text-accent text-xs tracking-[0.3em] block mb-4 uppercase">
+              Join The Circle
+            </span>
+            <h1 className="font-display text-5xl md:text-8xl lg:text-9xl uppercase leading-[0.9] mb-8">
+              Work With <span className="text-accent">Us</span>
+            </h1>
+            <p className="text-muted-foreground text-lg md:text-xl text-pretty">
+              We aren't just a sports bar; we're a community. We're looking for passionate individuals who love high-energy environments and exceptional hospitality.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-8 bg-surface border border-border group hover:border-accent transition-colors">
+              <div className="size-12 rounded-full bg-accent/10 flex items-center justify-center text-accent mb-6 group-hover:scale-110 transition-transform">
+                <Users className="size-6" />
+              </div>
+              <h3 className="font-display text-2xl uppercase mb-3">Strong Culture</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Join a tight-knit team where everyone has each other's back. We celebrate wins together and support growth.
+              </p>
+            </div>
+            <div className="p-8 bg-surface border border-border group hover:border-accent transition-colors">
+              <div className="size-12 rounded-full bg-accent/10 flex items-center justify-center text-accent mb-6 group-hover:scale-110 transition-transform">
+                <Star className="size-6" />
+              </div>
+              <h3 className="font-display text-2xl uppercase mb-3">Growth Potential</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                We promote from within. Start as a runner, become a manager. We provide the training to help you level up.
+              </p>
+            </div>
+            <div className="p-8 bg-surface border border-border group hover:border-accent transition-colors">
+              <div className="size-12 rounded-full bg-accent/10 flex items-center justify-center text-accent mb-6 group-hover:scale-110 transition-transform">
+                <Heart className="size-6" />
+              </div>
+              <h3 className="font-display text-2xl uppercase mb-3">Great Perks</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Competitive pay, shift meals, employee discounts, and a flexible schedule that respects your life outside work.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Open Positions */}
+      <section className="py-24 px-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+          <div>
+            <div className="mb-10">
+              <h2 className="font-display text-4xl uppercase mb-4">Open <span className="text-accent">Positions</span></h2>
+              <p className="text-muted-foreground">Select a role to view details and apply.</p>
+            </div>
+
+            {jobsLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-24 w-full bg-surface animate-pulse border border-border" />
+                ))}
+              </div>
+            ) : jobs.length === 0 ? (
+              <div className="p-12 border-2 border-dashed border-border text-center rounded-lg">
+                <Briefcase className="size-12 text-muted-foreground/30 mx-auto mb-4" />
+                <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest">No active openings right now</p>
+                <p className="text-xs text-muted-foreground/60 mt-2">Check back soon or follow us on social media for updates.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {jobs.map((job) => (
+                  <button
+                    key={job.id}
+                    onClick={() => {
+                        setSelectedJob(job);
+                        setSubmitted(false);
+                    }}
+                    className={`w-full text-left p-6 border transition-all ${
+                      selectedJob?.id === job.id 
+                        ? "bg-accent/5 border-accent shadow-[4px_4px_0px_0px_rgba(56,189,248,1)]" 
+                        : "bg-surface border-border hover:border-accent/50"
+                    }`}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-display text-2xl uppercase">{job.title}</h3>
+                      <span className="font-mono text-[10px] bg-accent/10 text-accent px-2 py-1 uppercase tracking-widest">
+                        {job.type}
+                      </span>
+                    </div>
+                    <div className="flex gap-4 text-xs text-muted-foreground font-mono uppercase tracking-widest">
+                      <span className="flex items-center gap-1.5"><MapPin className="size-3" /> {job.location}</span>
+                      <span className="flex items-center gap-1.5"><Briefcase className="size-3" /> {job.department}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="relative">
+            {selectedJob ? (
+              <div className="sticky top-32 p-8 border-2 border-border bg-card shadow-[12px_12px_0px_0px_rgba(255,255,255,0.05)]">
+                {submitted ? (
+                  <div className="text-center py-12">
+                    <div className="size-20 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center mx-auto mb-6">
+                      <CheckCircle2 className="size-10" />
+                    </div>
+                    <h3 className="font-display text-3xl uppercase mb-3">Application Received</h3>
+                    <p className="text-muted-foreground mb-8">
+                      Thanks for your interest in joining the team! We've received your application for the <strong>{selectedJob.title}</strong> position and will be in touch soon.
+                    </p>
+                    <button 
+                      onClick={() => setSubmitted(false)}
+                      className="px-8 py-3 bg-accent text-primary-foreground font-bold uppercase tracking-widest text-sm hover:scale-105 transition-transform"
+                    >
+                      Back to Jobs
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-8 pb-6 border-b border-border">
+                      <h3 className="font-display text-3xl uppercase mb-2">Apply for {selectedJob.title}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{selectedJob.description}</p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Full Name</label>
+                          <input 
+                            required 
+                            name="fullName"
+                            className="w-full bg-background border border-border p-3 outline-none focus:border-accent transition-colors" 
+                            placeholder="John Doe"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Email Address</label>
+                          <input 
+                            required 
+                            type="email"
+                            name="email"
+                            className="w-full bg-background border border-border p-3 outline-none focus:border-accent transition-colors" 
+                            placeholder="john@example.com"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Phone Number</label>
+                          <input 
+                            required 
+                            name="phone"
+                            className="w-full bg-background border border-border p-3 outline-none focus:border-accent transition-colors" 
+                            placeholder="(555) 000-0000"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Resume (Link)</label>
+                          <input 
+                            name="resumeUrl"
+                            className="w-full bg-background border border-border p-3 outline-none focus:border-accent transition-colors" 
+                            placeholder="Link to PDF or Cloud Drive"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Message / Cover Letter</label>
+                        <textarea 
+                          name="message"
+                          rows={4}
+                          className="w-full bg-background border border-border p-3 outline-none focus:border-accent transition-colors resize-none" 
+                          placeholder="Tell us why you'd be a great fit..."
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full py-4 bg-accent text-primary-foreground font-black uppercase tracking-widest text-sm hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="size-4 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="size-4" />
+                            Submit Application
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="h-full min-h-[400px] border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center p-12 text-center opacity-60">
+                <div className="size-16 rounded-full bg-surface flex items-center justify-center mb-6">
+                  <Send className="size-6 text-muted-foreground" />
+                </div>
+                <h3 className="font-display text-2xl uppercase mb-2">Ready to Start?</h3>
+                <p className="text-sm text-muted-foreground max-w-xs">
+                  Pick a position on the left to see full details and submit your application.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <SiteFooter />
+    </div>
+  );
+}
