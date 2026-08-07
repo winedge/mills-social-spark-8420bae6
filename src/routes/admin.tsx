@@ -74,6 +74,12 @@ const NAV: NavEntry[] = [
       { id: "contactinfo", label: "Contact Details", icon: MapPin },
     ],
   },
+  {
+    label: "Careers", icon: Briefcase, children: [
+      { id: "careers", label: "Job Listings", icon: Briefcase },
+      { id: "applications", label: "Applications", icon: Users },
+    ],
+  },
   { id: "settings", label: "Settings", icon: SettingsIcon },
 ];
 
