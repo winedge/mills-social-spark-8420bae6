@@ -756,7 +756,7 @@ function DailySpecialsStrip() {
             <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-accent block mb-2">
               ★ Featured // Week Long
             </span>
-            <h2 className="font-display text-4xl md:text-6xl uppercase leading-[0.9]">
+            <h2 className="font-display text-4xl md:text-5xl uppercase leading-[0.9]">
               Daily <span className="text-accent">Specials</span>
             </h2>
           </div>
