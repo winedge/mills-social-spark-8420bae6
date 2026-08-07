@@ -7,7 +7,7 @@ import {
   Trash2, Check, LayoutDashboard, UtensilsCrossed, PartyPopper, Trophy,
   Settings as SettingsIcon, Menu as MenuIcon, X, Plus, Pencil, Save,
   MessageCircle, Search, ChevronRight, Sparkles, FolderTree, Eye, Activity,
-  TrendingUp, Tv, CalendarClock,
+  TrendingUp, Tv, CalendarClock, Upload,
 } from "lucide-react";
 import logo from "@/assets/mills-logo.png";
 import { estimateCalories } from "@/lib/menu-ai.functions";
@@ -679,6 +679,7 @@ function MenuSection() {
           <table className="w-full text-sm">
             <thead className="bg-muted/30 text-[10px] uppercase tracking-widest font-mono text-muted-foreground">
               <tr>
+                <th className="text-left px-4 py-3 w-16">Image</th>
                 <th className="text-left px-4 py-3">Name</th>
                 <th className="text-left px-4 py-3 hidden md:table-cell">Category</th>
                 <th className="text-left px-4 py-3 hidden md:table-cell">Price</th>
@@ -691,6 +692,17 @@ function MenuSection() {
             <tbody>
               {filtered.map((i) => (
                 <tr key={i.id} className="border-t border-border hover:bg-muted/20">
+                  <td className="px-4 py-3">
+                    <div className="size-10 bg-muted border border-border overflow-hidden">
+                      {i.image_url ? (
+                        <img src={i.image_url} alt="" className="size-full object-cover" />
+                      ) : (
+                        <div className="size-full flex items-center justify-center text-[10px] text-muted-foreground font-mono">
+                          N/A
+                        </div>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-4 py-3 font-medium">{i.name}</td>
                   <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">
                     {(i.category_id && catNameById.get(i.category_id)) || i.category || "-"}
@@ -732,6 +744,7 @@ function MenuEditor({ row, categories, onClose, onSaved }: { row: MenuRow; categ
     calories: row.calories ?? ("" as number | ""),
     category_id: row.category_id ?? "",
     tag: row.tag ?? "",
+    image_url: row.image_url ?? "",
     sort_order: row.sort_order,
     active: row.active,
   });
@@ -763,7 +776,8 @@ function MenuEditor({ row, categories, onClose, onSaved }: { row: MenuRow; categ
     const payload: any = {
       name: form.name, description: form.description, price: form.price,
       calories: cal, category: catName, category_id: form.category_id || null,
-      tag: form.tag || null, sort_order: Number(form.sort_order) || 0, active: form.active,
+      tag: form.tag || null, image_url: form.image_url || null,
+      sort_order: Number(form.sort_order) || 0, active: form.active,
     };
     const q = row.id
       ? supabase.from("menu_items").update(payload).eq("id", row.id)
@@ -779,6 +793,52 @@ function MenuEditor({ row, categories, onClose, onSaved }: { row: MenuRow; categ
       <form onSubmit={save} className="space-y-4">
         <Input name="name" label="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
         <Textarea name="description" label="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Preview Image</label>
+          <div className="flex gap-2">
+            <input
+              value={form.image_url}
+              onChange={(e) => setForm({ ...form, image_url: e.target.value })}
+              placeholder="https://..."
+              className="flex-1 bg-background border border-border px-3 h-10 text-sm focus:border-accent outline-none"
+            />
+            <label className="shrink-0 flex items-center justify-center size-10 border border-border cursor-pointer hover:border-accent transition-colors">
+              <Upload className="size-4" />
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setBusy(true);
+                  try {
+                    const ext = file.name.split(".").pop();
+                    const path = `menu/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+                    const { error } = await supabase.storage.from("site_assets").upload(path, file);
+                    if (error) throw error;
+                    const { data: { publicUrl } } = supabase.storage.from("site_assets").getPublicUrl(path);
+                    setForm((f) => ({ ...f, image_url: publicUrl }));
+                  } catch (err: any) { alert(err.message); }
+                  finally { setBusy(false); }
+                }}
+                disabled={busy}
+              />
+            </label>
+          </div>
+          {form.image_url && (
+            <div className="mt-2 size-20 bg-muted border border-border overflow-hidden relative group">
+              <img src={form.image_url} alt="" className="size-full object-cover" />
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, image_url: "" })}
+                className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <Trash2 className="size-4 text-white" />
+              </button>
+            </div>
+          )}
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <Input name="price" label="Price (e.g. $15)" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
           <div>
