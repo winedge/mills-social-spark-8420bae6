@@ -192,6 +192,19 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
             >
               Book a Table
             </button>
+            <div className="flex justify-center gap-8 mb-6">
+              {socialLinks.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-muted-foreground hover:text-accent transition-colors"
+                >
+                  <s.icon className="size-6" />
+                </a>
+              ))}
+            </div>
             <p className="font-mono text-[10px] text-muted-foreground text-center uppercase tracking-widest">
               83 E Broadway Rd · Tempe, AZ
             </p>
