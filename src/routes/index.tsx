@@ -258,14 +258,14 @@ function Home() {
                   Find Us
                 </h2>
                 <p className="text-foreground text-xl font-semibold mb-1">
-                  On the corner of Mill Ave & Broadway Rd
+                  83 E Broadway Rd, Tempe, Arizona 85282
                 </p>
                 <p className="text-muted-foreground font-medium tracking-wide">Tempe, Arizona</p>
               </div>
 
               <div className="mt-10 flex flex-col gap-4 relative z-10">
                 <a
-                  href="https://maps.google.com/?q=Mill+Ave+and+Broadway+Rd+Tempe+AZ"
+                  href="https://maps.google.com/?q=83+E+Broadway+Rd+Tempe+AZ+85282"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors group"

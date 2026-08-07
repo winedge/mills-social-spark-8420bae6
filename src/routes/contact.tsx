@@ -66,7 +66,8 @@ function ContactPage() {
       value: `${contact?.hours_weekday ?? "SUN–THU · 11AM – 12AM"}\n${contact?.hours_weekend ?? "FRI–SAT · 11AM – 2AM"}`,
     },
     { icon: Phone, label: "Phone", value: contact?.phone ?? "(480) 555-0142" },
-    { icon: Mail, label: "Email", value: contact?.email ?? "hello@millsmodernsocial.com" },
+    { icon: Mail, label: "Email", value: contact?.email ?? "info@millsmodernsocial.com" },
+    { icon: Mail, label: "Parties", value: "party@millsmodernsocial.com" },
   ];
 
   return (
@@ -128,7 +129,7 @@ function ContactPage() {
                     <input required name="name" className="contact-input" placeholder="Jane Doe" />
                   </ContactField>
                   <ContactField label="Phone">
-                    <input name="phone" type="tel" className="contact-input" placeholder="(480) 555-0123" />
+                    <input name="phone" type="tel" className="contact-input" placeholder="(602) 689-5361" />
                   </ContactField>
                 </div>
                 <ContactField label="Email">
