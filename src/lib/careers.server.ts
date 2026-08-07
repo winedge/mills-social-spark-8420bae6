@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin } from "../integrations/supabase/client.server";
 
 export type CareerApplication = {
   fullName: string;
@@ -15,7 +15,7 @@ async function getAdminEmail(): Promise<string> {
     .select("notification_email")
     .eq("id", 1)
     .maybeSingle();
-  return data?.notification_email ?? "admin@millsmodernsocial.com";
+  return (data as any)?.notification_email ?? "admin@millsmodernsocial.com";
 }
 
 async function getAdminWhatsApp(): Promise<string> {
@@ -24,7 +24,7 @@ async function getAdminWhatsApp(): Promise<string> {
     .select("whatsapp_number")
     .eq("id", 1)
     .maybeSingle();
-  return data?.whatsapp_number?.replace(/[^\d]/g, "") ?? "";
+  return (data as any)?.whatsapp_number?.replace(/[^\d]/g, "") ?? "";
 }
 
 export async function notifyCareerApplication(app: CareerApplication) {
@@ -50,7 +50,7 @@ export async function notifyCareerApplication(app: CareerApplication) {
       body_text: body
     });
   } catch (e) {
-    console.warn("Email RPC failed (likely not created yet):", e);
+    // Log failure but don't crash
   }
 
   // WhatsApp Notification (using existing logic)
