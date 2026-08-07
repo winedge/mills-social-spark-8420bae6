@@ -93,6 +93,49 @@ function cleanNum(v: number | null | undefined): number | null {
   return null;
 }
 
+const PRIVATE_STORAGE_PREFIX = "storage://site_assets/";
+
+function storagePathFromUrl(url: string): string | null {
+  if (url.startsWith(PRIVATE_STORAGE_PREFIX)) return url.slice(PRIVATE_STORAGE_PREFIX.length);
+  const marker = "/storage/v1/object/public/site_assets/";
+  const markerIndex = url.indexOf(marker);
+  return markerIndex >= 0 ? decodeURIComponent(url.slice(markerIndex + marker.length)) : null;
+}
+
+async function resolveOverrideUrl(url: string): Promise<string> {
+  const path = storagePathFromUrl(url);
+  if (!path) return url;
+  const { data, error } = await supabase.storage.from("site_assets").createSignedUrl(path, 86_400);
+  return error || !data?.signedUrl ? url : data.signedUrl;
+}
+
+async function applyCurrentFighterOverrides(data: {
+  upcoming: UfcEvent[];
+  live: UfcEvent[];
+  recent: UfcEvent[];
+}) {
+  const { data: rows } = await supabase
+    .from("ufc_fighter_overrides" as any)
+    .select("fighter_name,image_url");
+  const overrides = new Map<string, string>();
+  await Promise.all(
+    ((rows ?? []) as { fighter_name: string; image_url: string }[]).map(async (row) => {
+      overrides.set(row.fighter_name.trim().toLowerCase(), await resolveOverrideUrl(row.image_url));
+    }),
+  );
+
+  for (const event of [...data.upcoming, ...data.live, ...data.recent]) {
+    for (const fight of event.fights) {
+      for (const fighter of [fight.fighterA, fight.fighterB]) {
+        if (!fighter) continue;
+        const overrideUrl = overrides.get(fighter.name.trim().toLowerCase());
+        if (overrideUrl) fighter.imageUrl = overrideUrl;
+      }
+    }
+  }
+  return data;
+}
+
 async function mapFighter(f: RawFighter | undefined): Promise<UfcFighter | null> {
   if (!f) return null;
   const first = cleanStr(f.FirstName) || "";
@@ -288,6 +331,7 @@ export const getUfcFights = createServerFn({ method: "GET" }).handler(async (): 
     };
   }
 
-  return { ...data, configured: true, stale };
+  const currentData = await applyCurrentFighterOverrides(data);
+  return { ...currentData, configured: true, stale };
 
 });
