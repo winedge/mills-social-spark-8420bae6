@@ -319,7 +319,7 @@ function Overview({ onNav }: { onNav: (s: Section) => void }) {
   const cards = [
     { label: "Table Reservations", value: stats.res, badge: stats.newRes, s: "reservations" as Section },
     { label: "Space Requests", value: stats.sp, badge: stats.newSp, s: "spaces" as Section },
-    { label: "Menu Items", value: stats.menu, badge: 0, s: "menu" as Section },
+    { label: "Job Applications", value: stats.apps, badge: 0, s: "applications" as Section },
   ];
 
   const maxViews = Math.max(1, ...(analytics?.series.map((s) => s.views) ?? [0]));
