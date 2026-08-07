@@ -7,8 +7,9 @@ import {
   Trash2, Check, LayoutDashboard, UtensilsCrossed, PartyPopper, Trophy,
   Settings as SettingsIcon, Menu as MenuIcon, X, Plus, Pencil, Save,
   MessageCircle, Search, ChevronRight, Sparkles, FolderTree, Eye, Activity,
-  TrendingUp, Tv, CalendarClock, Upload, Briefcase,
+  TrendingUp, Tv, CalendarClock, Upload, Briefcase, FileText,
 } from "lucide-react";
+
 import logo from "@/assets/mills-logo.png";
 import { estimateCalories } from "@/lib/menu-ai.functions";
 import { sendCustomerConfirmation } from "@/lib/notify.functions";
