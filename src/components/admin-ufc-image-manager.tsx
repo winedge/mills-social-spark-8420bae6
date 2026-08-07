@@ -19,7 +19,7 @@ export function UfcFighterImageManager() {
   const clearCache = async () => {
     setBusy(true);
     try {
-      const { error } = await supabase.from("sports_cache" as any).delete().like("cache_key", "ufc:%");
+      const { error } = await supabase.from("sports_cache" as any).delete().filter("cache_key", "like", "ufc:%");
       if (error) throw error;
       alert("UFC cache cleared. Headshots will update on the next page load.");
     } catch (err: any) {
@@ -29,6 +29,7 @@ export function UfcFighterImageManager() {
       setBusy(false);
     }
   };
+
 
 
   useEffect(() => { load(); }, []);
@@ -168,7 +169,8 @@ function AddOverrideModal({ onClose, onSuccess }: { onClose: () => void, onSucce
       if (error) throw error;
       
       // Auto-clear cache after successful override update
-      await supabase.from("sports_cache" as any).delete().like("cache_key", "ufc:%").catch(() => {});
+      await supabase.from("sports_cache" as any).delete().filter("cache_key", "like", "ufc:%");
+
       
       onSuccess();
 
