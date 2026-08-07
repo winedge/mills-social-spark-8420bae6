@@ -10,6 +10,7 @@ export type DbMenuItem = {
   category: string;
   category_id: string | null;
   tag: string | null;
+  image_url: string | null;
   sort_order: number;
   active: boolean;
 };
