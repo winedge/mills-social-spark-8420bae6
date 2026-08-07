@@ -129,7 +129,7 @@ function ContactPage() {
                     <input required name="name" className="contact-input" placeholder="Jane Doe" />
                   </ContactField>
                   <ContactField label="Phone">
-                    <input name="phone" type="tel" className="contact-input" placeholder="(480) 555-0123" />
+                    <input name="phone" type="tel" className="contact-input" placeholder="(602) 689-5361" />
                   </ContactField>
                 </div>
                 <ContactField label="Email">

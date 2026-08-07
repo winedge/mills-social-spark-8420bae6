@@ -180,7 +180,7 @@ export function ReservationModal() {
                     required
                     name="phone"
                     type="tel"
-                    placeholder="(480) 555-0123"
+                    placeholder="(602) 689-5361"
                     className="input-base"
                   />
                 </Field>
