@@ -7,8 +7,9 @@ import {
   Trash2, Check, LayoutDashboard, UtensilsCrossed, PartyPopper, Trophy,
   Settings as SettingsIcon, Menu as MenuIcon, X, Plus, Pencil, Save,
   MessageCircle, Search, ChevronRight, Sparkles, FolderTree, Eye, Activity,
-  TrendingUp, Tv, CalendarClock, Upload, Briefcase,
+  TrendingUp, Tv, CalendarClock, Upload, Briefcase, FileText,
 } from "lucide-react";
+
 import logo from "@/assets/mills-logo.png";
 import { estimateCalories } from "@/lib/menu-ai.functions";
 import { sendCustomerConfirmation } from "@/lib/notify.functions";
@@ -2160,27 +2161,36 @@ function CareersSection() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4">
-        {rows.map((r) => (
-          <div key={r.id} className={`p-6 border bg-surface/40 flex flex-wrap items-start justify-between gap-4 ${r.is_active ? "border-border" : "border-dashed opacity-60"}`}>
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h4 className="font-display text-2xl uppercase tracking-tight">{r.title}</h4>
-                {!r.is_active && <span className="font-mono text-[9px] bg-muted px-1.5 py-0.5">INACTIVE</span>}
-              </div>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
-                <span>{r.department}</span>
-                <span>{r.type}</span>
-                <span>{r.location}</span>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => setEditing(r)} className="p-2 border border-border hover:border-accent hover:text-accent transition-colors"><Pencil className="size-4" /></button>
-              <button onClick={() => remove(r.id)} className="p-2 border border-border hover:border-red-500 hover:text-red-500 transition-colors"><Trash2 className="size-4" /></button>
-            </div>
-          </div>
-        ))}
+      <div className="border border-border overflow-x-auto bg-surface/40">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/30 text-[10px] uppercase tracking-widest font-mono text-muted-foreground">
+            <tr>
+              <th className="text-left px-4 py-3">Position</th>
+              <th className="text-left px-4 py-3">Dept</th>
+              <th className="text-left px-4 py-3">Type</th>
+              <th className="text-left px-4 py-3 text-center">Active</th>
+              <th className="text-right px-4 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.id} className={`border-t border-border ${!r.is_active ? "opacity-60" : ""}`}>
+                <td className="px-4 py-3 font-medium uppercase">{r.title}</td>
+                <td className="px-4 py-3 font-mono text-[10px] text-muted-foreground uppercase">{r.department}</td>
+                <td className="px-4 py-3 font-mono text-[10px] text-muted-foreground uppercase">{r.type}</td>
+                <td className="px-4 py-3 text-center">
+                  <span className={`inline-block w-2 h-2 rounded-full ${r.is_active ? "bg-green-500" : "bg-muted"}`} />
+                </td>
+                <td className="px-4 py-3 text-right space-x-1">
+                  <button onClick={() => setEditing(r)} className="p-1.5 border border-border hover:border-accent hover:text-accent transition-colors"><Pencil className="size-3.5" /></button>
+                  <button onClick={() => remove(r.id)} className="p-1.5 border border-border hover:border-red-500 hover:text-red-500 transition-colors"><Trash2 className="size-3.5" /></button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
+
     </div>
   );
 }
@@ -2228,41 +2238,85 @@ function ApplicationsSection() {
       </div>
 
       {filtered.length === 0 ? <Empty label="No applications yet" /> : (
-        <div className="space-y-4">
-          {filtered.map((r) => (
-            <div key={r.id} className="border border-border bg-surface/40 overflow-hidden">
-               <div className="p-6 grid grid-cols-1 lg:grid-cols-[1fr_2fr_1fr] gap-8">
-                  <div>
-                    <p className="font-mono text-[10px] text-accent uppercase tracking-widest mb-1">{r.job_listings?.title || "General Application"}</p>
-                    <h4 className="font-display text-2xl uppercase mb-1">{r.full_name}</h4>
-                    <div className="space-y-1">
-                      <a href={`mailto:${r.email}`} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-accent"><Mail className="size-3" /> {r.email}</a>
-                      <a href={`tel:${r.phone}`} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-accent"><Phone className="size-3" /> {r.phone}</a>
+        <div className="border border-border overflow-x-auto bg-surface/40">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/30 text-[10px] uppercase tracking-widest font-mono text-muted-foreground">
+              <tr>
+                <th className="text-left px-4 py-3">Date</th>
+                <th className="text-left px-4 py-3">Candidate</th>
+                <th className="text-left px-4 py-3">Position</th>
+                <th className="text-left px-4 py-3">Status</th>
+                <th className="text-right px-4 py-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((r) => (
+                <tr key={r.id} className="border-t border-border group">
+                  <td className="px-4 py-3 font-mono text-[9px] text-muted-foreground">
+                    {new Date(r.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-foreground">{r.full_name}</div>
+                    <div className="flex gap-3 mt-0.5">
+                      <a href={`mailto:${r.email}`} className="text-[10px] text-muted-foreground hover:text-accent transition-colors">{r.email}</a>
+                      <a href={`tel:${r.phone}`} className="text-[10px] text-muted-foreground hover:text-accent transition-colors">{r.phone}</a>
                     </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-accent">
+                      {r.job_listings?.title || "General Application"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`font-mono text-[9px] uppercase px-1.5 py-0.5 ${
+                      r.status === 'rejected' ? 'bg-red-500/10 text-red-500' : 
+                      r.status === 'reviewed' ? 'bg-green-500/10 text-green-500' : 
+                      'bg-accent/10 text-accent'
+                    }`}>
+                      {r.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right space-x-1 whitespace-nowrap">
                     {r.resume_url && (
-                       <a href={r.resume_url} target="_blank" rel="noopener noreferrer" className="inline-block mt-4 px-4 py-2 border border-accent text-accent font-mono text-[10px] uppercase tracking-widest hover:bg-accent hover:text-white transition-colors">Download Resume</a>
+                      <a 
+                        href={r.resume_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="inline-flex items-center justify-center p-1.5 border border-border hover:bg-accent hover:text-white transition-colors"
+                        title="Download Resume"
+                      >
+                        <FileText className="size-3.5" />
+                      </a>
                     )}
-                  </div>
-                  <div>
-                    <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest mb-2">Message / Cover Letter</p>
-                    <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed italic">{r.cover_letter || "No message provided."}</p>
-                  </div>
-                  <div className="flex flex-col justify-between items-end">
-                    <div className="text-right">
-                       <p className="font-mono text-[10px] text-muted-foreground uppercase mb-2">Status: <span className="text-accent">{r.status}</span></p>
-                       <div className="flex gap-1">
-                          <button onClick={() => updateStatus(r.id, "reviewed")} title="Mark Reviewed" className="p-2 border border-border hover:bg-accent hover:text-white transition-colors"><Check className="size-4" /></button>
-                          <button onClick={() => updateStatus(r.id, "rejected")} title="Reject" className="p-2 border border-border hover:bg-red-500 hover:text-white transition-colors"><X className="size-4" /></button>
-                          <button onClick={() => remove(r.id)} title="Delete" className="p-2 border border-border hover:bg-red-600 hover:text-white transition-colors"><Trash2 className="size-4" /></button>
-                       </div>
-                    </div>
-                    <p className="font-mono text-[9px] text-muted-foreground mt-4">{new Date(r.created_at).toLocaleString()}</p>
-                  </div>
-               </div>
-            </div>
-          ))}
+                    <button 
+                      onClick={() => updateStatus(r.id, "reviewed")} 
+                      className="p-1.5 border border-border hover:bg-green-600 hover:text-white transition-colors"
+                      title="Mark Reviewed"
+                    >
+                      <Check className="size-3.5" />
+                    </button>
+                    <button 
+                      onClick={() => updateStatus(r.id, "rejected")} 
+                      className="p-1.5 border border-border hover:bg-red-500 hover:text-white transition-colors"
+                      title="Reject"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                    <button 
+                      onClick={() => remove(r.id)} 
+                      className="p-1.5 border border-border hover:bg-red-600 hover:text-white transition-colors"
+                      title="Delete"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
   );
+
 }
