@@ -12,10 +12,10 @@ export type CareerApplication = {
 async function getAdminEmail(): Promise<string> {
   const { data } = await supabaseAdmin
     .from("site_settings")
-    .select("email")
+    .select("notification_email")
     .eq("id", 1)
     .maybeSingle();
-  return data?.email ?? "admin@millsmodernsocial.com";
+  return data?.notification_email ?? "admin@millsmodernsocial.com";
 }
 
 async function getAdminWhatsApp(): Promise<string> {
@@ -42,17 +42,15 @@ export async function notifyCareerApplication(app: CareerApplication) {
     `Resume: ${app.resumeUrl}`,
   ].filter(Boolean).join("\n");
 
-  // Email Notification via Lovable Cloud Emails (transactional)
-  // We use the supabase-internal queue if set up, or a direct RPC if available.
-  // For now, we'll try to use a generic 'send_email' RPC if it exists, or just log for infra setup.
+  // Email Notification via generic RPC if available
   try {
-     await supabaseAdmin.rpc("send_transactional_email", {
+     await (supabaseAdmin as any).rpc("send_transactional_email", {
       to_email: adminEmail,
       subject,
       body_text: body
     });
   } catch (e) {
-    console.error("Email notification failed. Ensure 'email_domain--setup_email_infra' was run.", e);
+    console.warn("Email RPC failed (likely not created yet):", e);
   }
 
   // WhatsApp Notification (using existing logic)
