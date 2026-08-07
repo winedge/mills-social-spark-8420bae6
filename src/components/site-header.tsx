@@ -29,10 +29,10 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
   const contact = useContactInfo();
 
   const socialLinks = [
-    { icon: Instagram, href: contact?.instagram_url || "#", label: "Instagram" },
-    { icon: Facebook, href: "#", label: "Facebook" },
-    { icon: Twitter, href: contact?.x_url || "#", label: "X" },
-    { icon: Music2, href: contact?.tiktok_url || "#", label: "TikTok" },
+    { icon: Instagram, href: contact?.instagram_url || "#", label: "Instagram", color: "#E4405F" },
+    { icon: Facebook, href: contact?.facebook_url || "#", label: "Facebook", color: "#1877F2" },
+    { icon: Twitter, href: contact?.x_url || "#", label: "X", color: "#000000" },
+    { icon: Music2, href: contact?.tiktok_url || "#", label: "TikTok", color: "#000000" },
   ];
 
   return (
@@ -79,7 +79,8 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
                 href={s.href}
                 target="_blank"
                 rel="noreferrer"
-                className="text-muted-foreground hover:text-accent transition-colors"
+                className="text-muted-foreground hover:brightness-125 transition-all duration-300"
+                style={{ color: s.color }}
                 aria-label={s.label}
               >
                 <s.icon className="size-5" />
@@ -189,7 +190,8 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
                   href={s.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-muted-foreground hover:text-accent transition-colors"
+                  className="text-muted-foreground hover:brightness-125 transition-all duration-300"
+                  style={{ color: s.color }}
                 >
                   <s.icon className="size-6" />
                 </a>
