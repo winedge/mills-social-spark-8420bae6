@@ -2233,7 +2233,7 @@ function ApplicationsSection() {
             <div key={r.id} className="border border-border bg-surface/40 overflow-hidden">
                <div className="p-6 grid grid-cols-1 lg:grid-cols-[1fr_2fr_1fr] gap-8">
                   <div>
-                    <p className="font-mono text-[10px] text-accent uppercase tracking-widest mb-1">{r.job_listings?.title || "Deleted Position"}</p>
+                    <p className="font-mono text-[10px] text-accent uppercase tracking-widest mb-1">{r.job_listings?.title || "General Application"}</p>
                     <h4 className="font-display text-2xl uppercase mb-1">{r.full_name}</h4>
                     <div className="space-y-1">
                       <a href={`mailto:${r.email}`} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-accent"><Mail className="size-3" /> {r.email}</a>

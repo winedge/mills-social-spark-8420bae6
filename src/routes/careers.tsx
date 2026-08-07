@@ -23,21 +23,21 @@ function CareersPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>, jobId?: string) => {
     e.preventDefault();
-    if (!selectedJob) return;
+    const targetJobId = jobId || selectedJob?.id;
 
     setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
     
     try {
       const { error } = await supabase.from("job_applications").insert({
-        job_id: selectedJob.id,
+        job_id: targetJobId || null,
         full_name: formData.get("fullName") as string,
         email: formData.get("email") as string,
         phone: formData.get("phone") as string,
         cover_letter: formData.get("message") as string,
-        // Resume upload would go here in a full implementation with storage
+        resume_url: formData.get("resumeUrl") as string,
         status: "pending",
       });
 
@@ -271,6 +271,110 @@ function CareersPage() {
                   Pick a position on the left to see full details and submit your application.
                 </p>
               </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Generic Application Section */}
+      <section className="py-24 px-6 border-t border-border bg-surface/30">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="font-display text-4xl uppercase mb-4">Don't see the <span className="text-accent">Right Role?</span></h2>
+            <p className="text-muted-foreground">
+              Submit a general application. If we have any requirements that match your skills, we'll reach out to you.
+            </p>
+          </div>
+
+          <div className="bg-card border-2 border-border p-8 md:p-12 shadow-[12px_12px_0px_0px_rgba(56,189,248,0.1)]">
+            {submitted && !selectedJob ? (
+              <div className="text-center py-12">
+                <div className="size-20 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle2 className="size-10" />
+                </div>
+                <h3 className="font-display text-3xl uppercase mb-3">Submission Received</h3>
+                <p className="text-muted-foreground mb-8">
+                  Thanks for your interest in joining Mill's! We've added your details to our talent pool.
+                </p>
+                <button 
+                  onClick={() => setSubmitted(false)}
+                  className="px-8 py-3 bg-accent text-primary-foreground font-bold uppercase tracking-widest text-sm hover:scale-105 transition-transform"
+                >
+                  Apply Again
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={(e) => handleSubmit(e)} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Full Name</label>
+                    <input 
+                      required 
+                      name="fullName"
+                      className="w-full bg-background border border-border p-3 outline-none focus:border-accent transition-colors" 
+                      placeholder="Your Name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Email Address</label>
+                    <input 
+                      required 
+                      type="email"
+                      name="email"
+                      className="w-full bg-background border border-border p-3 outline-none focus:border-accent transition-colors" 
+                      placeholder="your@email.com"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Phone Number</label>
+                    <input 
+                      required 
+                      name="phone"
+                      className="w-full bg-background border border-border p-3 outline-none focus:border-accent transition-colors" 
+                      placeholder="(555) 000-0000"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Resume (Link)</label>
+                    <input 
+                      name="resumeUrl"
+                      className="w-full bg-background border border-border p-3 outline-none focus:border-accent transition-colors" 
+                      placeholder="Link to PDF or Portfolio"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Tell us about yourself</label>
+                  <textarea 
+                    name="message"
+                    rows={4}
+                    className="w-full bg-background border border-border p-3 outline-none focus:border-accent transition-colors resize-none" 
+                    placeholder="Experience, interests, and what you're looking for..."
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-4 bg-accent text-primary-foreground font-black uppercase tracking-widest text-sm hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="size-4" />
+                      Submit Application
+                    </>
+                  )}
+                </button>
+              </form>
             )}
           </div>
         </div>
