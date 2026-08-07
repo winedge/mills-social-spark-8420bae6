@@ -31,8 +31,8 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
   const socialLinks = [
     { icon: Instagram, href: contact?.instagram_url || "#", label: "Instagram", color: "#E4405F" },
     { icon: Facebook, href: contact?.facebook_url || "#", label: "Facebook", color: "#1877F2" },
-    { icon: Twitter, href: contact?.x_url || "#", label: "X", color: "#000000" },
-    { icon: Music2, href: contact?.tiktok_url || "#", label: "TikTok", color: "#000000" },
+    { icon: Twitter, href: contact?.x_url || "#", label: "X", color: "#FFFFFF" },
+    { icon: Music2, href: contact?.tiktok_url || "#", label: "TikTok", color: "#FFFFFF" },
   ];
 
   return (
