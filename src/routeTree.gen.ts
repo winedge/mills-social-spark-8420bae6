@@ -14,6 +14,7 @@ import { Route as PlayRouteImport } from './routes/play'
 import { Route as PartyRouteImport } from './routes/party'
 import { Route as MenuRouteImport } from './routes/menu'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CareersRouteImport } from './routes/careers'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -42,6 +43,11 @@ const ContactRoute = ContactRouteImport.update({
   path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CareersRoute = CareersRouteImport.update({
+  id: '/careers',
+  path: '/careers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -56,6 +62,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/careers': typeof CareersRoute
   '/contact': typeof ContactRoute
   '/menu': typeof MenuRoute
   '/party': typeof PartyRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/careers': typeof CareersRoute
   '/contact': typeof ContactRoute
   '/menu': typeof MenuRoute
   '/party': typeof PartyRoute
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/careers': typeof CareersRoute
   '/contact': typeof ContactRoute
   '/menu': typeof MenuRoute
   '/party': typeof PartyRoute
@@ -86,17 +95,27 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/careers'
     | '/contact'
     | '/menu'
     | '/party'
     | '/play'
     | '/sports'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/contact' | '/menu' | '/party' | '/play' | '/sports'
+  to:
+    | '/'
+    | '/admin'
+    | '/careers'
+    | '/contact'
+    | '/menu'
+    | '/party'
+    | '/play'
+    | '/sports'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/careers'
     | '/contact'
     | '/menu'
     | '/party'
@@ -107,6 +126,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  CareersRoute: typeof CareersRoute
   ContactRoute: typeof ContactRoute
   MenuRoute: typeof MenuRoute
   PartyRoute: typeof PartyRoute
@@ -151,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/careers': {
+      id: '/careers'
+      path: '/careers'
+      fullPath: '/careers'
+      preLoaderRoute: typeof CareersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -171,6 +198,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  CareersRoute: CareersRoute,
   ContactRoute: ContactRoute,
   MenuRoute: MenuRoute,
   PartyRoute: PartyRoute,

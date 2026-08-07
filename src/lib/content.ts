@@ -245,3 +245,31 @@ export function useFeatureFlag(key: string, fallback = true) {
   }, [key]);
   return { enabled, loading };
 }
+
+export type DbJobListing = {
+  id: string;
+  title: string;
+  department: string | null;
+  location: string | null;
+  type: string | null;
+  description: string | null;
+  is_active: boolean;
+  created_at: string;
+};
+
+export function useJobListings() {
+  const [items, setItems] = useState<DbJobListing[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    supabase
+      .from("job_listings")
+      .select("*")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        setItems((data ?? []) as DbJobListing[]);
+        setLoading(false);
+      });
+  }, []);
+  return { items, loading };
+}

@@ -20,6 +20,7 @@ const navLinks = [
   { to: "/play", label: "Play" },
   { to: "/party", label: "Party" },
   { to: "/contact", label: "Contact" },
+  { to: "/careers", label: "Join Our Team" },
 ] as const;
 
 export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
