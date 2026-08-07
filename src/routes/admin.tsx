@@ -249,6 +249,8 @@ function Dashboard({ email }: { email: string }) {
           {section === "pulse" && <PulseSection />}
           {section === "marquee" && <MarqueeSection />}
           {section === "settings" && <SettingsSection />}
+          {section === "careers" && <CareersSection />}
+          {section === "applications" && <ApplicationsSection />}
         </main>
       </div>
     </div>
