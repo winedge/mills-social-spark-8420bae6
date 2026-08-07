@@ -2070,3 +2070,195 @@ function SubscribersSection() {
     </div>
   );
 }
+
+/* ================= CAREERS ================= */
+
+function CareersSection() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState<any>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const { data } = await supabase.from("job_listings").select("*").order("created_at", { ascending: false });
+    setRows(data ?? []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const save = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const payload = {
+      title: String(fd.get("title")),
+      department: String(fd.get("department")),
+      type: String(fd.get("type")),
+      location: String(fd.get("location")),
+      description: String(fd.get("description")),
+      is_active: fd.get("is_active") === "on",
+    };
+
+    if (editing?.id) {
+      await supabase.from("job_listings").update(payload).eq("id", editing.id);
+    } else {
+      await supabase.from("job_listings").insert(payload);
+    }
+    setEditing(null);
+    load();
+  };
+
+  const remove = async (id: string) => {
+    if (!confirm("Delete this job listing?")) return;
+    await supabase.from("job_listings").delete().eq("id", id);
+    load();
+  };
+
+  if (loading) return <div className="p-10 grid place-items-center"><Loader2 className="size-5 animate-spin text-accent" /></div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <p className="text-sm text-muted-foreground">{rows.length} Listings</p>
+        <button onClick={() => setEditing({ is_active: true })} className="flex items-center gap-2 px-4 h-10 bg-accent text-primary-foreground text-[10px] font-bold uppercase tracking-widest">
+          <Plus className="size-3" /> New Listing
+        </button>
+      </div>
+
+      {editing && (
+        <div className="border border-accent/40 bg-accent/5 p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-accent/20 pb-4 mb-4">
+             <h3 className="font-display text-xl uppercase">{editing.id ? "Edit" : "New"} Job Listing</h3>
+             <button onClick={() => setEditing(null)}><X className="size-4" /></button>
+          </div>
+          <form onSubmit={save} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2"><Input name="title" label="Job Title" defaultValue={editing.title} required /></div>
+            <Input name="department" label="Department" defaultValue={editing.department} />
+            <Input name="type" label="Type (Full-time, Part-time)" defaultValue={editing.type} />
+            <Input name="location" label="Location" defaultValue={editing.location} />
+            <div className="flex items-center gap-2 pt-6">
+              <input type="checkbox" name="is_active" id="is_active" defaultChecked={editing.is_active} className="accent-accent" />
+              <label htmlFor="is_active" className="text-xs font-bold uppercase tracking-widest cursor-pointer">Active / Visible</label>
+            </div>
+            <div className="md:col-span-2">
+              <label className="block font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Description</label>
+              <textarea name="description" rows={5} defaultValue={editing.description} className="w-full bg-background border border-border p-3 text-sm focus:border-accent outline-none transition-colors" />
+            </div>
+            <div className="md:col-span-2 pt-4 flex gap-2">
+              <button type="submit" className="flex items-center gap-2 px-6 h-11 bg-accent text-primary-foreground text-[10px] font-bold uppercase tracking-widest">
+                <Save className="size-3" /> Save Listing
+              </button>
+              <button type="button" onClick={() => setEditing(null)} className="px-6 h-11 border border-border text-[10px] font-bold uppercase tracking-widest">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-4">
+        {rows.map((r) => (
+          <div key={r.id} className={`p-6 border bg-surface/40 flex flex-wrap items-start justify-between gap-4 ${r.is_active ? "border-border" : "border-dashed opacity-60"}`}>
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <h4 className="font-display text-2xl uppercase tracking-tight">{r.title}</h4>
+                {!r.is_active && <span className="font-mono text-[9px] bg-muted px-1.5 py-0.5">INACTIVE</span>}
+              </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
+                <span>{r.department}</span>
+                <span>{r.type}</span>
+                <span>{r.location}</span>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setEditing(r)} className="p-2 border border-border hover:border-accent hover:text-accent transition-colors"><Pencil className="size-4" /></button>
+              <button onClick={() => remove(r.id)} className="p-2 border border-border hover:border-red-500 hover:text-red-500 transition-colors"><Trash2 className="size-4" /></button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ApplicationsSection() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("all");
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const { data } = await supabase.from("job_applications").select("*, job_listings(title)").order("created_at", { ascending: false });
+    setRows(data ?? []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const updateStatus = async (id: string, status: string) => {
+    await supabase.from("job_applications").update({ status }).eq("id", id);
+    load();
+  };
+
+  const remove = async (id: string) => {
+    if (!confirm("Delete this application?")) return;
+    await supabase.from("job_applications").delete().eq("id", id);
+    load();
+  };
+
+  const filtered = rows.filter(r => filter === "all" || r.status === filter);
+
+  if (loading) return <div className="p-10 grid place-items-center"><Loader2 className="size-5 animate-spin text-accent" /></div>;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center gap-4 flex-wrap">
+        <p className="text-sm text-muted-foreground">{filtered.length} Applications</p>
+        <div className="flex border border-border">
+          {["all", "pending", "reviewed", "rejected"].map((f) => (
+            <button key={f} onClick={() => setFilter(f)} className={`px-4 h-9 text-[10px] font-bold uppercase tracking-widest border-r border-border last:border-r-0 ${filter === f ? "bg-accent text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+              {f}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {filtered.length === 0 ? <Empty label="No applications yet" /> : (
+        <div className="space-y-4">
+          {filtered.map((r) => (
+            <div key={r.id} className="border border-border bg-surface/40 overflow-hidden">
+               <div className="p-6 grid grid-cols-1 lg:grid-cols-[1fr_2fr_1fr] gap-8">
+                  <div>
+                    <p className="font-mono text-[10px] text-accent uppercase tracking-widest mb-1">{r.job_listings?.title || "Deleted Position"}</p>
+                    <h4 className="font-display text-2xl uppercase mb-1">{r.full_name}</h4>
+                    <div className="space-y-1">
+                      <a href={`mailto:${r.email}`} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-accent"><Mail className="size-3" /> {r.email}</a>
+                      <a href={`tel:${r.phone}`} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-accent"><Phone className="size-3" /> {r.phone}</a>
+                    </div>
+                    {r.resume_url && (
+                       <a href={r.resume_url} target="_blank" rel="noopener" className="inline-block mt-4 px-4 py-2 border border-accent text-accent font-mono text-[10px] uppercase tracking-widest hover:bg-accent hover:text-white transition-colors">View Resume</a>
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest mb-2">Message / Cover Letter</p>
+                    <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed italic">{r.cover_letter || "No message provided."}</p>
+                  </div>
+                  <div className="flex flex-col justify-between items-end">
+                    <div className="text-right">
+                       <p className="font-mono text-[10px] text-muted-foreground uppercase mb-2">Status: <span className="text-accent">{r.status}</span></p>
+                       <div className="flex gap-1">
+                          <button onClick={() => updateStatus(r.id, "reviewed")} title="Mark Reviewed" className="p-2 border border-border hover:bg-accent hover:text-white transition-colors"><Check className="size-4" /></button>
+                          <button onClick={() => updateStatus(r.id, "rejected")} title="Reject" className="p-2 border border-border hover:bg-red-500 hover:text-white transition-colors"><X className="size-4" /></button>
+                          <button onClick={() => remove(r.id)} title="Delete" className="p-2 border border-border hover:bg-red-600 hover:text-white transition-colors"><Trash2 className="size-4" /></button>
+                       </div>
+                    </div>
+                    <p className="font-mono text-[9px] text-muted-foreground mt-4">{new Date(r.created_at).toLocaleString()}</p>
+                  </div>
+               </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
