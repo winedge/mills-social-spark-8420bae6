@@ -274,7 +274,7 @@ function NavButton({ item, active, nested, onClick }: { item: NavItem; active: b
 /* ================= OVERVIEW ================= */
 
 function Overview({ onNav }: { onNav: (s: Section) => void }) {
-  const [stats, setStats] = useState({ res: 0, sp: 0, newRes: 0, newSp: 0, menu: 0 });
+  const [stats, setStats] = useState({ res: 0, sp: 0, newRes: 0, newSp: 0, menu: 0, jobs: 0, apps: 0 });
   const [range, setRange] = useState<"week" | "month" | "year">("week");
   const [analytics, setAnalytics] = useState<AnalyticsStats | null>(null);
   const [aLoading, setALoading] = useState(true);
