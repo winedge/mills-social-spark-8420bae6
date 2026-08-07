@@ -17,6 +17,7 @@ const tickerItems = [
 const navLinks = [
   { to: "/", label: "Home" },
   { to: "/menu", label: "Menu" },
+  { to: "/events", label: "Events" },
   { to: "/sports", label: "Sports" },
   { to: "/play", label: "Play" },
   { to: "/party", label: "Party" },
