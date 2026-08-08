@@ -126,3 +126,14 @@
   35% { transform: scale(1.28); }
   100% { transform: scale(1); }
 }
+
+/* Hide platform branding */
+#lovable-badge,
+.lovable-badge,
+[class*="lovable-badge"],
+[id*="lovable-badge"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
