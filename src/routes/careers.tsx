@@ -10,6 +10,7 @@ import { submitCareerApplication } from "@/lib/careers.functions";
 import { useServerFn } from "@tanstack/react-start";
 
 import WarpText from "@/components/ui/warp-text";
+import teamPhoto from "@/assets/team-photo.jpg.asset.json";
 
 
 export const Route = createFileRoute("/careers")({
@@ -153,6 +154,23 @@ function CareersPage() {
             </p>
           </div>
 
+          <div className="relative mb-12 border border-border overflow-hidden group">
+            <img
+              src={teamPhoto.url}
+              alt="Mill's Modern Social team behind the bar holding signature dishes"
+              loading="lazy"
+              className="w-full h-[260px] md:h-[440px] object-cover object-center transition-transform duration-700 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent pointer-events-none" />
+            <div className="absolute bottom-0 left-0 p-5 md:p-8">
+              <span className="font-mono text-[10px] md:text-xs tracking-[0.35em] uppercase text-accent block mb-1">
+                The Crew
+              </span>
+              <p className="font-display text-2xl md:text-4xl uppercase leading-none">
+                This could be your team
+              </p>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="p-8 bg-surface border border-border group hover:border-accent transition-colors">
