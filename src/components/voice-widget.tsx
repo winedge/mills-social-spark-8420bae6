@@ -18,7 +18,7 @@ export function VoiceWidget() {
       // @ts-ignore
       if (window.vw) {
         // @ts-ignore
-        window.vw('init', 'wgt_r3PcLKxueW4Z6mc0hJuyomgg');
+        window.vw('init', 'wgt_5KLotoIys-h1lAeQGlM1lokn');
       }
     };
 
