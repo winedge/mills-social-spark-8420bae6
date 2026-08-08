@@ -2,28 +2,26 @@ import { useEffect } from "react";
 
 export function VoiceWidget() {
   useEffect(() => {
-    // Check if script already exists to avoid duplicate injection
-    if (document.getElementById("vw-script")) return;
-
-    // Define the initialization function as per the provided snippet
-    // @ts-ignore
-    window.vw = window.vw || function() {
+    // The widget provider's exact recommended implementation
+    // Using a self-invoking function to match the requested format precisely
+    (function(w, d, s, o, f, js) {
       // @ts-ignore
-      (window.vw.q = window.vw.q || []).push(arguments);
-    };
+      if (w[o]) return;
+      // @ts-ignore
+      w[o] = w[o] || function() {
+        // @ts-ignore
+        (w[o].q = w[o].q || []).push(arguments);
+      };
+      js = d.createElement(s);
+      // @ts-ignore
+      js.id = o;
+      // @ts-ignore
+      js.src = f;
+      // @ts-ignore
+      js.async = 1;
+      (d.head || d.body).appendChild(js);
+    }(window, document, 'script', 'vw', 'https://n2nverse.ai/widget/embed.js'));
 
-    const script = document.createElement("script");
-    script.id = "vw-script";
-    script.src = "https://n2nverse.ai/widget/embed.js";
-    script.async = true;
-    
-    // Append to head or body
-    const target = document.head || document.body;
-    if (target) {
-      target.appendChild(script);
-    }
-
-    // Call init immediately (it gets queued if script isn't loaded yet)
     // @ts-ignore
     window.vw('init', 'wgt_5KLotoIys-h1lAeQGlM1lokn');
   }, []);
