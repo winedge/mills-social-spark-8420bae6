@@ -121,14 +121,19 @@ function CareersPage() {
       <SiteHeader showTicker={false} />
 
       {/* Hero / Why Join Section */}
-      <section className="relative pt-8 pb-6 px-6 overflow-hidden border-b border-border">
-        <div className="absolute inset-0 pointer-events-none opacity-20">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-accent/20 blur-[120px] rounded-full" />
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/10 blur-[120px] rounded-full" />
+      <section className="relative pt-16 pb-14 px-6 overflow-hidden border-b border-border">
+        <div className="absolute inset-0">
+          <img
+            src={teamPhoto.url}
+            alt="Mill's Modern Social team behind the bar holding signature dishes"
+            className="w-full h-full object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-background/75" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-background/50 to-background" />
         </div>
-        
+
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center max-w-4xl mx-auto mb-10">
+          <div className="text-center max-w-4xl mx-auto">
             <span className="font-mono text-accent text-sm md:text-base tracking-[0.4em] block mb-2 uppercase font-bold">
               Join The Circle
             </span>
@@ -153,24 +158,12 @@ function CareersPage() {
               We aren't just a sports bar; we're a community. We're looking for passionate individuals who love high-energy environments and exceptional hospitality.
             </p>
           </div>
+        </div>
+      </section>
 
-          <div className="relative mb-12 border border-border overflow-hidden group">
-            <img
-              src={teamPhoto.url}
-              alt="Mill's Modern Social team behind the bar holding signature dishes"
-              loading="lazy"
-              className="w-full h-[260px] md:h-[440px] object-cover object-center transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent pointer-events-none" />
-            <div className="absolute bottom-0 left-0 p-5 md:p-8">
-              <span className="font-mono text-[10px] md:text-xs tracking-[0.35em] uppercase text-accent block mb-1">
-                The Crew
-              </span>
-              <p className="font-display text-2xl md:text-4xl uppercase leading-none">
-                This could be your team
-              </p>
-            </div>
-          </div>
+      <section className="relative px-6 py-14">
+        <div className="max-w-7xl mx-auto">
+
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="p-8 bg-surface border border-border group hover:border-accent transition-colors">
