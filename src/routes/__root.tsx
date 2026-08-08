@@ -137,6 +137,7 @@ function RootComponent() {
       <RoutePreloader />
       <ReservationModal />
       <AnalyticsTracker />
+      <VoiceWidget />
     </QueryClientProvider>
 
   );
