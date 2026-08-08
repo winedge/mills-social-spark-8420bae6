@@ -15,6 +15,7 @@ import { MobileBottomNav } from "../components/mobile-bottom-nav";
 import { RoutePreloader } from "../components/route-preloader";
 import { ReservationModal } from "../components/reservation-modal";
 import { AnalyticsTracker } from "../components/analytics-tracker";
+import { VoiceWidget } from "../components/voice-widget";
 
 
 function NotFoundComponent() {
@@ -136,6 +137,7 @@ function RootComponent() {
       <RoutePreloader />
       <ReservationModal />
       <AnalyticsTracker />
+      <VoiceWidget />
     </QueryClientProvider>
 
   );
