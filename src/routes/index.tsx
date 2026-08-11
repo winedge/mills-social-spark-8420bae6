@@ -224,7 +224,7 @@ function Home() {
             TEMPE, AZ · MODERN SPORTS SOCIAL
           </span>
           <h2 className="font-display text-5xl md:text-6xl lg:text-7xl uppercase leading-[1.05] tracking-tight mb-4 text-balance">
-            Where Tempe comes to watch, eat & celebrate
+            Were Tempe comes to watch, eat & celebrate
           </h2>
           <p className="text-muted-foreground max-w-lg mx-auto mb-6 text-base md:text-lg text-pretty">
             Ice-cold drinks. Scratch-made food. Every big game on the biggest screens.
