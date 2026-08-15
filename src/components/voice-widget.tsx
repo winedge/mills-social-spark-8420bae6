@@ -2,13 +2,24 @@ import { useEffect } from "react";
 
 export function VoiceWidget() {
   useEffect(() => {
-    // Hide for mobile on menu page
-    const isMenuPage = window.location.pathname === "/menu";
-    const isMobile = window.innerWidth <= 768;
-    if (isMenuPage && isMobile) return;
+    const handleWidget = () => {
+      const isMenuPage = window.location.pathname === "/menu";
+      const isMobile = window.innerWidth <= 768;
+      const shouldHide = isMenuPage && isMobile;
 
+      const widgetEl = document.querySelector('.n2n-voice-widget-container') as HTMLElement;
+      const widgetButton = document.getElementById('vw-btn') as HTMLElement;
+      
+      if (shouldHide) {
+        if (widgetEl) widgetEl.style.display = 'none';
+        if (widgetButton) widgetButton.style.display = 'none';
+      } else {
+        if (widgetEl) widgetEl.style.display = 'block';
+        if (widgetButton) widgetButton.style.display = 'block';
+      }
+    };
 
-    // Exact logic from the snippet, but typed for TS safely
+    // Initialize widget
     const w = window as any;
     const d = document;
     const s = 'script';
@@ -27,6 +38,18 @@ export function VoiceWidget() {
     }
 
     w[o]('init', 'wgt_5KLotoIys-h1lAeQGlM1lokn');
+
+    // Handle visibility on load and window changes
+    handleWidget();
+    window.addEventListener('resize', handleWidget);
+    
+    // Check periodically since the widget might mount late
+    const interval = setInterval(handleWidget, 1000);
+
+    return () => {
+      window.removeEventListener('resize', handleWidget);
+      clearInterval(interval);
+    };
   }, []);
 
   return null;
