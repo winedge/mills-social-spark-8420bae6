@@ -1,7 +1,30 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useLocation } from "@tanstack/react-router";
 
 export function VoiceWidget() {
+  const location = useLocation();
+  const [isClient, setIsClient] = useState(false);
+
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+
+    // Standardize path comparison
+    const isMenuPage = location.pathname === "/menu" || location.href.includes("/menu");
+    
+    if (isMenuPage) {
+      document.body.classList.add('is-menu-page');
+    } else {
+      document.body.classList.remove('is-menu-page');
+    }
+  }, [location, isClient]);
+
+  useEffect(() => {
+    if (!isClient) return;
+
     // Add CSS rule for mobile menu page to hide elements
     const style = document.createElement('style');
     style.id = 'vw-mobile-hide-css';
