@@ -73,6 +73,10 @@ export function VoiceWidget() {
       document.head.removeChild(style);
       document.body.classList.remove('is-menu-page');
       observer.disconnect();
+      clearInterval(interval);
+      window.removeEventListener('popstate', handleUrlChange);
+      window.removeEventListener('pushstate', handleUrlChange);
+      window.removeEventListener('replacestate', handleUrlChange);
     };
   }, []);
 
