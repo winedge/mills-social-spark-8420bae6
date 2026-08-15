@@ -624,7 +624,30 @@ function MenuPage() {
       {/* Menu list */}
       {!isDailyTab && (
       <section className="px-4 md:px-6 py-12 md:py-16 max-w-7xl mx-auto">
-        {grouped.length === 0 ? (
+        {loading ? (
+          <div className="space-y-16 md:space-y-20">
+            {[1, 2, 3].map((group) => (
+              <div key={group} className="space-y-8">
+                <div className="h-10 w-48 bg-surface animate-pulse border-b border-border" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 lg:gap-x-12 gap-y-8">
+                  {[1, 2, 3, 4, 5, 6].map((item) => (
+                    <div key={item} className="flex gap-4 pb-6 border-b border-border/60 animate-pulse">
+                      <div className="size-20 md:size-24 bg-surface shrink-0" />
+                      <div className="flex-1 space-y-3">
+                        <div className="h-5 w-3/4 bg-surface" />
+                        <div className="h-4 w-full bg-surface" />
+                        <div className="flex justify-between items-center pt-2">
+                          <div className="h-6 w-16 bg-surface" />
+                          <div className="h-4 w-12 bg-surface" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : grouped.length === 0 ? (
           <p className="text-center text-muted-foreground font-mono text-sm py-24">
             NO ITEMS MATCH YOUR FILTER.
           </p>
