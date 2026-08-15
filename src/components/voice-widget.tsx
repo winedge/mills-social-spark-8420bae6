@@ -2,6 +2,12 @@ import { useEffect } from "react";
 
 export function VoiceWidget() {
   useEffect(() => {
+    // Hide for mobile on menu page
+    const isMenuPage = window.location.pathname === "/menu";
+    const isMobile = window.innerWidth <= 768;
+    if (isMenuPage && isMobile) return;
+
+
     // Exact logic from the snippet, but typed for TS safely
     const w = window as any;
     const d = document;
