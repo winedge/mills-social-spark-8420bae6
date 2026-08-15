@@ -806,7 +806,7 @@ function DailySpecialsStrip() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {specials.map((s) => (
+          {specials.map((s: DbDailySpecial) => (
             <article
               key={s.id}
               className="group flex flex-col border border-border bg-background hover:border-accent/60 transition-colors overflow-hidden"
