@@ -21,7 +21,10 @@ export function VoiceWidget() {
     document.head.appendChild(style);
 
     const updateBodyClass = () => {
-      if (window.location.pathname === "/menu") {
+      // Check both location.pathname and tanstack router state if possible
+      // But pathname is most reliable for standard checks
+      const isMenu = window.location.pathname === "/menu" || window.location.hash.includes("/menu");
+      if (isMenu) {
         document.body.classList.add('is-menu-page');
       } else {
         document.body.classList.remove('is-menu-page');
