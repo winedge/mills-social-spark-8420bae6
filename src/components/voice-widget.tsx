@@ -8,9 +8,12 @@ export function VoiceWidget() {
     style.textContent = `
       @media (max-width: 768px) {
         body.is-menu-page #vw-btn,
-        body.is-menu-page .n2n-voice-widget-container {
+        body.is-menu-page .n2n-voice-widget-container,
+        body.is-menu-page [id^="vw-"],
+        body.is-menu-page [class^="n2n-voice-widget"] {
           display: none !important;
           opacity: 0 !important;
+          visibility: hidden !important;
           pointer-events: none !important;
         }
       }
