@@ -107,8 +107,10 @@ function MenuPage() {
   const [query, setQuery] = useState(q);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const { items: dbItems } = useMenuItems();
-  const { items: cats } = useMenuCategories();
+  const { items: dbItems, loading: itemsLoading } = useMenuItems();
+  const { items: cats, loading: catsLoading } = useMenuCategories();
+
+  const loading = itemsLoading || catsLoading;
 
   const tree = useMemo(() => buildTree(cats), [cats]);
   const nameById = useMemo(() => {
@@ -126,6 +128,7 @@ function MenuPage() {
   }, [catId, tree]);
 
   const filtered = useMemo(() => {
+    if (loading) return [];
     const needle = query.trim().toLowerCase();
     return dbItems.filter((i) => {
       const inCat = !selectedIds || (i.category_id && selectedIds.has(i.category_id));
@@ -139,7 +142,7 @@ function MenuPage() {
         activeCal.id === "all" ? true : c != null && c > 0 && c >= activeCal.min && c <= activeCal.max;
       return inCat && inQ && inCal;
     });
-  }, [dbItems, selectedIds, query, activeCal]);
+  }, [dbItems, selectedIds, query, activeCal, loading]);
 
 
   const catOrder = useMemo(() => {
