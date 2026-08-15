@@ -26,35 +26,26 @@ export function VoiceWidget() {
     if (!isClient) return;
 
     // Add CSS rule for mobile menu page to hide elements
-    const style = document.createElement('style');
-    style.id = 'vw-mobile-hide-css';
-    style.textContent = `
-      @media (max-width: 768px) {
-        body.is-menu-page #vw-btn,
-        body.is-menu-page .n2n-voice-widget-container,
-        body.is-menu-page [id^="vw-"],
-        body.is-menu-page [class^="n2n-voice-widget"] {
-          display: none !important;
-          opacity: 0 !important;
-          visibility: hidden !important;
-          pointer-events: none !important;
+    // We add this once on mount
+    const styleId = 'vw-mobile-hide-css';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = `
+        @media (max-width: 768px) {
+          body.is-menu-page #vw-btn,
+          body.is-menu-page .n2n-voice-widget-container,
+          body.is-menu-page [id^="vw-"],
+          body.is-menu-page [class^="n2n-voice-widget"] {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+          }
         }
-      }
-    `;
-    document.head.appendChild(style);
-
-    const updateBodyClass = () => {
-      // Check both location.pathname and tanstack router state if possible
-      // But pathname is most reliable for standard checks
-      const isMenu = window.location.pathname === "/menu" || window.location.hash.includes("/menu");
-      if (isMenu) {
-        document.body.classList.add('is-menu-page');
-      } else {
-        document.body.classList.remove('is-menu-page');
-      }
-    };
-
-    updateBodyClass();
+      `;
+      document.head.appendChild(style);
+    }
 
     // Initialize widget
     const w = window as any;
@@ -76,32 +67,43 @@ export function VoiceWidget() {
 
     w[o]('init', 'wgt_5KLotoIys-h1lAeQGlM1lokn');
 
-    // Handle navigation changes
-    const handleUrlChange = () => {
-      updateBodyClass();
+    // Mutation observer to handle any dynamically injected elements from the widget
+    const checkVisibility = () => {
+      const isMenuPage = document.body.classList.contains('is-menu-page');
+      const isMobile = window.innerWidth <= 768;
+      
+      if (isMenuPage && isMobile) {
+        const elements = [
+          document.getElementById('vw-btn'),
+          ...Array.from(document.querySelectorAll('.n2n-voice-widget-container')),
+          ...Array.from(document.querySelectorAll('[id^="vw-"]')),
+          ...Array.from(document.querySelectorAll('[class^="n2n-voice-widget"]'))
+        ];
+        
+        elements.forEach(el => {
+          if (el instanceof HTMLElement) {
+            el.style.display = 'none';
+            el.style.opacity = '0';
+            el.style.visibility = 'hidden';
+            el.style.pointerEvents = 'none';
+          }
+        });
+      }
     };
 
-    window.addEventListener('popstate', handleUrlChange);
-    window.addEventListener('pushstate', handleUrlChange);
-    window.addEventListener('replacestate', handleUrlChange);
-
-    // Also observe the entire body for changes as widgets might inject elements later
-    const observer = new MutationObserver(updateBodyClass);
+    const observer = new MutationObserver(checkVisibility);
     observer.observe(document.body, { childList: true, subtree: true });
     
-    // Periodically check as well just in case
-    const interval = setInterval(updateBodyClass, 1000);
+    // Check periodically for safety
+    const interval = setInterval(checkVisibility, 2000);
 
     return () => {
-      document.head.removeChild(style);
-      document.body.classList.remove('is-menu-page');
+      const style = document.getElementById(styleId);
+      if (style) document.head.removeChild(style);
       observer.disconnect();
       clearInterval(interval);
-      window.removeEventListener('popstate', handleUrlChange);
-      window.removeEventListener('pushstate', handleUrlChange);
-      window.removeEventListener('replacestate', handleUrlChange);
     };
-  }, []);
+  }, [isClient]);
 
   return null;
 }
