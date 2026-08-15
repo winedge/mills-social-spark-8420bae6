@@ -53,9 +53,21 @@ export function VoiceWidget() {
 
     w[o]('init', 'wgt_5KLotoIys-h1lAeQGlM1lokn');
 
-    // Handle navigation changes for body class
+    // Handle navigation changes
+    const handleUrlChange = () => {
+      updateBodyClass();
+    };
+
+    window.addEventListener('popstate', handleUrlChange);
+    window.addEventListener('pushstate', handleUrlChange);
+    window.addEventListener('replacestate', handleUrlChange);
+
+    // Also observe the entire body for changes as widgets might inject elements later
     const observer = new MutationObserver(updateBodyClass);
-    observer.observe(document.querySelector('title')!, { subtree: true, characterData: true, childList: true });
+    observer.observe(document.body, { childList: true, subtree: true });
+    
+    // Periodically check as well just in case
+    const interval = setInterval(updateBodyClass, 1000);
 
     return () => {
       document.head.removeChild(style);
