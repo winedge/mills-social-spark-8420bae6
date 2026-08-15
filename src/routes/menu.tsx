@@ -5,7 +5,7 @@ import { useMemo, useState, useEffect } from "react";
 import { Search, SlidersHorizontal, X, ChevronRight, Maximize2, Info } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { useMenuItems, useMenuCategories, useDailySpecials, type DbMenuCategory } from "@/lib/content";
+import { useMenuItems, useMenuCategories, useDailySpecialsState, type DbMenuCategory, type DbDailySpecial } from "@/lib/content";
 import {
   Dialog,
   DialogContent,
@@ -107,8 +107,10 @@ function MenuPage() {
   const [query, setQuery] = useState(q);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const { items: dbItems } = useMenuItems();
-  const { items: cats } = useMenuCategories();
+  const { items: dbItems, loading: itemsLoading } = useMenuItems();
+  const { items: cats, loading: catsLoading } = useMenuCategories();
+
+  const loading = itemsLoading || catsLoading;
 
   const tree = useMemo(() => buildTree(cats), [cats]);
   const nameById = useMemo(() => {
@@ -126,6 +128,7 @@ function MenuPage() {
   }, [catId, tree]);
 
   const filtered = useMemo(() => {
+    if (loading) return [];
     const needle = query.trim().toLowerCase();
     return dbItems.filter((i) => {
       const inCat = !selectedIds || (i.category_id && selectedIds.has(i.category_id));
@@ -139,7 +142,7 @@ function MenuPage() {
         activeCal.id === "all" ? true : c != null && c > 0 && c >= activeCal.min && c <= activeCal.max;
       return inCat && inQ && inCal;
     });
-  }, [dbItems, selectedIds, query, activeCal]);
+  }, [dbItems, selectedIds, query, activeCal, loading]);
 
 
   const catOrder = useMemo(() => {
@@ -621,7 +624,30 @@ function MenuPage() {
       {/* Menu list */}
       {!isDailyTab && (
       <section className="px-4 md:px-6 py-12 md:py-16 max-w-7xl mx-auto">
-        {grouped.length === 0 ? (
+        {loading ? (
+          <div className="space-y-16 md:space-y-20">
+            {[1, 2, 3].map((group) => (
+              <div key={group} className="space-y-8">
+                <div className="h-10 w-48 bg-surface animate-pulse border-b border-border" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 lg:gap-x-12 gap-y-8">
+                  {[1, 2, 3, 4, 5, 6].map((item) => (
+                    <div key={item} className="flex gap-4 pb-6 border-b border-border/60 animate-pulse">
+                      <div className="size-20 md:size-24 bg-surface shrink-0" />
+                      <div className="flex-1 space-y-3">
+                        <div className="h-5 w-3/4 bg-surface" />
+                        <div className="h-4 w-full bg-surface" />
+                        <div className="flex justify-between items-center pt-2">
+                          <div className="h-6 w-16 bg-surface" />
+                          <div className="h-4 w-12 bg-surface" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : grouped.length === 0 ? (
           <p className="text-center text-muted-foreground font-mono text-sm py-24">
             NO ITEMS MATCH YOUR FILTER.
           </p>
@@ -745,7 +771,21 @@ function MenuPage() {
 }
 
 function DailySpecialsStrip() {
-  const specials = useDailySpecials();
+  const { items: specials, loading } = useDailySpecialsState();
+  if (loading) {
+    return (
+      <section className="relative border-y-2 border-accent/40 bg-card/50 overflow-hidden">
+        <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-16">
+          <div className="h-16 w-64 bg-surface animate-pulse mb-8" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="aspect-[4/3] bg-surface animate-pulse border border-border" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
   if (specials.length === 0) return null;
   return (
     <section className="relative border-y-2 border-accent/40 bg-card/50 overflow-hidden">
@@ -766,7 +806,7 @@ function DailySpecialsStrip() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {specials.map((s) => (
+          {specials.map((s: DbDailySpecial) => (
             <article
               key={s.id}
               className="group flex flex-col border border-border bg-background hover:border-accent/60 transition-colors overflow-hidden"
