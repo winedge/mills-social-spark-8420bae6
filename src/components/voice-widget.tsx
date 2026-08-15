@@ -2,22 +2,30 @@ import { useEffect } from "react";
 
 export function VoiceWidget() {
   useEffect(() => {
-    const handleWidget = () => {
-      const isMenuPage = window.location.pathname === "/menu";
-      const isMobile = window.innerWidth <= 768;
-      const shouldHide = isMenuPage && isMobile;
+    // Add CSS rule for mobile menu page to hide elements
+    const style = document.createElement('style');
+    style.id = 'vw-mobile-hide-css';
+    style.textContent = `
+      @media (max-width: 768px) {
+        body.is-menu-page #vw-btn,
+        body.is-menu-page .n2n-voice-widget-container {
+          display: none !important;
+          opacity: 0 !important;
+          pointer-events: none !important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
 
-      const widgetEl = document.querySelector('.n2n-voice-widget-container') as HTMLElement;
-      const widgetButton = document.getElementById('vw-btn') as HTMLElement;
-      
-      if (shouldHide) {
-        if (widgetEl) widgetEl.style.display = 'none';
-        if (widgetButton) widgetButton.style.display = 'none';
+    const updateBodyClass = () => {
+      if (window.location.pathname === "/menu") {
+        document.body.classList.add('is-menu-page');
       } else {
-        if (widgetEl) widgetEl.style.display = 'block';
-        if (widgetButton) widgetButton.style.display = 'block';
+        document.body.classList.remove('is-menu-page');
       }
     };
+
+    updateBodyClass();
 
     // Initialize widget
     const w = window as any;
@@ -39,16 +47,14 @@ export function VoiceWidget() {
 
     w[o]('init', 'wgt_5KLotoIys-h1lAeQGlM1lokn');
 
-    // Handle visibility on load and window changes
-    handleWidget();
-    window.addEventListener('resize', handleWidget);
-    
-    // Check periodically since the widget might mount late
-    const interval = setInterval(handleWidget, 1000);
+    // Handle navigation changes for body class
+    const observer = new MutationObserver(updateBodyClass);
+    observer.observe(document.querySelector('title')!, { subtree: true, characterData: true, childList: true });
 
     return () => {
-      window.removeEventListener('resize', handleWidget);
-      clearInterval(interval);
+      document.head.removeChild(style);
+      document.body.classList.remove('is-menu-page');
+      observer.disconnect();
     };
   }, []);
 
