@@ -771,7 +771,21 @@ function MenuPage() {
 }
 
 function DailySpecialsStrip() {
-  const specials = useDailySpecials();
+  const { items: specials, loading } = useDailySpecialsState();
+  if (loading) {
+    return (
+      <section className="relative border-y-2 border-accent/40 bg-card/50 overflow-hidden">
+        <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-16">
+          <div className="h-16 w-64 bg-surface animate-pulse mb-8" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="aspect-[4/3] bg-surface animate-pulse border border-border" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
   if (specials.length === 0) return null;
   return (
     <section className="relative border-y-2 border-accent/40 bg-card/50 overflow-hidden">
