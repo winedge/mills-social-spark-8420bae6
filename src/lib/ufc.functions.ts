@@ -182,9 +182,9 @@ export type UfcFeed = {
 export const getUfcFights = createServerFn({ method: "GET" }).handler(async (): Promise<UfcFeed> => {
   const { withSportsCache } = await import("./sports-cache.server");
   
-  // Year 2024 for demo/testing until 2026 data exists
+  // Using season 2024 since free plan is limited to 2022-2024
   const season = 2024;
-  const cacheKey = `ufc-api-sports:${season}`;
+  const cacheKey = `ufc-api-sports-v6:${season}`;
   const ttl = 900_000;
 
   const { data, stale } = await withSportsCache<{
@@ -234,10 +234,10 @@ export const getUfcFights = createServerFn({ method: "GET" }).handler(async (): 
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
       const live = events.filter(e => e.live);
-      const recent = events.filter(e => normStatus(e.status) === "final" && new Date(e.dateTime!) > thirtyDaysAgo)
+      const recent = events.filter(e => normStatus(e.status) === "final" || e.status === "Finished")
         .sort((a, b) => new Date(b.dateTime!).getTime() - new Date(a.dateTime!).getTime())
         .slice(0, 3);
-      const upcoming = events.filter(e => !e.live && normStatus(e.status) !== "final" && new Date(e.dateTime!) > twelveHoursAgo)
+      const upcoming = events.filter(e => !e.live && normStatus(e.status) !== "final" && e.status !== "Finished")
         .sort((a, b) => new Date(a.dateTime!).getTime() - new Date(b.dateTime!).getTime())
         .slice(0, 6);
 
