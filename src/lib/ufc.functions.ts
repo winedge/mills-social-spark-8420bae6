@@ -234,10 +234,10 @@ export const getUfcFights = createServerFn({ method: "GET" }).handler(async (): 
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
       const live = events.filter(e => e.live);
-      const recent = events.filter(e => normStatus(e.status) === "final" && new Date(e.dateTime!) > thirtyDaysAgo)
+      const recent = events.filter(e => normStatus(e.status) === "final" || e.status === "Finished")
         .sort((a, b) => new Date(b.dateTime!).getTime() - new Date(a.dateTime!).getTime())
         .slice(0, 3);
-      const upcoming = events.filter(e => !e.live && normStatus(e.status) !== "final" && new Date(e.dateTime!) > twelveHoursAgo)
+      const upcoming = events.filter(e => !e.live && normStatus(e.status) !== "final" && e.status !== "Finished")
         .sort((a, b) => new Date(a.dateTime!).getTime() - new Date(b.dateTime!).getTime())
         .slice(0, 6);
 
