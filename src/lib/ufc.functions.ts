@@ -47,35 +47,23 @@ type ApiSportsFighter = {
 
 type ApiSportsFight = {
   id: number;
-  order: number | null;
+  date: string;
+  slug: string; // Used as event name
+  is_main: boolean;
+  category: string | null;
   status: {
     long: string;
     short: string;
   };
-  category: string | null;
   fighters: {
     first: ApiSportsFighter & { winner: boolean };
     second: ApiSportsFighter & { winner: boolean };
   };
-  result: string | null;
-};
-
-type ApiSportsEvent = {
-  id: number;
-  name: string;
-  date: string;
-  status: {
-    long: string;
-    short: string;
-  };
-  league: {
-    id: number;
-    name: string;
-  };
+  result?: string | null;
 };
 
 const BASE = "https://v1.mma.api-sports.io";
-const LEAGUE_ID_UFC = 2; // Typically 2 for UFC in API-Sports
+const API_KEY = "7ffc76f772f0f10f09450fbb6df232f6";
 
 export function normStatus(v: string | null | undefined): string {
   const s = String(v ?? "").toLowerCase().replace(/[^a-z]/g, "");
@@ -89,12 +77,6 @@ function cleanStr(v: string | null | undefined): string | null {
   const s = String(v).trim();
   if (!s || s.toLowerCase() === "null") return null;
   return s;
-}
-
-function cleanNum(v: any): number | null {
-  if (v == null) return null;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : null;
 }
 
 const PRIVATE_STORAGE_PREFIX = "storage://site_assets/";
@@ -157,12 +139,11 @@ async function mapFighter(f: ApiSportsFighter & { winner: boolean }): Promise<Uf
   const ufcOfficialAltUrl = `https://dmxg5wxfqgb4u.cloudfront.net/styles/event_results_athlete_headshot/s3/image/fighter/profile/${slug}.png`;
   const ufcOfficialCdnUrl = `https://dmxg5wxfqgb4u.cloudfront.net/image/fighter/profile/${slug}.png`;
 
-  // API-Sports logo is often high quality
   const imageUrl = f.logo || ufcOfficialUrl;
 
   return {
     name,
-    wins: null, // API-Sports detail endpoint might have this, but for now we skip
+    wins: null, 
     losses: null,
     draws: null,
     winner: f.winner,
@@ -175,39 +156,17 @@ async function mapFighter(f: ApiSportsFighter & { winner: boolean }): Promise<Uf
 }
 
 async function mapFight(f: ApiSportsFight): Promise<UfcFight> {
-  const resultType = f.result ? f.result.split(" ")[0] : null;
-  const resultRoundMatch = f.result?.match(/R(\d+)/);
-  const resultRound = resultRoundMatch ? parseInt(resultRoundMatch[1], 10) : null;
-
   return {
     fightId: f.id,
-    order: f.order ?? null,
+    order: f.is_main ? 1 : null,
     status: f.status.long || "Scheduled",
     weightClass: cleanStr(f.category),
-    cardSegment: f.order === 1 ? "Main Event" : null,
-    rounds: null, // Would need detail endpoint
+    cardSegment: f.is_main ? "Main Event" : null,
+    rounds: null, 
     fighterA: await mapFighter(f.fighters.first),
     fighterB: await mapFighter(f.fighters.second),
-    resultType,
-    resultRound,
-  };
-}
-
-async function mapEvent(raw: ApiSportsEvent, fights: ApiSportsFight[] = []): Promise<UfcEvent> {
-  const mappedFights = await Promise.all(fights.map(mapFight));
-  const byOrder = [...mappedFights].sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
-  const mainEvent = byOrder[0] || null;
-  const status = raw.status.long || "Scheduled";
-  
-  return {
-    eventId: raw.id,
-    name: raw.name || "UFC Event",
-    shortName: raw.name?.split(":")[0] || "UFC",
-    dateTime: raw.date ?? null,
-    status,
-    live: normStatus(status) === "inprogress",
-    mainEvent,
-    fights: mappedFights,
+    resultType: null,
+    resultRound: null,
   };
 }
 
@@ -221,20 +180,12 @@ export type UfcFeed = {
 };
 
 export const getUfcFights = createServerFn({ method: "GET" }).handler(async (): Promise<UfcFeed> => {
-  const apiKey = process.env.API_SPORTS_KEY || process.env.SPORTSDATAIO_API_KEY; // Fallback for transition
-  if (!apiKey) {
-    return { upcoming: [], live: [], recent: [], configured: false };
-  }
-
-  const season = new Date().getUTCFullYear();
-  const { withSportsCache, readSportsCache } = await import("./sports-cache.server");
+  const { withSportsCache } = await import("./sports-cache.server");
+  
+  // Year 2024 for demo/testing until 2026 data exists
+  const season = 2024;
   const cacheKey = `ufc-api-sports:${season}`;
-
-  const cachedNow = await readSportsCache(cacheKey);
-  const hasLive = Array.isArray((cachedNow?.payload as { live?: unknown[] })?.live)
-    ? ((cachedNow!.payload as { live: unknown[] }).live.length > 0)
-    : false;
-  const ttl = hasLive ? 60_000 : 900_000;
+  const ttl = 900_000;
 
   const { data, stale } = await withSportsCache<{
     upcoming: UfcEvent[];
@@ -242,58 +193,70 @@ export const getUfcFights = createServerFn({ method: "GET" }).handler(async (): 
     recent: UfcEvent[];
   }>(cacheKey, ttl, async () => {
     try {
-      const headers = {
-        "x-rapidapi-key": apiKey,
-        "x-rapidapi-host": "v1.mma.api-sports.io",
-      };
+      const res = await fetch(`${BASE}/fights?season=${season}`, { 
+        headers: { "x-apisports-key": API_KEY } 
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      const allFights = (json.response || []) as ApiSportsFight[];
+      if (!allFights.length) return null;
 
-      // 1. Fetch Events for the season
-      const eventsRes = await fetch(`${BASE}/events?league=${LEAGUE_ID_UFC}&season=${season}`, { headers });
-      if (!eventsRes.ok) return null;
-      const eventsJson = await eventsRes.json();
-      const allEvents = (eventsJson.response || []) as ApiSportsEvent[];
-      if (!allEvents.length) return null;
+      // Group fights by event (slug)
+      const eventsMap = new Map<string, ApiSportsFight[]>();
+      for (const fight of allFights) {
+        if (!eventsMap.has(fight.slug)) {
+          eventsMap.set(fight.slug, []);
+        }
+        eventsMap.get(fight.slug)!.push(fight);
+      }
+
+      const events: UfcEvent[] = await Promise.all(
+        Array.from(eventsMap.entries()).map(async ([slug, fights]) => {
+          const firstFight = fights[0];
+          const mappedFights = await Promise.all(fights.map(mapFight));
+          const mainEvent = mappedFights.find(f => f.cardSegment === "Main Event") || mappedFights[0];
+          
+          return {
+            eventId: firstFight.id, // Using first fight ID as event ID
+            name: slug,
+            shortName: slug.split(":")[0],
+            dateTime: firstFight.date,
+            status: firstFight.status.long,
+            live: normStatus(firstFight.status.short) === "inprogress",
+            mainEvent,
+            fights: mappedFights
+          };
+        })
+      );
 
       const now = new Date();
       const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-      const categorized = allEvents.reduce((acc, e) => {
-        const date = new Date(e.date);
-        const status = normStatus(e.status.short);
-        
-        if (status === "inprogress") {
-          acc.live.push(e);
-        } else if (status === "final") {
-          if (date > thirtyDaysAgo) acc.recent.push(e);
-        } else if (date > twelveHoursAgo) {
-          acc.upcoming.push(e);
-        }
-        return acc;
-      }, { live: [] as ApiSportsEvent[], upcoming: [] as ApiSportsEvent[], recent: [] as ApiSportsEvent[] });
+      const live = events.filter(e => e.live);
+      const recent = events.filter(e => normStatus(e.status) === "final" && new Date(e.dateTime!) > thirtyDaysAgo)
+        .sort((a, b) => new Date(b.dateTime!).getTime() - new Date(a.dateTime!).getTime())
+        .slice(0, 3);
+      const upcoming = events.filter(e => !e.live && normStatus(e.status) !== "final" && new Date(e.dateTime!) > twelveHoursAgo)
+        .sort((a, b) => new Date(a.dateTime!).getTime() - new Date(b.dateTime!).getTime())
+        .slice(0, 6);
 
-      // Sort and slice
-      categorized.upcoming.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      const upcomingSlice = categorized.upcoming.slice(0, 6);
-      
-      categorized.recent.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      const recentSlice = categorized.recent.slice(0, 3);
+      // If no upcoming in last 12h, just take next 6 from future
+      if (upcoming.length === 0) {
+        const future = events.filter(e => !e.live && normStatus(e.status) !== "final" && new Date(e.dateTime!) > now)
+            .sort((a, b) => new Date(a.dateTime!).getTime() - new Date(b.dateTime!).getTime())
+            .slice(0, 6);
+        upcoming.push(...future);
+      }
 
-      const targetEvents = [...categorized.live, ...upcomingSlice, ...recentSlice];
+      // If still empty (e.g. 2024 is past), take last 6 for display
+      if (upcoming.length === 0 && live.length === 0) {
+          const past = events.sort((a, b) => new Date(b.dateTime!).getTime() - new Date(a.dateTime!).getTime())
+            .slice(0, 6);
+          upcoming.push(...past);
+      }
 
-      // 2. Fetch Fights for these events
-      const eventsWithFights = await Promise.all(targetEvents.map(async (event) => {
-        const fightsRes = await fetch(`${BASE}/fights?event=${event.id}`, { headers });
-        if (!fightsRes.ok) return mapEvent(event);
-        const fightsJson = await fightsRes.json();
-        return mapEvent(event, fightsJson.response || []);
-      }));
-
-      return {
-        live: eventsWithFights.slice(0, categorized.live.length),
-        upcoming: eventsWithFights.slice(categorized.live.length, categorized.live.length + upcomingSlice.length),
-        recent: eventsWithFights.slice(categorized.live.length + upcomingSlice.length),
-      };
+      return { live, upcoming, recent };
     } catch (err) {
       console.error("API-Sports UFC fetch error:", err);
       return null;
