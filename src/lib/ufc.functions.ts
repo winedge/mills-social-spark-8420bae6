@@ -221,7 +221,7 @@ export type UfcFeed = {
 };
 
 export const getUfcFights = createServerFn({ method: "GET" }).handler(async (): Promise<UfcFeed> => {
-  const apiKey = process.env.API_SPORTS_KEY || process.env.SPORTSDATAIO_API_KEY; // Fallback for transition
+  const apiKey = "7ffc76f772f0f10f09450fbb6df232f6";
   if (!apiKey) {
     return { upcoming: [], live: [], recent: [], configured: false };
   }
