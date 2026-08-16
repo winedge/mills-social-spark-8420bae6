@@ -456,7 +456,7 @@ export function UfcSection() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
           <div className="max-w-2xl">
             <span className="font-mono text-accent text-xs tracking-[0.3em] block mb-3">
-              OCTAGON HQ · POWERED BY SPORTSDATAIO
+              OCTAGON HQ · POWERED BY API-SPORTS
             </span>
             <h3 className="font-display text-5xl md:text-6xl uppercase mb-4">
               UFC <span className="text-accent">fight nights</span>
