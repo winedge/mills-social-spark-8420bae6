@@ -38,59 +38,63 @@ export type UfcEvent = {
   fights: UfcFight[];
 };
 
-type RawFighter = {
-  FighterId?: number | null;
-  FirstName?: string | null;
-  LastName?: string | null;
-  PreFightWins?: number | null;
-  PreFightLosses?: number | null;
-  PreFightDraws?: number | null;
-  Wins?: number | null;
-  Losses?: number | null;
-  Draws?: number | null;
-  Winner?: boolean | null;
+/** API-Sports MMA Types */
+type ApiSportsFighter = {
+  id: number;
+  name: string;
+  logo: string | null;
 };
 
-type RawFight = {
-  FightId: number;
-  Order?: number | null;
-  Status?: string | null;
-  WeightClass?: string | null;
-  CardSegment?: string | null;
-  Rounds?: number | null;
-  ResultRound?: number | null;
-  ResultType?: string | null;
-  Fighters?: RawFighter[];
+type ApiSportsFight = {
+  id: number;
+  order: number | null;
+  status: {
+    long: string;
+    short: string;
+  };
+  category: string | null;
+  fighters: {
+    first: ApiSportsFighter & { winner: boolean };
+    second: ApiSportsFighter & { winner: boolean };
+  };
+  result: string | null;
 };
 
-type RawEvent = {
-  EventId: number;
-  Name?: string;
-  ShortName?: string;
-  DateTime?: string | null;
-  Day?: string | null;
-  Status?: string | null;
-  Season?: number;
-  Fights?: RawFight[];
+type ApiSportsEvent = {
+  id: number;
+  name: string;
+  date: string;
+  status: {
+    long: string;
+    short: string;
+  };
+  league: {
+    id: number;
+    name: string;
+  };
 };
 
-const BASE = "https://api.sportsdata.io/v3/mma/scores/json";
+const BASE = "https://v1.mma.api-sports.io";
+const LEAGUE_ID_UFC = 2; // Typically 2 for UFC in API-Sports
 
 export function normStatus(v: string | null | undefined): string {
-  return String(v ?? "").toLowerCase().replace(/[^a-z]/g, "");
+  const s = String(v ?? "").toLowerCase().replace(/[^a-z]/g, "");
+  if (s === "finished" || s === "ft" || s === "final") return "final";
+  if (s === "live" || s === "inprogress") return "inprogress";
+  return s;
 }
 
 function cleanStr(v: string | null | undefined): string | null {
   if (!v) return null;
   const s = String(v).trim();
-  if (!s || s.toLowerCase() === "scrambled" || s.toLowerCase() === "null") return null;
+  if (!s || s.toLowerCase() === "null") return null;
   return s;
 }
 
-function cleanNum(v: number | null | undefined): number | null {
+function cleanNum(v: any): number | null {
   if (v == null) return null;
-  if (typeof v === "number" && Number.isFinite(v)) return v;
-  return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
 }
 
 const PRIVATE_STORAGE_PREFIX = "storage://site_assets/";
@@ -118,11 +122,14 @@ async function applyCurrentFighterOverrides(data: {
     .from("ufc_fighter_overrides" as any)
     .select("fighter_name,image_url");
   const overrides = new Map<string, string>();
-  await Promise.all(
-    ((rows ?? []) as unknown as { fighter_name: string; image_url: string }[]).map(async (row) => {
-      overrides.set(row.fighter_name.trim().toLowerCase(), await resolveOverrideUrl(row.image_url));
-    }),
-  );
+  
+  if (rows) {
+    await Promise.all(
+      (rows as unknown as { fighter_name: string; image_url: string }[]).map(async (row) => {
+        overrides.set(row.fighter_name.trim().toLowerCase(), await resolveOverrideUrl(row.image_url));
+      }),
+    );
+  }
 
   for (const event of [...data.upcoming, ...data.live, ...data.recent]) {
     for (const fight of event.fights) {
@@ -136,110 +143,71 @@ async function applyCurrentFighterOverrides(data: {
   return data;
 }
 
-async function mapFighter(f: RawFighter | undefined): Promise<UfcFighter | null> {
-  if (!f) return null;
-  const first = cleanStr(f.FirstName) || "";
-  const last = cleanStr(f.LastName) || "";
-  const name = `${first} ${last}`.trim();
-  if (!name) return null;
+async function mapFighter(f: ApiSportsFighter & { winner: boolean }): Promise<UfcFighter | null> {
+  if (!f || !f.name) return null;
+  const name = f.name.trim();
 
-  // The slug for UFC.com images is strictly lowercase, no spaces, no special characters, just hyphens
-  // Example: "Mateusz Gamrot" -> "mateusz-gamrot"
   const slug = name.toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove accents
-    .replace(/[^a-z0-9]/g, "-") // replace non-alphanumeric with hyphen
-    .replace(/-+/g, "-") // collapse multiple hyphens
-    .replace(/^-|-$/g, ""); // trim hyphens
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") 
+    .replace(/[^a-z0-9]/g, "-") 
+    .replace(/-+/g, "-") 
+    .replace(/^-|-$/g, ""); 
     
-  // Official UFC headshot pattern
   const ufcOfficialUrl = `https://dmxg5wxfqgb4u.cloudfront.net/styles/fighter_stats_headshot/s3/image/fighter/profile/${slug}.png`;
-  
-  // Secondary UFC patterns
   const ufcOfficialAltUrl = `https://dmxg5wxfqgb4u.cloudfront.net/styles/event_results_athlete_headshot/s3/image/fighter/profile/${slug}.png`;
-  const ufcOfficialThirdUrl = `https://dmxg5wxfqgb4u.cloudfront.net/s3/image/fighter/profile/${slug}.png`;
-  
-  // Direct UFC.com full-size image (often works when cloudfront styles fail)
-  const ufcOfficialDirectUrl = `https://www.ufc.com/themes/custom/ufc/assets/img/no-profile-image.png`; // Fallback placeholder logic check
   const ufcOfficialCdnUrl = `https://dmxg5wxfqgb4u.cloudfront.net/image/fighter/profile/${slug}.png`;
 
-  // Check for admin override first
-  const { data: override } = await supabase.from("ufc_fighter_overrides" as any).select("image_url").eq("fighter_name", name).maybeSingle();
-
-  // Use override if exists, otherwise SportsDataIO S3 as primary if FighterId exists
-  const imageUrl = (override as any)?.image_url 
-    ? (override as any).image_url
-    : (f.FighterId 
-      ? `https://s3-us-west-2.amazonaws.com/sportsdata-images/mma/fighters/${f.FighterId}.png`
-      : ufcOfficialUrl);
+  // API-Sports logo is often high quality
+  const imageUrl = f.logo || ufcOfficialUrl;
 
   return {
     name,
-    wins: cleanNum(f.PreFightWins ?? f.Wins ?? null),
-    losses: cleanNum(f.PreFightLosses ?? f.Losses ?? null),
-    draws: cleanNum(f.PreFightDraws ?? f.Draws ?? null),
-    winner: Boolean(f.Winner),
+    wins: null, // API-Sports detail endpoint might have this, but for now we skip
+    losses: null,
+    draws: null,
+    winner: f.winner,
     imageUrl,
     ufcFallbackUrl: ufcOfficialUrl,
     ufcAltUrl: ufcOfficialAltUrl,
     ufcThirdUrl: ufcOfficialCdnUrl,
-    espnId: null, // To be potentially hydrated if we find a way to map IDs
+    espnId: null,
   };
 }
 
-async function mapFight(fight: RawFight): Promise<UfcFight> {
+async function mapFight(f: ApiSportsFight): Promise<UfcFight> {
+  const resultType = f.result ? f.result.split(" ")[0] : null;
+  const resultRoundMatch = f.result?.match(/R(\d+)/);
+  const resultRound = resultRoundMatch ? parseInt(resultRoundMatch[1], 10) : null;
+
   return {
-    fightId: fight.FightId,
-    order: fight.Order ?? null,
-    status: fight.Status || "Scheduled",
-    weightClass: cleanStr(fight.WeightClass),
-    cardSegment: cleanStr(fight.CardSegment),
-    rounds: cleanNum(fight.Rounds),
-    fighterA: await mapFighter(fight.Fighters?.[0]),
-    fighterB: await mapFighter(fight.Fighters?.[1]),
-    resultType: cleanStr(fight.ResultType),
-    resultRound: cleanNum(fight.ResultRound),
+    fightId: f.id,
+    order: f.order ?? null,
+    status: f.status.long || "Scheduled",
+    weightClass: cleanStr(f.category),
+    cardSegment: f.order === 1 ? "Main Event" : null,
+    rounds: null, // Would need detail endpoint
+    fighterA: await mapFighter(f.fighters.first),
+    fighterB: await mapFighter(f.fighters.second),
+    resultType,
+    resultRound,
   };
 }
 
-function parseTs(iso: string | null | undefined): number | null {
-  if (!iso) return null;
-  const stamp = iso.endsWith("Z") || /[+-]\d\d:?\d\d$/.test(iso) ? iso : iso + "Z";
-  const t = new Date(stamp).getTime();
-  return Number.isFinite(t) ? t : null;
-}
-
-async function fetchEventDetail(eventId: number, apiKey: string): Promise<RawEvent | null> {
-  try {
-    // We use the Fight Detail endpoint because it's more likely to have FighterId and ImageUrl 
-    // populated correctly than the high-level Event endpoint.
-    const res = await fetch(`${BASE}/Event/${eventId}?key=${apiKey}`, {
-      headers: { Accept: "application/json" },
-    });
-    if (!res.ok) return null;
-    return (await res.json()) as RawEvent;
-  } catch {
-    return null;
-  }
-}
-
-async function mapEvent(raw: RawEvent): Promise<UfcEvent> {
-  const fights = await Promise.all((raw.Fights ?? []).map(mapFight));
-  const byOrder = [...fights].sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
-  const mainEvent =
-    fights.find((f) => (f.cardSegment || "").toLowerCase() === "main event") ||
-    byOrder.find((f) => f.fighterA && f.fighterB) ||
-    byOrder[0] ||
-    null;
-  const status = raw.Status || "Scheduled";
+async function mapEvent(raw: ApiSportsEvent, fights: ApiSportsFight[] = []): Promise<UfcEvent> {
+  const mappedFights = await Promise.all(fights.map(mapFight));
+  const byOrder = [...mappedFights].sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+  const mainEvent = byOrder[0] || null;
+  const status = raw.status.long || "Scheduled";
+  
   return {
-    eventId: raw.EventId,
-    name: raw.Name || raw.ShortName || "UFC Event",
-    shortName: raw.ShortName || raw.Name || "UFC",
-    dateTime: raw.DateTime ?? null,
+    eventId: raw.id,
+    name: raw.name || "UFC Event",
+    shortName: raw.name?.split(":")[0] || "UFC",
+    dateTime: raw.date ?? null,
     status,
     live: normStatus(status) === "inprogress",
     mainEvent,
-    fights,
+    fights: mappedFights,
   };
 }
 
@@ -253,16 +221,15 @@ export type UfcFeed = {
 };
 
 export const getUfcFights = createServerFn({ method: "GET" }).handler(async (): Promise<UfcFeed> => {
-  const apiKey = process.env.SPORTSDATAIO_API_KEY;
+  const apiKey = process.env.API_SPORTS_KEY || process.env.SPORTSDATAIO_API_KEY; // Fallback for transition
   if (!apiKey) {
     return { upcoming: [], live: [], recent: [], configured: false };
   }
 
   const season = new Date().getUTCFullYear();
   const { withSportsCache, readSportsCache } = await import("./sports-cache.server");
-  const cacheKey = `ufc:${season}`;
+  const cacheKey = `ufc-api-sports:${season}`;
 
-  // Refresh often while a card is in progress, sparingly otherwise (API quota).
   const cachedNow = await readSportsCache(cacheKey);
   const hasLive = Array.isArray((cachedNow?.payload as { live?: unknown[] })?.live)
     ? ((cachedNow!.payload as { live: unknown[] }).live.length > 0)
@@ -274,51 +241,63 @@ export const getUfcFights = createServerFn({ method: "GET" }).handler(async (): 
     live: UfcEvent[];
     recent: UfcEvent[];
   }>(cacheKey, ttl, async () => {
+    try {
+      const headers = {
+        "x-rapidapi-key": apiKey,
+        "x-rapidapi-host": "v1.mma.api-sports.io",
+      };
 
-    const schedRes = await fetch(`${BASE}/Schedule/UFC/${season}?key=${apiKey}`, {
-      headers: { Accept: "application/json" },
-    });
-    if (!schedRes.ok) return null;
-    const schedule = (await schedRes.json()) as RawEvent[];
-    if (!Array.isArray(schedule) || schedule.length === 0) return null;
-    const now = Date.now();
+      // 1. Fetch Events for the season
+      const eventsRes = await fetch(`${BASE}/events?league=${LEAGUE_ID_UFC}&season=${season}`, { headers });
+      if (!eventsRes.ok) return null;
+      const eventsJson = await eventsRes.json();
+      const allEvents = (eventsJson.response || []) as ApiSportsEvent[];
+      if (!allEvents.length) return null;
 
-    const withTs = schedule.map((e) => ({ e, ts: parseTs(e.DateTime ?? e.Day ?? null) }));
+      const now = new Date();
+      const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    const upcomingRaw = withTs
-      .filter(
-        ({ e, ts }) =>
-          normStatus(e.Status) !== "final" &&
-          normStatus(e.Status) !== "canceled" &&
-          normStatus(e.Status) !== "inprogress" &&
-          ts !== null &&
-          ts >= now - 1000 * 60 * 60 * 12,
-      )
-      .sort((a, b) => (a.ts! - b.ts!))
-      .slice(0, 6);
+      const categorized = allEvents.reduce((acc, e) => {
+        const date = new Date(e.date);
+        const status = normStatus(e.status.short);
+        
+        if (status === "inprogress") {
+          acc.live.push(e);
+        } else if (status === "final") {
+          if (date > thirtyDaysAgo) acc.recent.push(e);
+        } else if (date > twelveHoursAgo) {
+          acc.upcoming.push(e);
+        }
+        return acc;
+      }, { live: [] as ApiSportsEvent[], upcoming: [] as ApiSportsEvent[], recent: [] as ApiSportsEvent[] });
 
-    const liveRaw = withTs.filter(({ e }) => normStatus(e.Status) === "inprogress");
+      // Sort and slice
+      categorized.upcoming.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      const upcomingSlice = categorized.upcoming.slice(0, 6);
+      
+      categorized.recent.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      const recentSlice = categorized.recent.slice(0, 3);
 
-    const recentRaw = withTs
-      .filter(
-        ({ e, ts }) => normStatus(e.Status) === "final" && ts !== null && now - ts < 1000 * 60 * 60 * 24 * 30,
-      )
-      .sort((a, b) => b.ts! - a.ts!)
-      .slice(0, 3);
+      const targetEvents = [...categorized.live, ...upcomingSlice, ...recentSlice];
 
-    const sources = [...liveRaw, ...upcomingRaw, ...recentRaw];
-    const details = await Promise.all(sources.map(({ e }) => fetchEventDetail(e.EventId, apiKey)));
+      // 2. Fetch Fights for these events
+      const eventsWithFights = await Promise.all(targetEvents.map(async (event) => {
+        const fightsRes = await fetch(`${BASE}/fights?event=${event.id}`, { headers });
+        if (!fightsRes.ok) return mapEvent(event);
+        const fightsJson = await fightsRes.json();
+        return mapEvent(event, fightsJson.response || []);
+      }));
 
-    const events = await Promise.all(details.map(async (raw, i) => {
-      const source = sources[i].e;
-      return raw ? await mapEvent({ ...source, ...raw }) : await mapEvent(source);
-    }));
-
-    return {
-      live: events.slice(0, liveRaw.length),
-      upcoming: events.slice(liveRaw.length, liveRaw.length + upcomingRaw.length),
-      recent: events.slice(liveRaw.length + upcomingRaw.length),
-    };
+      return {
+        live: eventsWithFights.slice(0, categorized.live.length),
+        upcoming: eventsWithFights.slice(categorized.live.length, categorized.live.length + upcomingSlice.length),
+        recent: eventsWithFights.slice(categorized.live.length + upcomingSlice.length),
+      };
+    } catch (err) {
+      console.error("API-Sports UFC fetch error:", err);
+      return null;
+    }
   });
 
   if (!data) {
@@ -333,5 +312,4 @@ export const getUfcFights = createServerFn({ method: "GET" }).handler(async (): 
 
   const currentData = await applyCurrentFighterOverrides(data);
   return { ...currentData, configured: true, stale };
-
 });
