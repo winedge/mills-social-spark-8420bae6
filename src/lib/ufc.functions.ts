@@ -182,9 +182,9 @@ export type UfcFeed = {
 export const getUfcFights = createServerFn({ method: "GET" }).handler(async (): Promise<UfcFeed> => {
   const { withSportsCache } = await import("./sports-cache.server");
   
-  // Year 2024 for demo/testing until 2026 data exists
+  // Using season 2024 since free plan is limited to 2022-2024
   const season = 2024;
-  const cacheKey = `ufc-api-sports:${season}`;
+  const cacheKey = `ufc-api-sports-v2:${season}`;
   const ttl = 900_000;
 
   const { data, stale } = await withSportsCache<{
