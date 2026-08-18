@@ -1,15 +1,15 @@
 import React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import heroBar from "@/assets/hero-bar.jpg";
-import heroVideo from "@/assets/hero-loop.mp4";
-import marqueeImagesAsset from "@/assets/marquee-images.png";
+import heroBar from "@/assets/hero-bar.jpg.asset.json";
+import heroVideo from "@/assets/hero-loop.mp4.asset.json";
+import marqueeImagesAsset from "@/assets/marquee-images.png.asset.json";
 
 /** Locally bundled so it resolves on any deployment target. */
-const DEFAULT_HERO_VIDEO = heroVideo;
-import menuBurger from "@/assets/menu-burger.jpg";
-import menuCocktail from "@/assets/menu-cocktail.jpg";
-import menuWings from "@/assets/menu-wings.jpg";
+const DEFAULT_HERO_VIDEO = heroVideo.url;
+import menuBurger from "@/assets/menu-burger.jpg.asset.json";
+import menuCocktail from "@/assets/menu-cocktail.jpg.asset.json";
+import menuWings from "@/assets/menu-wings.jpg.asset.json";
 import { useDailySpecialsState, useWeeklyPulseState } from "@/lib/content";
 import {
   DailySpecialsSkeleton,
@@ -17,10 +17,10 @@ import {
   NflSectionSkeleton,
   UfcSectionSkeleton,
 } from "@/components/skeletons";
-import pulseHappyHour from "@/assets/pulse-happy-hour.jpg";
-import pulseTrivia from "@/assets/pulse-trivia.jpg";
-import pulseLiveMusic from "@/assets/pulse-live-music.jpg";
-import pulseBrunch from "@/assets/pulse-brunch.jpg";
+import pulseHappyHour from "@/assets/pulse-happy-hour.jpg.asset.json";
+import pulseTrivia from "@/assets/pulse-trivia.jpg.asset.json";
+import pulseLiveMusic from "@/assets/pulse-live-music.jpg.asset.json";
+import pulseBrunch from "@/assets/pulse-brunch.jpg.asset.json";
 import { SiteHeader } from "@/components/site-header";
 import { supabase } from "@/integrations/supabase/client";
 import { openReservation } from "@/components/reservation-modal";
@@ -44,8 +44,8 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Mills Social Hub is a modern, user-friendly website for a sports bar in Tempe, Arizona.",
       },
-      { property: "og:image", content: heroBar },
-      { name: "twitter:image", content: heroBar },
+      { property: "og:image", content: heroBar.url },
+      { name: "twitter:image", content: heroBar.url },
     ],
   }),
   loader: ({ context }) =>
@@ -170,10 +170,10 @@ function Home() {
   const heroSrc = useHeroVideo();
   const marqueeImages = useMarqueeImages();
   const { items: dbSpecials, loading: specialsLoading } = useDailySpecialsState();
-  const specialImgs = [menuBurger, menuWings, menuCocktail];
+  const specialImgs = [menuBurger.url, menuWings.url, menuCocktail.url];
   const dailySpecials = dbSpecials.length
     ? dbSpecials.map((s, i) => ({
-        img: s.image_url || specialImgs[i % specialImgs.length],
+        img: s.image_url ? (s.image_url.startsWith('/') ? s.image_url : s.image_url) : specialImgs[i % specialImgs.length],
         day: s.day,
         badge: s.badge,
         title: s.title,
@@ -183,14 +183,14 @@ function Home() {
     : fallbackSpecials;
 
   const { items: dbPulse, loading: pulseLoading } = useWeeklyPulseState();
-  const pulseImgs = [pulseHappyHour, pulseTrivia, pulseLiveMusic, pulseBrunch];
+  const pulseImgs = [pulseHappyHour.url, pulseTrivia.url, pulseLiveMusic.url, pulseBrunch.url];
   const schedule = dbPulse.length
     ? dbPulse.map((s, i) => ({
         days: s.days_label,
         title: s.title,
         copy: s.copy,
         accent: s.accent,
-        img: s.image_url || pulseImgs[i % pulseImgs.length],
+        img: s.image_url ? (s.image_url.startsWith('/') ? s.image_url : s.image_url) : pulseImgs[i % pulseImgs.length],
       }))
     : fallbackSchedule;
 
@@ -203,7 +203,7 @@ function Home() {
         <video
           src={heroSrc}
           key={heroSrc}
-          poster={heroBar}
+          poster={heroBar.url}
           autoPlay
           loop
           muted
@@ -329,7 +329,7 @@ function Home() {
       {/* Full-Width Image Marquee Slider - Completely edge-to-edge */}
       <div className="w-full overflow-hidden relative border-y border-accent/20 bg-black py-0">
         <div className="flex animate-marquee whitespace-nowrap">
-          {(marqueeImages.length > 0 ? [...marqueeImages, ...marqueeImages] : [marqueeImagesAsset, marqueeImagesAsset]).map((url, i) => (
+          {(marqueeImages.length > 0 ? [...marqueeImages, ...marqueeImages] : [marqueeImagesAsset.url, marqueeImagesAsset.url]).map((url, i) => (
             <div key={i} className="flex shrink-0 items-center">
               <img 
                 src={url} 
