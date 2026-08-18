@@ -170,7 +170,7 @@ function Home() {
   const heroSrc = useHeroVideo();
   const marqueeImages = useMarqueeImages();
   const { items: dbSpecials, loading: specialsLoading } = useDailySpecialsState();
-  const specialImgs = [menuBurger, menuWings, menuCocktail];
+  const specialImgs = [menuBurger.url, menuWings.url, menuCocktail.url];
   const dailySpecials = dbSpecials.length
     ? dbSpecials.map((s, i) => ({
         img: s.image_url || specialImgs[i % specialImgs.length],
@@ -183,7 +183,7 @@ function Home() {
     : fallbackSpecials;
 
   const { items: dbPulse, loading: pulseLoading } = useWeeklyPulseState();
-  const pulseImgs = [pulseHappyHour, pulseTrivia, pulseLiveMusic, pulseBrunch];
+  const pulseImgs = [pulseHappyHour.url, pulseTrivia.url, pulseLiveMusic.url, pulseBrunch.url];
   const schedule = dbPulse.length
     ? dbPulse.map((s, i) => ({
         days: s.days_label,
