@@ -1,15 +1,15 @@
 import React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import heroBar from "@/assets/hero-bar.jpg";
+import heroBar from "@/assets/hero-bar.jpg.asset.json";
 import heroVideo from "@/assets/hero-loop.mp4.asset.json";
 import marqueeImagesAsset from "@/assets/marquee-images.png.asset.json";
 
 /** Absolute so the default hero video also resolves on self-hosted domains. */
 const DEFAULT_HERO_VIDEO = `https://mills-social-spark.lovable.app${heroVideo.url}`;
-import menuBurger from "@/assets/menu-burger.jpg";
-import menuCocktail from "@/assets/menu-cocktail.jpg";
-import menuWings from "@/assets/menu-wings.jpg";
+import menuBurger from "@/assets/menu-burger.jpg.asset.json";
+import menuCocktail from "@/assets/menu-cocktail.jpg.asset.json";
+import menuWings from "@/assets/menu-wings.jpg.asset.json";
 import { useDailySpecialsState, useWeeklyPulseState } from "@/lib/content";
 import {
   DailySpecialsSkeleton,
@@ -17,10 +17,10 @@ import {
   NflSectionSkeleton,
   UfcSectionSkeleton,
 } from "@/components/skeletons";
-import pulseHappyHour from "@/assets/pulse-happy-hour.jpg";
-import pulseTrivia from "@/assets/pulse-trivia.jpg";
-import pulseLiveMusic from "@/assets/pulse-live-music.jpg";
-import pulseBrunch from "@/assets/pulse-brunch.jpg";
+import pulseHappyHour from "@/assets/pulse-happy-hour.jpg.asset.json";
+import pulseTrivia from "@/assets/pulse-trivia.jpg.asset.json";
+import pulseLiveMusic from "@/assets/pulse-live-music.jpg.asset.json";
+import pulseBrunch from "@/assets/pulse-brunch.jpg.asset.json";
 import { SiteHeader } from "@/components/site-header";
 import { supabase } from "@/integrations/supabase/client";
 import { openReservation } from "@/components/reservation-modal";
@@ -44,8 +44,8 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Mills Social Hub is a modern, user-friendly website for a sports bar in Tempe, Arizona.",
       },
-      { property: "og:image", content: heroBar },
-      { name: "twitter:image", content: heroBar },
+      { property: "og:image", content: heroBar.url },
+      { name: "twitter:image", content: heroBar.url },
     ],
   }),
   loader: ({ context }) =>
@@ -58,7 +58,7 @@ export const Route = createFileRoute("/")({
 
 const fallbackSpecials = [
   {
-    img: menuBurger,
+    img: menuBurger.url,
     day: "MONDAY",
     badge: "1/2 OFF",
     title: "Burger Night",
@@ -66,7 +66,7 @@ const fallbackSpecials = [
     price: "from $8",
   },
   {
-    img: menuWings,
+    img: menuWings.url,
     day: "TUESDAY",
     badge: "$1 EACH",
     title: "Wing It",
@@ -74,7 +74,7 @@ const fallbackSpecials = [
     price: "$1 / wing",
   },
   {
-    img: menuCocktail,
+    img: menuCocktail.url,
     day: "WEDNESDAY",
     badge: "2 FOR 1",
     title: "Craft Cocktail Night",
@@ -84,10 +84,10 @@ const fallbackSpecials = [
 ];
 
 const fallbackSchedule = [
-  { days: "MON–WED", title: "HAPPY HOUR", copy: "4PM–7PM. $2 off all drafts & signature cocktails.", accent: false, img: pulseHappyHour },
-  { days: "THURSDAY", title: "TRIVIA NIGHT", copy: "8PM start. Win a $50 bar tab. Hosted by DJ Mac.", accent: true, img: pulseTrivia },
-  { days: "FRIDAY", title: "LIVE SESSIONS", copy: "Local artists 9PM–late. High-energy acoustic sets.", accent: false, img: pulseLiveMusic },
-  { days: "SAT–SUN", title: "GAME DAY BRUNCH", copy: "Open early for kickoff. Bottomless mimosas & sliders.", accent: true, img: pulseBrunch },
+  { days: "MON–WED", title: "HAPPY HOUR", copy: "4PM–7PM. $2 off all drafts & signature cocktails.", accent: false, img: pulseHappyHour.url },
+  { days: "THURSDAY", title: "TRIVIA NIGHT", copy: "8PM start. Win a $50 bar tab. Hosted by DJ Mac.", accent: true, img: pulseTrivia.url },
+  { days: "FRIDAY", title: "LIVE SESSIONS", copy: "Local artists 9PM–late. High-energy acoustic sets.", accent: false, img: pulseLiveMusic.url },
+  { days: "SAT–SUN", title: "GAME DAY BRUNCH", copy: "Open early for kickoff. Bottomless mimosas & sliders.", accent: true, img: pulseBrunch.url },
 ];
 
 
@@ -170,7 +170,7 @@ function Home() {
   const heroSrc = useHeroVideo();
   const marqueeImages = useMarqueeImages();
   const { items: dbSpecials, loading: specialsLoading } = useDailySpecialsState();
-  const specialImgs = [menuBurger, menuWings, menuCocktail];
+  const specialImgs = [menuBurger.url, menuWings.url, menuCocktail.url];
   const dailySpecials = dbSpecials.length
     ? dbSpecials.map((s, i) => ({
         img: s.image_url || specialImgs[i % specialImgs.length],
@@ -183,7 +183,7 @@ function Home() {
     : fallbackSpecials;
 
   const { items: dbPulse, loading: pulseLoading } = useWeeklyPulseState();
-  const pulseImgs = [pulseHappyHour, pulseTrivia, pulseLiveMusic, pulseBrunch];
+  const pulseImgs = [pulseHappyHour.url, pulseTrivia.url, pulseLiveMusic.url, pulseBrunch.url];
   const schedule = dbPulse.length
     ? dbPulse.map((s, i) => ({
         days: s.days_label,
@@ -203,7 +203,7 @@ function Home() {
         <video
           src={heroSrc}
           key={heroSrc}
-          poster={heroBar}
+          poster={heroBar.url}
           autoPlay
           loop
           muted

@@ -138,7 +138,7 @@ async function mapFighter(f: ApiSportsFighter & { winner: boolean }): Promise<Uf
     .replace(/^-|-$/g, ""); 
     
   // Local asset path
-  const localUrl = `/src/assets/ufc/${slug}.png`;
+  const localUrl = `/ufc/${slug}.png`;
   
   // External fallbacks
   const ufcOfficialUrl = `https://dmxg5wxfqgb4u.cloudfront.net/styles/fighter_stats_headshot/s3/image/fighter/profile/${slug}.png`;
