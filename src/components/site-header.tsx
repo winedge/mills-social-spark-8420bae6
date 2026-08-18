@@ -52,7 +52,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
           <div className="flex items-center gap-6 md:justify-self-start">
             <Link to="/" className="flex items-center min-w-0" aria-label="Mills Modern Social - Home">
               <img
-                src={millsLogo}
+                src={millsLogo.url}
                 alt="Mill's Modern Social"
                 width={260}
                 height={60}
