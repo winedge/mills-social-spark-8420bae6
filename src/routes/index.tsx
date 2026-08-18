@@ -1,15 +1,15 @@
 import React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import heroBar from "@/assets/hero-bar.jpg";
+import heroBar from "@/assets/hero-bar.jpg.asset.json";
 import heroVideo from "@/assets/hero-loop.mp4.asset.json";
 import marqueeImagesAsset from "@/assets/marquee-images.png.asset.json";
 
 /** Absolute so the default hero video also resolves on self-hosted domains. */
 const DEFAULT_HERO_VIDEO = `https://mills-social-spark.lovable.app${heroVideo.url}`;
-import menuBurger from "@/assets/menu-burger.jpg";
-import menuCocktail from "@/assets/menu-cocktail.jpg";
-import menuWings from "@/assets/menu-wings.jpg";
+import menuBurger from "@/assets/menu-burger.jpg.asset.json";
+import menuCocktail from "@/assets/menu-cocktail.jpg.asset.json";
+import menuWings from "@/assets/menu-wings.jpg.asset.json";
 import { useDailySpecialsState, useWeeklyPulseState } from "@/lib/content";
 import {
   DailySpecialsSkeleton,
