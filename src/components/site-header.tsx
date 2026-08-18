@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Menu, X, Instagram, Facebook, Twitter, Music2 } from "lucide-react";
-import millsLogo from "@/assets/mills-logo.png";
+import millsLogo from "@/assets/mills-logo.png.asset.json";
 import { openReservation } from "@/components/reservation-modal";
 import { useContactInfo } from "@/lib/content";
 
