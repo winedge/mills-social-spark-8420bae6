@@ -203,7 +203,7 @@ function Home() {
         <video
           src={heroSrc}
           key={heroSrc}
-          poster={heroBar}
+          poster={heroBar.url}
           autoPlay
           loop
           muted
