@@ -66,7 +66,7 @@ const ESPN_ABBR: Record<string, string> = {
 function teamLogo(team: string) {
   const code = (ESPN_ABBR[team.toUpperCase()] ?? team).toLowerCase();
   // Using locally hosted assets for production stability
-  return `/src/assets/nfl/${code}.png`;
+  return `/nfl/${code}.png`;
 }
 
 const TEAM_COLOR: Record<string, string> = {
