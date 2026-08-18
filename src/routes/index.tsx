@@ -17,10 +17,10 @@ import {
   NflSectionSkeleton,
   UfcSectionSkeleton,
 } from "@/components/skeletons";
-import pulseHappyHour from "@/assets/pulse-happy-hour.jpg";
-import pulseTrivia from "@/assets/pulse-trivia.jpg";
-import pulseLiveMusic from "@/assets/pulse-live-music.jpg";
-import pulseBrunch from "@/assets/pulse-brunch.jpg";
+import pulseHappyHour from "@/assets/pulse-happy-hour.jpg.asset.json";
+import pulseTrivia from "@/assets/pulse-trivia.jpg.asset.json";
+import pulseLiveMusic from "@/assets/pulse-live-music.jpg.asset.json";
+import pulseBrunch from "@/assets/pulse-brunch.jpg.asset.json";
 import { SiteHeader } from "@/components/site-header";
 import { supabase } from "@/integrations/supabase/client";
 import { openReservation } from "@/components/reservation-modal";
