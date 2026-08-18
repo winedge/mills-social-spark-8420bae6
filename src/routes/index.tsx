@@ -58,7 +58,7 @@ export const Route = createFileRoute("/")({
 
 const fallbackSpecials = [
   {
-    img: menuBurger,
+    img: menuBurger.url,
     day: "MONDAY",
     badge: "1/2 OFF",
     title: "Burger Night",
@@ -66,7 +66,7 @@ const fallbackSpecials = [
     price: "from $8",
   },
   {
-    img: menuWings,
+    img: menuWings.url,
     day: "TUESDAY",
     badge: "$1 EACH",
     title: "Wing It",
@@ -74,7 +74,7 @@ const fallbackSpecials = [
     price: "$1 / wing",
   },
   {
-    img: menuCocktail,
+    img: menuCocktail.url,
     day: "WEDNESDAY",
     badge: "2 FOR 1",
     title: "Craft Cocktail Night",
@@ -84,10 +84,10 @@ const fallbackSpecials = [
 ];
 
 const fallbackSchedule = [
-  { days: "MON–WED", title: "HAPPY HOUR", copy: "4PM–7PM. $2 off all drafts & signature cocktails.", accent: false, img: pulseHappyHour },
-  { days: "THURSDAY", title: "TRIVIA NIGHT", copy: "8PM start. Win a $50 bar tab. Hosted by DJ Mac.", accent: true, img: pulseTrivia },
-  { days: "FRIDAY", title: "LIVE SESSIONS", copy: "Local artists 9PM–late. High-energy acoustic sets.", accent: false, img: pulseLiveMusic },
-  { days: "SAT–SUN", title: "GAME DAY BRUNCH", copy: "Open early for kickoff. Bottomless mimosas & sliders.", accent: true, img: pulseBrunch },
+  { days: "MON–WED", title: "HAPPY HOUR", copy: "4PM–7PM. $2 off all drafts & signature cocktails.", accent: false, img: pulseHappyHour.url },
+  { days: "THURSDAY", title: "TRIVIA NIGHT", copy: "8PM start. Win a $50 bar tab. Hosted by DJ Mac.", accent: true, img: pulseTrivia.url },
+  { days: "FRIDAY", title: "LIVE SESSIONS", copy: "Local artists 9PM–late. High-energy acoustic sets.", accent: false, img: pulseLiveMusic.url },
+  { days: "SAT–SUN", title: "GAME DAY BRUNCH", copy: "Open early for kickoff. Bottomless mimosas & sliders.", accent: true, img: pulseBrunch.url },
 ];
 
 
