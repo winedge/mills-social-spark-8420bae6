@@ -691,9 +691,22 @@ function MenuPage() {
                                   alt={i.name}
                                   loading="lazy"
                                   className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover/img:scale-110"
+                                  onError={(e) => {
+                                    const target = e.currentTarget;
+                                    target.style.display = 'none';
+                                    target.parentElement?.querySelector('.fallback-icon')?.classList.remove('hidden');
+                                    // If this is a dialog trigger, we might want to prevent zoom
+                                    target.parentElement?.classList.add('cursor-default');
+                                    target.parentElement?.classList.remove('cursor-zoom-in');
+                                  }}
                                 />
                                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
                                   <Maximize2 className="size-5 text-white" />
+                                </div>
+                                <div className="fallback-icon hidden absolute inset-0 flex items-center justify-center bg-accent/[0.03]">
+                                  <span className="font-display text-2xl text-accent/20 uppercase">
+                                    {i.name.slice(0, 1)}
+                                  </span>
                                 </div>
                               </button>
                             </DialogTrigger>
