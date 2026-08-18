@@ -44,8 +44,8 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Mills Social Hub is a modern, user-friendly website for a sports bar in Tempe, Arizona.",
       },
-      { property: "og:image", content: heroBar },
-      { name: "twitter:image", content: heroBar },
+      { property: "og:image", content: heroBar.url },
+      { name: "twitter:image", content: heroBar.url },
     ],
   }),
   loader: ({ context }) =>
