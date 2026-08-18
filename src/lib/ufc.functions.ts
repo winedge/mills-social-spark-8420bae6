@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { saveImageLocally } from "./utils"; // Assuming we add a helper or handle it via admin
+
 
 export type UfcFighter = {
   name: string;
