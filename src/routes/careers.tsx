@@ -10,7 +10,7 @@ import { submitCareerApplication } from "@/lib/careers.functions";
 import { useServerFn } from "@tanstack/react-start";
 
 import WarpText from "@/components/ui/warp-text";
-import teamPhoto from "@/assets/team-photo.jpg.asset.json";
+import teamPhoto from "@/assets/team-photo.jpg";
 
 
 export const Route = createFileRoute("/careers")({
@@ -124,7 +124,7 @@ function CareersPage() {
       <section className="relative pt-16 pb-14 px-6 overflow-hidden border-b border-border">
         <div className="absolute inset-0">
           <img
-            src={teamPhoto.url}
+            src={teamPhoto}
             alt="Mill's Modern Social team behind the bar holding signature dishes"
             className="w-full h-full object-cover object-center"
           />
