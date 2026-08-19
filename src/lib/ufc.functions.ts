@@ -137,16 +137,25 @@ async function mapFighter(f: ApiSportsFighter & { winner: boolean }): Promise<Uf
     .replace(/-+/g, "-") 
     .replace(/^-|-$/g, ""); 
     
-  // Local asset path
-  const localUrl = `/ufc/${slug}.png`;
+  // Local asset resolution
+  let imageUrl = null;
+  try {
+    // Attempt to load from our localized assets
+    const asset = await import(`../assets/ufc/${slug}.png.asset.json`).catch(() => null);
+    if (asset?.default?.url) {
+      imageUrl = asset.default.url;
+    } else {
+      // Fallback to public directory if asset not registered
+      imageUrl = `/ufc/${slug}.png`;
+    }
+  } catch (e) {
+    imageUrl = `/ufc/${slug}.png`;
+  }
   
   // External fallbacks
   const ufcOfficialUrl = `https://dmxg5wxfqgb4u.cloudfront.net/styles/fighter_stats_headshot/s3/image/fighter/profile/${slug}.png`;
   const ufcOfficialAltUrl = `https://dmxg5wxfqgb4u.cloudfront.net/styles/event_results_athlete_headshot/s3/image/fighter/profile/${slug}.png`;
   const ufcOfficialCdnUrl = `https://dmxg5wxfqgb4u.cloudfront.net/image/fighter/profile/${slug}.png`;
-
-  // Prefer local asset, then API logo, then external fallbacks
-  const imageUrl = localUrl;
 
   return {
     name,
