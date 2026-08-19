@@ -138,18 +138,19 @@ async function mapFighter(f: ApiSportsFighter & { winner: boolean }): Promise<Uf
     .replace(/^-|-$/g, ""); 
     
   // Local asset resolution
-  let imageUrl = null;
+  let imageUrl = `/ufc/${slug}.png`; // Default to public directory
   try {
     // Attempt to load from our localized assets
-    const asset = await import(`../assets/ufc/${slug}.png.asset.json`).catch(() => null);
+    // Use a dynamic import that Vite will resolve at build time
+    const assets = import.meta.glob('../assets/ufc/*.png.asset.json', { eager: true });
+    const assetPath = `../assets/ufc/${slug}.png.asset.json`;
+    const asset = assets[assetPath] as any;
+    
     if (asset?.default?.url) {
       imageUrl = asset.default.url;
-    } else {
-      // Fallback to public directory if asset not registered
-      imageUrl = `/ufc/${slug}.png`;
     }
   } catch (e) {
-    imageUrl = `/ufc/${slug}.png`;
+    // Fallback to public path if anything fails
   }
   
   // External fallbacks
