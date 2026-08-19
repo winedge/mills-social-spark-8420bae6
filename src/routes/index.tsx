@@ -173,7 +173,7 @@ function Home() {
   const specialImgs = [menuBurger.url, menuWings.url, menuCocktail.url];
   const dailySpecials = dbSpecials.length
     ? dbSpecials.map((s, i) => ({
-        img: (s.image_url ? (s.image_url.startsWith('/') ? s.image_url : s.image_url) : specialImgs[i % specialImgs.length]),
+        img: (s.image_url ? s.image_url : specialImgs[i % specialImgs.length]) as string,
         day: s.day,
         badge: s.badge,
         title: s.title,
@@ -190,7 +190,7 @@ function Home() {
         title: s.title,
         copy: s.copy,
         accent: s.accent,
-        img: (s.image_url ? (s.image_url.startsWith('/') ? s.image_url : s.image_url) : pulseImgs[i % pulseImgs.length]),
+        img: (s.image_url ? s.image_url : pulseImgs[i % pulseImgs.length]) as string,
       }))
     : fallbackSchedule;
 
