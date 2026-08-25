@@ -134,9 +134,6 @@ function CareersPage() {
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center max-w-4xl mx-auto">
-            <span className="font-mono text-accent text-sm md:text-base tracking-[0.4em] block mb-2 uppercase font-bold">
-              Join The Circle
-            </span>
             <div className="mb-4">
               <WarpText
                 text="WORK WITH US"
