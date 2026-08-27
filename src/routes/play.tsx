@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Target, Dices, Gamepad2, CircleDot, Trophy, Clock, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
+import { InquiryForm } from "@/components/inquiry-form";
 import { SiteFooter } from "@/components/site-footer";
 import { BeerPong } from "@/components/beer-pong";
 import { useFeatureFlag } from "@/lib/content";
@@ -41,6 +42,15 @@ function PlayPage() {
       <ArcadeSection />
       {!flagLoading && beerPongOn && <BeerPong />}
       <HouseRules />
+      <InquiryForm
+        kind="play"
+        title="Book the game floor"
+        blurb="Pool tables, darts, shuffleboard or the whole arcade - tell us what you want and we'll lock it in."
+        dateLabel="Preferred date"
+        guestsLabel="Players"
+        subjectPlaceholder="Pool table for 6 / arcade takeover"
+        messagePlaceholder="What do you want to play, and when?"
+      />
 
       <SiteFooter />
     </div>

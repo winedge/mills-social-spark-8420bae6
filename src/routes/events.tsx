@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { openReservation } from "@/components/reservation-modal";
+import { InquiryForm } from "@/components/inquiry-form";
 import { Calendar, Music, Trophy, Star, Clock } from "lucide-react";
 import { useWeeklyPulseState } from "@/lib/content";
 
@@ -127,6 +128,14 @@ function EventsPage() {
           </div>
         </div>
       </main>
+
+      <InquiryForm
+        kind="events"
+        title="Event enquiry"
+        blurb="Planning a watch party, birthday, or corporate night? Send us the details and our events team will reply within one business day."
+        subjectPlaceholder="Birthday party / corporate mixer"
+        messagePlaceholder="Tell us about your event…"
+      />
 
       <SiteFooter />
     </div>
