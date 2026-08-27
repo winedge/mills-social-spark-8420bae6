@@ -89,7 +89,20 @@ export function SiteFooter() {
                 <span className="text-[10px] uppercase opacity-50 mr-2">Parties</span>
                 <a href="mailto:party@millsmodernsocial.com" className="hover:text-accent uppercase">party@millsmodernsocial.com</a>
               </p>
+              <p>
+                <span className="text-[10px] uppercase opacity-50 mr-2">Events</span>
+                <a href="mailto:events@millsmodernsocial.com" className="hover:text-accent uppercase">events@millsmodernsocial.com</a>
+              </p>
+              <p>
+                <span className="text-[10px] uppercase opacity-50 mr-2">Play</span>
+                <a href="mailto:play@millsmodernsocial.com" className="hover:text-accent uppercase">play@millsmodernsocial.com</a>
+              </p>
+              <p>
+                <span className="text-[10px] uppercase opacity-50 mr-2">Work</span>
+                <a href="mailto:work-mms@millsmodernsocial.com" className="hover:text-accent uppercase">work-mms@millsmodernsocial.com</a>
+              </p>
             </div>
+
           </div>
         </div>
         <div className="bg-accent/5 p-10 md:p-12 border border-accent/20 flex flex-col justify-between gap-12">

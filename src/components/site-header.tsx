@@ -30,11 +30,12 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
   const contact = useContactInfo();
 
   const socialLinks = [
-    { icon: Instagram, href: contact?.instagram_url || "#", label: "Instagram", color: "#E4405F" },
-    { icon: Facebook, href: contact?.facebook_url || "#", label: "Facebook", color: "#1877F2" },
+    { icon: Instagram, href: contact?.instagram_url || "#", label: "Instagram", color: "#FFFFFF" },
+    { icon: Facebook, href: contact?.facebook_url || "#", label: "Facebook", color: "#FFFFFF" },
     { icon: Twitter, href: contact?.x_url || "#", label: "X", color: "#FFFFFF" },
     { icon: Music2, href: contact?.tiktok_url || "#", label: "TikTok", color: "#FFFFFF" },
   ];
+
 
   return (
     <>

@@ -131,6 +131,48 @@ export type Database = {
         }
         Relationships: []
       }
+      inquiries: {
+        Row: {
+          created_at: string
+          email: string
+          event_date: string | null
+          guests: number | null
+          id: string
+          kind: string
+          message: string
+          name: string
+          phone: string
+          status: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          event_date?: string | null
+          guests?: number | null
+          id?: string
+          kind?: string
+          message?: string
+          name: string
+          phone?: string
+          status?: string
+          subject?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          event_date?: string | null
+          guests?: number | null
+          id?: string
+          kind?: string
+          message?: string
+          name?: string
+          phone?: string
+          status?: string
+          subject?: string
+        }
+        Relationships: []
+      }
       job_applications: {
         Row: {
           cover_letter: string | null

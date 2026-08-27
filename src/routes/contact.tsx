@@ -6,6 +6,8 @@ import { SiteFooter } from "@/components/site-footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useContactInfo } from "@/lib/content";
 import { openReservation } from "@/components/reservation-modal";
+import { submitInquiry } from "@/lib/inquiries.functions";
+
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -42,21 +44,28 @@ function ContactPage() {
     const fd = new FormData(form);
     setErr(null);
     setStatus("busy");
-    const { error } = await (supabase as any).from("contact_messages").insert({
+    const payload = {
       name: String(fd.get("name") ?? "").trim().slice(0, 120),
       email: String(fd.get("email") ?? "").trim().slice(0, 255),
       phone: String(fd.get("phone") ?? "").trim().slice(0, 40),
       subject: String(fd.get("subject") ?? "").trim().slice(0, 160),
       message: String(fd.get("message") ?? "").trim().slice(0, 2000),
-    });
+    };
+    const { error } = await (supabase as any).from("contact_messages").insert(payload);
     if (error) {
       setStatus("idle");
       setErr("Couldn't send your message. Please try again or give us a call.");
       return;
     }
+    try {
+      await submitInquiry({ data: { kind: "contact", ...payload } });
+    } catch {
+      // notification failure shouldn't block the user
+    }
     form.reset();
     setStatus("done");
   };
+
 
   const details = [
     { icon: MapPin, label: "Address", value: contact?.address_line ?? "425 S Mill Ave, Tempe, AZ 85281" },
@@ -66,11 +75,18 @@ function ContactPage() {
       value: `${contact?.hours_weekday ?? "SUN–THU · 11AM – 12AM"}\n${contact?.hours_weekend ?? "FRI–SAT · 11AM – 2AM"}`,
     },
     { icon: Phone, label: "Phone", value: contact?.phone ?? "(480) 555-0142" },
-    { 
-      icon: Mail, 
-      label: "Email", 
-      value: `General: ${contact?.email ?? "info@millsmodernsocial.com"}\nParties: party@millsmodernsocial.com` 
+    {
+      icon: Mail,
+      label: "Email",
+      value: [
+        `General: ${contact?.email ?? "info@millsmodernsocial.com"}`,
+        "Parties: party@millsmodernsocial.com",
+        "Events: events@millsmodernsocial.com",
+        "Play: play@millsmodernsocial.com",
+        "Work: work-mms@millsmodernsocial.com",
+      ].join("\n"),
     },
+
   ];
 
   return (
