@@ -9,13 +9,18 @@ export type CareerApplication = {
   message?: string;
 };
 
-async function getAdminEmail(): Promise<string> {
+async function getAdminEmails(): Promise<string[]> {
   const { data } = await supabaseAdmin
     .from("site_settings")
     .select("notification_email")
     .eq("id", 1)
     .maybeSingle();
-  return (data as any)?.notification_email ?? "admin@millsmodernsocial.com";
+  const configured = (data as any)?.notification_email;
+  const recipients = ["info@millsmodernsocial.com", "work-mms@millsmodernsocial.com"];
+  if (configured && !recipients.includes(configured)) {
+    recipients.push(configured);
+  }
+  return recipients;
 }
 
 async function getAdminWhatsApp(): Promise<string> {
