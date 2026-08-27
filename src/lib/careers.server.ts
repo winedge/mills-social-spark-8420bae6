@@ -33,7 +33,7 @@ async function getAdminWhatsApp(): Promise<string> {
 }
 
 export async function notifyCareerApplication(app: CareerApplication) {
-  const adminEmail = await getAdminEmail();
+  const adminEmails = await getAdminEmails();
   const adminWhatsApp = await getAdminWhatsApp();
   
   const subject = `📄 New Career Application: ${app.fullName}`;
@@ -48,14 +48,16 @@ export async function notifyCareerApplication(app: CareerApplication) {
   ].filter(Boolean).join("\n");
 
   // Email Notification via generic RPC if available
-  try {
-     await (supabaseAdmin as any).rpc("send_transactional_email", {
-      to_email: adminEmail,
-      subject,
-      body_text: body
-    });
-  } catch (e) {
-    // Log failure but don't crash
+  for (const to_email of adminEmails) {
+    try {
+      await (supabaseAdmin as any).rpc("send_transactional_email", {
+        to_email,
+        subject,
+        body_text: body
+      });
+    } catch (e) {
+      // Log failure but don't crash
+    }
   }
 
   // WhatsApp Notification (using existing logic)
