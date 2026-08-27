@@ -398,7 +398,7 @@ function CareersPage() {
       <section className="py-24 px-6 border-t border-border bg-surface/30">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="font-display text-5xl uppercase mb-4">Don't see the <span className="text-accent">Right Role?</span></h2>
+            <h2 className="font-display text-5xl uppercase mb-4">Don't see the <span className="text-accent">Right Position?</span></h2>
             <p className="text-muted-foreground">
               Submit a general application. If we have any requirements that match your skills, we'll reach out to you.
             </p>
