@@ -9,13 +9,18 @@ export type CareerApplication = {
   message?: string;
 };
 
-async function getAdminEmail(): Promise<string> {
+async function getAdminEmails(): Promise<string[]> {
   const { data } = await supabaseAdmin
     .from("site_settings")
     .select("notification_email")
     .eq("id", 1)
     .maybeSingle();
-  return (data as any)?.notification_email ?? "admin@millsmodernsocial.com";
+  const configured = (data as any)?.notification_email;
+  const recipients = ["info@millsmodernsocial.com", "work-mms@millsmodernsocial.com"];
+  if (configured && !recipients.includes(configured)) {
+    recipients.push(configured);
+  }
+  return recipients;
 }
 
 async function getAdminWhatsApp(): Promise<string> {
@@ -28,7 +33,7 @@ async function getAdminWhatsApp(): Promise<string> {
 }
 
 export async function notifyCareerApplication(app: CareerApplication) {
-  const adminEmail = await getAdminEmail();
+  const adminEmails = await getAdminEmails();
   const adminWhatsApp = await getAdminWhatsApp();
   
   const subject = `📄 New Career Application: ${app.fullName}`;
@@ -43,14 +48,16 @@ export async function notifyCareerApplication(app: CareerApplication) {
   ].filter(Boolean).join("\n");
 
   // Email Notification via generic RPC if available
-  try {
-     await (supabaseAdmin as any).rpc("send_transactional_email", {
-      to_email: adminEmail,
-      subject,
-      body_text: body
-    });
-  } catch (e) {
-    // Log failure but don't crash
+  for (const to_email of adminEmails) {
+    try {
+      await (supabaseAdmin as any).rpc("send_transactional_email", {
+        to_email,
+        subject,
+        body_text: body
+      });
+    } catch (e) {
+      // Log failure but don't crash
+    }
   }
 
   // WhatsApp Notification (using existing logic)
