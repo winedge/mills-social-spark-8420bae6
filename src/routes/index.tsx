@@ -383,7 +383,7 @@ function Home() {
             {dailySpecials.map((s) => (
               <article key={s.day} className="group relative">
                 <div className="aspect-[4/5] overflow-hidden mb-6 bg-surface relative">
-                  <img
+                  <StorageImage
                     src={s.img}
                     alt={s.title}
                     loading="lazy"
