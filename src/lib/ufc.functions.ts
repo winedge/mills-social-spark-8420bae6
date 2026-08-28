@@ -136,23 +136,10 @@ async function mapFighter(f: ApiSportsFighter & { winner: boolean }): Promise<Uf
     .replace(/[^a-z0-9]/g, "-") 
     .replace(/-+/g, "-") 
     .replace(/^-|-$/g, ""); 
-    
-  // Local asset resolution
-  let imageUrl = `/ufc/${slug}.png`; // Default to public directory
-  try {
-    // Attempt to load from our localized assets
-    // Use a dynamic import that Vite will resolve at build time
-    const assets = import.meta.glob('../assets/ufc/*.png.asset.json', { eager: true });
-    const assetPath = `../assets/ufc/${slug}.png.asset.json`;
-    const asset = assets[assetPath] as any;
-    
-    if (asset?.default?.url) {
-      imageUrl = asset.default.url;
-    }
-  } catch (e) {
-    // Fallback to public path if anything fails
-  }
-  
+
+  // Primary: headshot supplied by the data provider
+  const imageUrl = cleanStr(f.logo);
+
   // External fallbacks
   const ufcOfficialUrl = `https://dmxg5wxfqgb4u.cloudfront.net/styles/fighter_stats_headshot/s3/image/fighter/profile/${slug}.png`;
   const ufcOfficialAltUrl = `https://dmxg5wxfqgb4u.cloudfront.net/styles/event_results_athlete_headshot/s3/image/fighter/profile/${slug}.png`;
