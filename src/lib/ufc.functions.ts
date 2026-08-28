@@ -137,13 +137,13 @@ async function mapFighter(f: ApiSportsFighter & { winner: boolean }): Promise<Uf
     .replace(/-+/g, "-") 
     .replace(/^-|-$/g, ""); 
 
-  // Primary: headshot supplied by the data provider
-  const imageUrl = cleanStr(f.logo);
-
   // External fallbacks
   const ufcOfficialUrl = `https://dmxg5wxfqgb4u.cloudfront.net/styles/fighter_stats_headshot/s3/image/fighter/profile/${slug}.png`;
   const ufcOfficialAltUrl = `https://dmxg5wxfqgb4u.cloudfront.net/styles/event_results_athlete_headshot/s3/image/fighter/profile/${slug}.png`;
   const ufcOfficialCdnUrl = `https://dmxg5wxfqgb4u.cloudfront.net/image/fighter/profile/${slug}.png`;
+
+  // Primary: headshot supplied by the data provider, else UFC official
+  const imageUrl = cleanStr(f.logo) ?? ufcOfficialUrl;
 
   return {
     name,
