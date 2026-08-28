@@ -188,7 +188,7 @@ export const getUfcFights = createServerFn({ method: "GET" }).handler(async (): 
   
   // Using season 2024 since free plan is limited to 2022-2024
   const season = 2024;
-  const cacheKey = `ufc-api-sports-v6:${season}`;
+  const cacheKey = `ufc-api-sports-v7:${season}`;
   const ttl = 86_400_000 * 7; // Increased to 7 days to minimize API calls; will update on new event ID selection or manual cache bust.
 
   const { data, stale } = await withSportsCache<{
