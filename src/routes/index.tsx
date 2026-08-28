@@ -380,37 +380,7 @@ function Home() {
           </div>
 
           {specialsLoading ? <DailySpecialsSkeleton /> : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {dailySpecials.map((s) => (
-              <article key={s.day} className="group relative">
-                <div className="aspect-[4/5] overflow-hidden mb-6 bg-surface relative">
-                  <StorageImage
-                    src={s.img}
-                    alt={s.title}
-                    loading="lazy"
-                    width={800}
-                    height={1000}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute top-4 left-4 bg-accent text-primary-foreground font-mono text-[10px] font-bold uppercase tracking-widest px-2 py-1">
-                    {s.day}
-                  </div>
-                  <div className="absolute bottom-4 right-4 bg-background/90 backdrop-blur-sm font-display text-xl uppercase px-3 py-1.5 text-accent">
-                    {s.badge}
-                  </div>
-                </div>
-                <div className="flex justify-between items-start gap-4">
-                  <div>
-                    <h4 className="font-display text-2xl uppercase tracking-wide">{s.title}</h4>
-                    <p className="text-sm text-muted-foreground mt-1">{s.desc}</p>
-                  </div>
-                  <span className="font-mono text-accent text-sm shrink-0 whitespace-nowrap">
-                    {s.price}
-                  </span>
-                </div>
-              </article>
-            ))}
-          </div>
+            <SpecialsSlider specials={dailySpecials} />
           )}
         </div>
       </section>
