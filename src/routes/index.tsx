@@ -167,6 +167,106 @@ function useMarqueeImages() {
   return images;
 }
 
+type Special = {
+  img: any;
+  day: string;
+  badge: string;
+  title: string;
+  desc: string;
+  price: string;
+};
+
+function SpecialsSlider({ specials }: { specials: Special[] }) {
+  const trackRef = React.useRef<HTMLDivElement>(null);
+  const [canPrev, setCanPrev] = React.useState(false);
+  const [canNext, setCanNext] = React.useState(true);
+
+  const update = React.useCallback(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    setCanPrev(el.scrollLeft > 8);
+    setCanNext(el.scrollLeft < el.scrollWidth - el.clientWidth - 8);
+  }, []);
+
+  React.useEffect(() => {
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [update, specials.length]);
+
+  const scrollByCard = (dir: 1 | -1) => {
+    const el = trackRef.current;
+    if (!el) return;
+    const card = el.querySelector<HTMLElement>("[data-card]");
+    const step = card ? card.offsetWidth + 24 : 360;
+    el.scrollBy({ left: dir * step, behavior: "smooth" });
+  };
+
+  return (
+    <div className="relative group/slider">
+      <div
+        ref={trackRef}
+        onScroll={update}
+        className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {specials.map((s) => (
+          <article
+            key={s.day + s.title}
+            data-card
+            className="group relative snap-start shrink-0 w-[85vw] sm:w-[420px]"
+          >
+            <div className="aspect-[4/5] overflow-hidden mb-6 bg-surface relative">
+              <StorageImage
+                src={s.img}
+                alt={s.title}
+                loading="lazy"
+                width={800}
+                height={1000}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute top-4 left-4 bg-accent text-primary-foreground font-mono text-[10px] font-bold uppercase tracking-widest px-2 py-1">
+                {s.day}
+              </div>
+              <div className="absolute bottom-4 right-4 bg-background/90 backdrop-blur-sm font-display text-xl uppercase px-3 py-1.5 text-accent">
+                {s.badge}
+              </div>
+            </div>
+            <div className="flex justify-between items-start gap-4">
+              <div>
+                <h4 className="font-display text-2xl uppercase tracking-wide">{s.title}</h4>
+                <p className="text-sm text-muted-foreground mt-1">{s.desc}</p>
+              </div>
+              <span className="font-mono text-accent text-sm shrink-0 whitespace-nowrap">
+                {s.price}
+              </span>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      {/* Arrows */}
+      <button
+        type="button"
+        aria-label="Previous specials"
+        onClick={() => scrollByCard(-1)}
+        disabled={!canPrev}
+        className="absolute left-0 top-[38%] -translate-y-1/2 -translate-x-3 md:-translate-x-6 size-11 border-2 border-border bg-background/90 backdrop-blur-sm font-display text-xl text-foreground hover:bg-accent hover:text-primary-foreground hover:border-accent transition-all disabled:opacity-0 disabled:pointer-events-none z-10"
+      >
+        ←
+      </button>
+      <button
+        type="button"
+        aria-label="Next specials"
+        onClick={() => scrollByCard(1)}
+        disabled={!canNext}
+        className="absolute right-0 top-[38%] -translate-y-1/2 translate-x-3 md:translate-x-6 size-11 border-2 border-border bg-background/90 backdrop-blur-sm font-display text-xl text-foreground hover:bg-accent hover:text-primary-foreground hover:border-accent transition-all disabled:opacity-0 disabled:pointer-events-none z-10"
+      >
+        →
+      </button>
+    </div>
+  );
+}
+
 function Home() {
   const heroSrc = useHeroVideo();
   const marqueeImages = useMarqueeImages();
