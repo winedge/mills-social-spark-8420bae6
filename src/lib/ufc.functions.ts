@@ -136,27 +136,14 @@ async function mapFighter(f: ApiSportsFighter & { winner: boolean }): Promise<Uf
     .replace(/[^a-z0-9]/g, "-") 
     .replace(/-+/g, "-") 
     .replace(/^-|-$/g, ""); 
-    
-  // Local asset resolution
-  let imageUrl = `/ufc/${slug}.png`; // Default to public directory
-  try {
-    // Attempt to load from our localized assets
-    // Use a dynamic import that Vite will resolve at build time
-    const assets = import.meta.glob('../assets/ufc/*.png.asset.json', { eager: true });
-    const assetPath = `../assets/ufc/${slug}.png.asset.json`;
-    const asset = assets[assetPath] as any;
-    
-    if (asset?.default?.url) {
-      imageUrl = asset.default.url;
-    }
-  } catch (e) {
-    // Fallback to public path if anything fails
-  }
-  
+
   // External fallbacks
   const ufcOfficialUrl = `https://dmxg5wxfqgb4u.cloudfront.net/styles/fighter_stats_headshot/s3/image/fighter/profile/${slug}.png`;
   const ufcOfficialAltUrl = `https://dmxg5wxfqgb4u.cloudfront.net/styles/event_results_athlete_headshot/s3/image/fighter/profile/${slug}.png`;
   const ufcOfficialCdnUrl = `https://dmxg5wxfqgb4u.cloudfront.net/image/fighter/profile/${slug}.png`;
+
+  // Primary: headshot supplied by the data provider, else UFC official
+  const imageUrl = cleanStr(f.logo) ?? ufcOfficialUrl;
 
   return {
     name,
@@ -201,7 +188,7 @@ export const getUfcFights = createServerFn({ method: "GET" }).handler(async (): 
   
   // Using season 2024 since free plan is limited to 2022-2024
   const season = 2024;
-  const cacheKey = `ufc-api-sports-v6:${season}`;
+  const cacheKey = `ufc-api-sports-v7:${season}`;
   const ttl = 86_400_000 * 7; // Increased to 7 days to minimize API calls; will update on new event ID selection or manual cache bust.
 
   const { data, stale } = await withSportsCache<{
