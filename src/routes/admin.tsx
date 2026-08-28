@@ -1478,7 +1478,8 @@ function SpecialsSection() {
               <Input name="price" label="Price label" defaultValue={editing.price} />
               <Input name="sort_order" label="Sort" type="number" defaultValue={editing.sort_order} />
             </div>
-            <Input name="image_url" label="Image URL (optional)" defaultValue={editing.image_url ?? ""} placeholder="https://…" />
+            <ImageUploadField name="image_url" label="Image (upload or URL)" folder="specials" defaultValue={editing.image_url ?? ""} />
+
             <label className="flex items-center gap-2 h-10"><input type="checkbox" name="active" defaultChecked={editing.active} /> Active</label>
             <SaveBar busy={false} onCancel={() => setEditing(null)} />
           </form>
