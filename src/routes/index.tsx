@@ -1,5 +1,6 @@
 import React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { StorageImage } from "@/components/storage-image";
 
 import heroBar from "@/assets/hero-bar.jpg.asset.json";
 import heroVideo from "@/assets/hero-loop.mp4.asset.json";
