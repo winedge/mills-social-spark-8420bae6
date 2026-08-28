@@ -1410,6 +1410,75 @@ function SettingsSection() {
 
 /* ================= SHARED UI ================= */
 
+function ImageUploadField({
+  name,
+  label,
+  folder,
+  defaultValue,
+}: {
+  name: string;
+  label: string;
+  folder: string;
+  defaultValue?: string;
+}) {
+  const [url, setUrl] = useState(defaultValue ?? "");
+  const [busy, setBusy] = useState(false);
+  return (
+    <div className="space-y-1.5">
+      <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{label}</label>
+      <input type="hidden" name={name} value={url} />
+      <div className="flex gap-2">
+        <input
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder="https://…"
+          className="flex-1 bg-background border border-border px-3 h-10 text-sm focus:border-accent outline-none"
+        />
+        <label className="shrink-0 flex items-center justify-center size-10 border border-border cursor-pointer hover:border-accent transition-colors">
+          <Upload className="size-4" />
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            disabled={busy}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              setBusy(true);
+              try {
+                const ext = file.name.split(".").pop();
+                const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+                const { error } = await supabase.storage.from("site_assets").upload(path, file);
+                if (error) throw error;
+                const { data } = supabase.storage.from("site_assets").getPublicUrl(path);
+                setUrl(data.publicUrl);
+              } catch (err: any) {
+                alert(err.message);
+              } finally {
+                setBusy(false);
+              }
+            }}
+          />
+        </label>
+      </div>
+      {url && (
+        <div className="mt-2 size-20 bg-muted border border-border overflow-hidden relative group">
+          <img src={url} alt="" className="size-full object-cover" />
+          <button
+            type="button"
+            onClick={() => setUrl("")}
+            className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <Trash2 className="size-4 text-white" />
+          </button>
+        </div>
+      )}
+      {busy && <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Uploading…</p>}
+    </div>
+  );
+}
+
+
 type SpecialRow = { id: string; day: string; badge: string; title: string; description: string; price: string; image_url: string | null; sort_order: number; active: boolean };
 
 function SpecialsSection() {
@@ -1478,7 +1547,8 @@ function SpecialsSection() {
               <Input name="price" label="Price label" defaultValue={editing.price} />
               <Input name="sort_order" label="Sort" type="number" defaultValue={editing.sort_order} />
             </div>
-            <Input name="image_url" label="Image URL (optional)" defaultValue={editing.image_url ?? ""} placeholder="https://…" />
+            <ImageUploadField name="image_url" label="Image (upload or URL)" folder="specials" defaultValue={editing.image_url ?? ""} />
+
             <label className="flex items-center gap-2 h-10"><input type="checkbox" name="active" defaultChecked={editing.active} /> Active</label>
             <SaveBar busy={false} onCancel={() => setEditing(null)} />
           </form>
