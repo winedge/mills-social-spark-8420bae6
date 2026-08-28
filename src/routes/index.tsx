@@ -1,5 +1,6 @@
 import React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { StorageImage } from "@/components/storage-image";
 
 import heroBar from "@/assets/hero-bar.jpg.asset.json";
 import heroVideo from "@/assets/hero-loop.mp4.asset.json";
@@ -383,7 +384,7 @@ function Home() {
             {dailySpecials.map((s) => (
               <article key={s.day} className="group relative">
                 <div className="aspect-[4/5] overflow-hidden mb-6 bg-surface relative">
-                  <img
+                  <StorageImage
                     src={s.img}
                     alt={s.title}
                     loading="lazy"

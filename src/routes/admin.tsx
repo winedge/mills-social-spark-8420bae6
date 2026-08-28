@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { StorageImage } from "@/components/storage-image";
 import { useServerFn } from "@tanstack/react-start";
 import {
   LogOut, Shield, Loader2, Mail, Phone, Calendar, Users, MapPin,
@@ -1463,7 +1464,7 @@ function ImageUploadField({
       </div>
       {url && (
         <div className="mt-2 size-20 bg-muted border border-border overflow-hidden relative group">
-          <img src={url} alt="" className="size-full object-cover" />
+          <StorageImage src={url} alt="" className="size-full object-cover" />
           <button
             type="button"
             onClick={() => setUrl("")}
