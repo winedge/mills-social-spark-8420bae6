@@ -114,7 +114,7 @@ function AdminPage() {
       } else setIsAdmin(true);
       setChecking(false);
     })();
-  }, [session]);
+  }, [session?.user?.id]);
 
   if (checking) {
     return <div className="min-h-screen bg-background grid place-items-center">
