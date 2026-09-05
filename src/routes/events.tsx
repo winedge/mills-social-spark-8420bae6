@@ -135,6 +135,14 @@ function EventsPage() {
         blurb="Planning a watch party, birthday, or corporate night? Send us the details and our events team will reply within one business day."
         subjectPlaceholder="Birthday party / corporate mixer"
         messagePlaceholder="Tell us about your event…"
+        spaceOptions={[
+          "Bar Lounge (up to 60)",
+          "Main Dining Room (up to 100)",
+          "Flex Room (up to 100)",
+          "Main Dining + Flex (up to 250)",
+          "Full Buyout (500+)",
+        ]}
+        note="This request is not a booking. An executive will contact you for confirmation at the earliest."
       />
 
       <SiteFooter />
