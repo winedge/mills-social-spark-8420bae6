@@ -4,6 +4,7 @@ import { z } from "zod";
 import { useMemo, useState, useEffect } from "react";
 import { Search, SlidersHorizontal, X, ChevronRight, Maximize2, Info } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
+import { StorageImage } from "@/components/storage-image";
 import { SiteFooter } from "@/components/site-footer";
 import { useMenuItems, useMenuCategories, useDailySpecialsState, type DbMenuCategory, type DbDailySpecial } from "@/lib/content";
 import {
@@ -686,7 +687,7 @@ function MenuPage() {
                           <Dialog>
                             <DialogTrigger asChild>
                               <button className="size-20 md:size-24 bg-surface border border-border overflow-hidden relative group/img cursor-zoom-in">
-                                <img
+                                <StorageImage
                                   src={i.image_url}
                                   alt={i.name}
                                   loading="lazy"
@@ -712,7 +713,7 @@ function MenuPage() {
                             </DialogTrigger>
                             <DialogContent className="max-w-[95vw] md:max-w-3xl p-0 border-none bg-transparent shadow-none [&>button]:text-white [&>button]:bg-black/40 [&>button]:rounded-full [&>button]:size-10 [&>button]:hover:bg-black/60">
                               <div className="relative aspect-square w-full overflow-hidden rounded-lg">
-                                <img
+                                <StorageImage
                                   src={i.image_url}
                                   alt={i.name}
                                   className="size-full object-cover animate-in zoom-in-95 duration-300"
@@ -827,7 +828,7 @@ function DailySpecialsStrip() {
               {/* Image top */}
               <div className="relative aspect-[4/3] bg-surface overflow-hidden border-b border-border">
                 {s.image_url ? (
-                  <img
+                  <StorageImage
                     src={s.image_url}
                     alt={`${s.title} - ${s.day} special`}
                     loading="lazy"
