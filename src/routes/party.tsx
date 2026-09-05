@@ -261,7 +261,7 @@ function PartyPage() {
           <div className="flex flex-col gap-4">
             <div className="mb-2">
               <span className="font-mono text-accent text-xs tracking-[0.3em] block mb-2">CHOOSE YOUR SPACE</span>
-              <h2 className="font-display text-4xl md:text-5xl uppercase leading-none">Three ways to <span className="text-accent italic">celebrate</span></h2>
+              <h2 className="font-display text-4xl md:text-5xl uppercase leading-none">Five ways to <span className="text-accent italic">celebrate</span></h2>
             </div>
             {spaces.map((s) => {
               const Icon = s.icon;
