@@ -331,9 +331,14 @@ function PartyPage() {
                   />
                 </div>
                 <div className="md:col-span-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-2">
-                  <p className="font-mono text-[10px] text-muted-foreground tracking-widest flex items-center gap-2">
-                    <Calendar className="size-3" /> WE'LL REPLY WITHIN 24 HOURS
-                  </p>
+                  <div className="space-y-1.5">
+                    <p className="font-mono text-[10px] text-muted-foreground tracking-widest flex items-center gap-2">
+                      <Calendar className="size-3" /> WE'LL REPLY WITHIN 24 HOURS
+                    </p>
+                    <p className="text-[11px] text-muted-foreground max-w-sm text-pretty">
+                      This request is not a booking. An executive will contact you for confirmation at the earliest.
+                    </p>
+                  </div>
                   <button
                     type="submit"
                     disabled={submitting}
