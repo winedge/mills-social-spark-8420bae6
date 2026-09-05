@@ -137,3 +137,12 @@
   opacity: 0 !important;
   pointer-events: none !important;
 }
+
+/* Form field readability */
+:root { color-scheme: dark; }
+
+input, select, textarea {
+  color-scheme: dark;
+  color: var(--color-foreground);
+}
+input::placeholder, textarea::placeholder { color: #7c8persist; }

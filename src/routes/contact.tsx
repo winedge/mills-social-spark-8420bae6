@@ -180,16 +180,16 @@ function ContactPage() {
             <style>{`
               .contact-input {
                 width: 100%;
-                background: hsl(var(--background));
-                border: 1px solid hsl(var(--border));
+                background: var(--color-background);
+                border: 1px solid var(--color-border);
                 padding: 0.7rem 0.8rem;
                 font-size: 0.9rem;
-                color: hsl(var(--foreground));
+                color: var(--color-foreground);
                 outline: none;
                 transition: border-color 150ms, box-shadow 150ms;
               }
               .contact-input:focus {
-                border-color: hsl(var(--accent));
+                border-color: var(--color-accent);
                 box-shadow: 0 0 0 3px rgba(56,189,248,0.15);
               }
             `}</style>
