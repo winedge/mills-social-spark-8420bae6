@@ -8,6 +8,40 @@ import marqueeImagesAsset from "@/assets/marquee-images.png.asset.json";
 
 /** Locally bundled so it resolves on any deployment target. */
 const DEFAULT_HERO_VIDEO = heroVideo.url;
+
+/** Recent photoshoot images for the homepage marquee slider. */
+const DEFAULT_MARQUEE_IMAGES = [
+  "/slider/all-american-burger.jpg",
+  "/slider/all-food-together.jpg",
+  "/slider/bbq-chicken-salad.jpg",
+  "/slider/buffalo-chicken-flatbread.jpg",
+  "/slider/cheesecake.jpg",
+  "/slider/cobb-salad.jpg",
+  "/slider/fountain-drink.jpg",
+  "/slider/green-chile-burger.jpg",
+  "/slider/grilled-chicken-caesar-salad.jpg",
+  "/slider/grilled-wings-8pc.jpg",
+  "/slider/hh-buffalo-chicken-sliders.jpg",
+  "/slider/hh-chicken-tenders.jpg",
+  "/slider/hh-fries.jpg",
+  "/slider/hh-house-salad.jpg",
+  "/slider/hh-hummus.jpg",
+  "/slider/hh-merica-sliders.jpg",
+  "/slider/hh-moderita.jpg",
+  "/slider/hh-old-fashioned.jpg",
+  "/slider/hh-onion-rings.jpg",
+  "/slider/hh-pretzel.jpg",
+  "/slider/hh-watermelon-moderita.jpg",
+  "/slider/hh-wings.jpg",
+  "/slider/iced-tea.jpg",
+  "/slider/philly-cheesesteak-sandwich.jpg",
+  "/slider/pink-lemonade.jpg",
+  "/slider/poke-nachos.jpg",
+  "/slider/smore-brownies.jpg",
+  "/slider/spanish-protein-bowl.jpg",
+  "/slider/truffle-fries.jpg",
+  "/slider/wild-hog-flatbread.jpg",
+];
 import menuBurger from "@/assets/menu-burger.jpg.asset.json";
 import menuCocktail from "@/assets/menu-cocktail.jpg.asset.json";
 import menuWings from "@/assets/menu-wings.jpg.asset.json";
@@ -270,6 +304,7 @@ function SpecialsSlider({ specials }: { specials: Special[] }) {
 function Home() {
   const heroSrc = useHeroVideo();
   const marqueeImages = useMarqueeImages();
+  const sliderImages = marqueeImages.length > 0 ? marqueeImages : DEFAULT_MARQUEE_IMAGES;
   const { items: dbSpecials, loading: specialsLoading } = useDailySpecialsState();
   const specialImgs = [menuBurger.url, menuWings.url, menuCocktail.url];
   const dailySpecials = dbSpecials.length
@@ -430,7 +465,7 @@ function Home() {
       {/* Full-Width Image Marquee Slider - Completely edge-to-edge */}
       <div className="w-full overflow-hidden relative border-y border-accent/20 bg-black py-0">
         <div className="flex animate-marquee whitespace-nowrap">
-          {(marqueeImages.length > 0 ? [...marqueeImages, ...marqueeImages] : [marqueeImagesAsset.url, marqueeImagesAsset.url]).map((url, i) => (
+          {[...sliderImages, ...sliderImages].map((url, i) => (
             <div key={i} className="flex shrink-0 items-center">
               <img 
                 src={url} 
