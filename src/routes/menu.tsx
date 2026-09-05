@@ -826,13 +826,13 @@ function DailySpecialsStrip() {
               className="group flex flex-col border border-border bg-background hover:border-accent/60 transition-colors overflow-hidden"
             >
               {/* Image top */}
-              <div className="relative aspect-[4/3] bg-surface overflow-hidden border-b border-border">
+              <div className="relative aspect-[4/5] bg-surface overflow-hidden border-b border-border">
                 {s.image_url ? (
                   <StorageImage
                     src={s.image_url}
                     alt={`${s.title} - ${s.day} special`}
                     loading="lazy"
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_30%_20%,color-mix(in_oklab,var(--accent)_18%,transparent),transparent_70%)]">
