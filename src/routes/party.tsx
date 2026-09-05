@@ -312,9 +312,11 @@ function PartyPage() {
                     className="bg-background border border-border px-3 h-11 text-sm outline-none focus:border-accent"
                   >
                     <option value="" disabled>Choose a space</option>
-                    <option>Bar Lounge</option>
-                    <option>Game Floor Buyout</option>
-                    <option>Full Venue</option>
+                    <option>Bar Lounge (up to 60)</option>
+                    <option>Main Dining Room (up to 100)</option>
+                    <option>Flex Room (up to 100)</option>
+                    <option>Main Dining + Flex (up to 250)</option>
+                    <option>Full Buyout (500+)</option>
                     <option>Not sure yet</option>
                   </select>
                 </div>
