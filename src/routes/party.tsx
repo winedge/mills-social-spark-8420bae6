@@ -38,7 +38,14 @@ const formSchema = z.object({
   phone: z.string().trim().min(7, "Phone is required").max(30),
   date: z.string().min(1, "Pick a date"),
   size: z.coerce.number().int().min(1, "At least 1").max(500, "Too large"),
-  space: z.enum(["Bar Lounge", "Game Floor Buyout", "Full Venue", "Not sure yet"]),
+  space: z.enum([
+    "Bar Lounge (up to 60)",
+    "Main Dining Room (up to 100)",
+    "Flex Room (up to 100)",
+    "Main Dining + Flex (up to 250)",
+    "Full Buyout (500+)",
+    "Not sure yet",
+  ]),
   message: z.string().trim().max(1000).optional().or(z.literal("")),
 });
 
