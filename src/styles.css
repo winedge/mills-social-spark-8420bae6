@@ -137,3 +137,40 @@
   opacity: 0 !important;
   pointer-events: none !important;
 }
+
+/* Form field readability */
+:root { color-scheme: dark; }
+
+input, select, textarea {
+  color-scheme: dark;
+  color: var(--color-foreground);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8;
+  opacity: 1;
+}
+
+select option {
+  background: var(--color-surface);
+  color: var(--color-foreground);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.6);
+  opacity: 0.9;
+  cursor: pointer;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+input[type="date"]::-webkit-datetime-edit,
+input[type="time"]::-webkit-datetime-edit {
+  color: var(--color-foreground);
+}

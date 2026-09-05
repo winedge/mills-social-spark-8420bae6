@@ -10,6 +10,8 @@ type Props = {
   guestsLabel?: string;
   subjectPlaceholder?: string;
   messagePlaceholder?: string;
+  spaceOptions?: string[];
+  note?: string;
 };
 
 export function InquiryForm({
@@ -20,6 +22,8 @@ export function InquiryForm({
   guestsLabel = "Guests",
   subjectPlaceholder = "What are you planning?",
   messagePlaceholder = "Tell us a bit more…",
+  spaceOptions,
+  note,
 }: Props) {
   const [status, setStatus] = useState<"idle" | "busy" | "done">("idle");
   const [err, setErr] = useState<string | null>(null);
@@ -40,7 +44,9 @@ export function InquiryForm({
           phone: String(fd.get("phone") ?? "").trim(),
           eventDate: String(fd.get("event_date") ?? "").trim(),
           guests: guestsRaw ? Number(guestsRaw) : undefined,
-          subject: String(fd.get("subject") ?? "").trim(),
+          subject: [String(fd.get("space") ?? "").trim(), String(fd.get("subject") ?? "").trim()]
+            .filter(Boolean)
+            .join(" — "),
           message: String(fd.get("message") ?? "").trim(),
         },
       });
@@ -87,6 +93,16 @@ export function InquiryForm({
                 <input name="guests" type="number" min={1} className="inq-input" placeholder="12" />
               </Field>
             </div>
+            {spaceOptions && spaceOptions.length > 0 && (
+              <Field label="Space">
+                <select name="space" defaultValue="" className="inq-input">
+                  <option value="">Not sure yet</option>
+                  {spaceOptions.map((o) => (
+                    <option key={o} value={o}>{o}</option>
+                  ))}
+                </select>
+              </Field>
+            )}
             <Field label="Subject">
               <input name="subject" className="inq-input" placeholder={subjectPlaceholder} />
             </Field>
@@ -94,6 +110,8 @@ export function InquiryForm({
               <textarea required name="message" rows={5} className="inq-input resize-none" placeholder={messagePlaceholder} />
             </Field>
             {err && <p className="text-sm text-red-500">{err}</p>}
+            <p className="font-mono text-[10px] tracking-widest uppercase text-muted-foreground">We'll reply within 24 hours</p>
+            {note && <p className="text-[11px] text-muted-foreground text-pretty">{note}</p>}
             <button
               disabled={status === "busy"}
               className="w-full bg-accent text-primary-foreground py-4 font-bold uppercase tracking-widest text-sm hover:brightness-110 active:scale-[0.99] transition inline-flex items-center justify-center gap-2 disabled:opacity-70"
@@ -106,16 +124,16 @@ export function InquiryForm({
         <style>{`
           .inq-input {
             width: 100%;
-            background: hsl(var(--background));
-            border: 1px solid hsl(var(--border));
+            background: var(--color-background);
+            border: 1px solid var(--color-border);
             padding: 0.7rem 0.8rem;
             font-size: 0.9rem;
-            color: hsl(var(--foreground));
+            color: var(--color-foreground);
             outline: none;
             transition: border-color 150ms, box-shadow 150ms;
           }
           .inq-input:focus {
-            border-color: hsl(var(--accent));
+            border-color: var(--color-accent);
             box-shadow: 0 0 0 3px rgba(56,189,248,0.15);
           }
         `}</style>

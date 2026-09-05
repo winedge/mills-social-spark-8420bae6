@@ -1680,14 +1680,14 @@ function MarqueeSection() {
         <h3 className="font-display text-lg uppercase mb-4">Add Slider Image</h3>
         <form onSubmit={addImage} className="flex gap-3">
           <div className="flex-1">
-            <Input name="image_url" label="Local Asset Path" placeholder="/src/assets/slider/image.png" required />
+            <ImageUploadField name="image_url" label="Slider image (upload or path)" folder="slider" />
           </div>
           <button disabled={busy} className="self-end h-10 px-6 bg-accent text-primary-foreground font-bold uppercase tracking-widest text-xs disabled:opacity-50">
             {busy ? "Adding..." : "Add"}
           </button>
         </form>
         <p className="mt-2 text-[10px] text-muted-foreground font-mono uppercase">
-          Tip: Use paths like /src/assets/slider/marquee-images.png
+          Upload an image or paste a path like /assets/slider/marquee-images.png
         </p>
       </div>
 
@@ -1695,7 +1695,7 @@ function MarqueeSection() {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {rows.map((r) => (
             <div key={r.id} className="group relative aspect-video border border-border bg-surface overflow-hidden">
-              <img src={r.image_url} alt="" className="w-full h-full object-cover" />
+              <StorageImage src={r.image_url} alt="" className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity grid place-items-center">
                 <button onClick={() => remove(r.id)} className="size-10 bg-red-500 text-white grid place-items-center rounded-full hover:scale-110 transition-transform">
                   <Trash2 className="size-5" />

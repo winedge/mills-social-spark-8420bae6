@@ -38,7 +38,14 @@ const formSchema = z.object({
   phone: z.string().trim().min(7, "Phone is required").max(30),
   date: z.string().min(1, "Pick a date"),
   size: z.coerce.number().int().min(1, "At least 1").max(500, "Too large"),
-  space: z.enum(["Bar Lounge", "Game Floor Buyout", "Full Venue", "Not sure yet"]),
+  space: z.enum([
+    "Bar Lounge (up to 60)",
+    "Main Dining Room (up to 100)",
+    "Flex Room (up to 100)",
+    "Main Dining + Flex (up to 250)",
+    "Full Buyout (500+)",
+    "Not sure yet",
+  ]),
   message: z.string().trim().max(1000).optional().or(z.literal("")),
 });
 
@@ -254,7 +261,7 @@ function PartyPage() {
           <div className="flex flex-col gap-4">
             <div className="mb-2">
               <span className="font-mono text-accent text-xs tracking-[0.3em] block mb-2">CHOOSE YOUR SPACE</span>
-              <h2 className="font-display text-4xl md:text-5xl uppercase leading-none">Three ways to <span className="text-accent italic">celebrate</span></h2>
+              <h2 className="font-display text-4xl md:text-5xl uppercase leading-none">Five ways to <span className="text-accent italic">celebrate</span></h2>
             </div>
             {spaces.map((s) => {
               const Icon = s.icon;
@@ -305,9 +312,11 @@ function PartyPage() {
                     className="bg-background border border-border px-3 h-11 text-sm outline-none focus:border-accent"
                   >
                     <option value="" disabled>Choose a space</option>
-                    <option>Bar Lounge</option>
-                    <option>Game Floor Buyout</option>
-                    <option>Full Venue</option>
+                    <option>Bar Lounge (up to 60)</option>
+                    <option>Main Dining Room (up to 100)</option>
+                    <option>Flex Room (up to 100)</option>
+                    <option>Main Dining + Flex (up to 250)</option>
+                    <option>Full Buyout (500+)</option>
                     <option>Not sure yet</option>
                   </select>
                 </div>
@@ -322,9 +331,14 @@ function PartyPage() {
                   />
                 </div>
                 <div className="md:col-span-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-2">
-                  <p className="font-mono text-[10px] text-muted-foreground tracking-widest flex items-center gap-2">
-                    <Calendar className="size-3" /> WE'LL REPLY WITHIN 24 HOURS
-                  </p>
+                  <div className="space-y-1.5">
+                    <p className="font-mono text-[10px] text-muted-foreground tracking-widest flex items-center gap-2">
+                      <Calendar className="size-3" /> WE'LL REPLY WITHIN 24 HOURS
+                    </p>
+                    <p className="text-[11px] text-muted-foreground max-w-sm text-pretty">
+                      This request is not a booking. An executive will contact you for confirmation at the earliest.
+                    </p>
+                  </div>
                   <button
                     type="submit"
                     disabled={submitting}
