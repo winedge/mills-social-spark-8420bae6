@@ -306,6 +306,72 @@ function SpecialsSlider({ specials }: { specials: Special[] }) {
   );
 }
 
+function MarqueeImagesSlider({ images }: { images: string[] }) {
+  const trackRef = React.useRef<HTMLDivElement>(null);
+  const [canPrev, setCanPrev] = React.useState(false);
+  const [canNext, setCanNext] = React.useState(true);
+
+  const update = React.useCallback(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    setCanPrev(el.scrollLeft > 8);
+    setCanNext(el.scrollLeft < el.scrollWidth - el.clientWidth - 8);
+  }, []);
+
+  React.useEffect(() => {
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [update, images.length]);
+
+  const scrollByImage = (dir: 1 | -1) => {
+    const el = trackRef.current;
+    if (!el) return;
+    const card = el.querySelector<HTMLElement>("[data-slide]");
+    const step = card ? card.offsetWidth : 400;
+    el.scrollBy({ left: dir * step * 2, behavior: "smooth" });
+  };
+
+  return (
+    <div className="w-full relative border-y border-accent/20 bg-black">
+      <div
+        ref={trackRef}
+        onScroll={update}
+        className="flex overflow-x-auto snap-x snap-mandatory whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {images.map((url, i) => (
+          <div key={i} data-slide className="flex shrink-0 items-center snap-start">
+            <img
+              src={url}
+              alt="Mill's Social Atmosphere"
+              className="h-[300px] md:h-[400px] lg:h-[500px] w-auto object-cover"
+            />
+          </div>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        aria-label="Previous images"
+        onClick={() => scrollByImage(-1)}
+        disabled={!canPrev}
+        className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 size-11 border-2 border-accent/40 bg-background/70 backdrop-blur-sm font-display text-xl text-foreground hover:bg-accent hover:text-primary-foreground hover:border-accent transition-all disabled:opacity-0 disabled:pointer-events-none z-10"
+      >
+        ←
+      </button>
+      <button
+        type="button"
+        aria-label="Next images"
+        onClick={() => scrollByImage(1)}
+        disabled={!canNext}
+        className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 size-11 border-2 border-accent/40 bg-background/70 backdrop-blur-sm font-display text-xl text-foreground hover:bg-accent hover:text-primary-foreground hover:border-accent transition-all disabled:opacity-0 disabled:pointer-events-none z-10"
+      >
+        →
+      </button>
+    </div>
+  );
+}
+
 function Home() {
   const heroSrc = useHeroVideo();
   const marqueeImages = useMarqueeImages();
@@ -430,20 +496,20 @@ function Home() {
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-8 gap-x-6">
                 <div className="space-y-1">
+                  <p className="font-display text-lg uppercase font-bold tracking-wider text-muted-foreground">Sunday</p>
+                  <p className="text-foreground font-bold text-lg tabular-nums">10AM – 10PM</p>
+                </div>
+                <div className="space-y-1">
                   <p className="font-display text-lg uppercase font-bold tracking-wider text-muted-foreground">Monday</p>
                   <p className="text-foreground font-bold text-lg tabular-nums">3PM – 10PM</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="font-display text-lg uppercase font-bold tracking-wider text-muted-foreground">Tuesday – Wednesday</p>
+                  <p className="font-display text-lg uppercase font-bold tracking-wider text-muted-foreground">Wednesday</p>
                   <p className="text-foreground font-bold text-lg tabular-nums">11AM – 10PM</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="font-display text-lg uppercase font-bold tracking-wider text-accent">Thursday, Friday + Saturday</p>
+                  <p className="font-display text-lg uppercase font-bold tracking-wider text-accent">Tuesday, Thursday, Friday + Saturday</p>
                   <p className="text-foreground font-bold text-lg tabular-nums text-accent">11AM – 2AM</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="font-display text-lg uppercase font-bold tracking-wider text-muted-foreground">Sunday</p>
-                  <p className="text-foreground font-bold text-lg tabular-nums">11AM – 10PM</p>
                 </div>
               </div>
 
@@ -467,20 +533,8 @@ function Home() {
         </div>
       </section>
 
-      {/* Full-Width Image Marquee Slider - Completely edge-to-edge */}
-      <div className="w-full overflow-hidden relative border-y border-accent/20 bg-black py-0">
-        <div className="flex animate-marquee whitespace-nowrap">
-          {[...sliderImages, ...sliderImages].map((url, i) => (
-            <div key={i} className="flex shrink-0 items-center">
-              <img 
-                src={url} 
-                alt="Mill's Social Atmosphere" 
-                className="h-[300px] md:h-[400px] lg:h-[500px] w-auto object-cover"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Full-Width Image Slider - Completely edge-to-edge, arrow-navigable */}
+      <MarqueeImagesSlider images={sliderImages} />
 
 
 

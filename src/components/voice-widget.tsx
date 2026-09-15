@@ -42,6 +42,14 @@ export function VoiceWidget() {
             visibility: hidden !important;
             pointer-events: none !important;
           }
+
+          /* Keep the widget above the fixed mobile bottom nav (72px bar + safe-area) so it never covers Party/Contact. */
+          body:not(.is-menu-page) #vw-btn,
+          body:not(.is-menu-page) .n2n-voice-widget-container,
+          body:not(.is-menu-page) [id^="vw-"],
+          body:not(.is-menu-page) [class^="n2n-voice-widget"] {
+            bottom: calc(96px + env(safe-area-inset-bottom)) !important;
+          }
         }
       `;
       document.head.appendChild(style);
