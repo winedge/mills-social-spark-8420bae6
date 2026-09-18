@@ -252,7 +252,7 @@ function SpecialsSlider({ specials }: { specials: Special[] }) {
           <article
             key={s.day + s.title}
             data-card
-            className="group relative snap-start shrink-0 w-[85vw] sm:w-[420px]"
+            className="group relative snap-start shrink-0 w-[85vw] sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)]"
           >
             <div className="aspect-[4/5] overflow-hidden mb-6 bg-surface relative">
               <StorageImage
@@ -308,6 +308,7 @@ function SpecialsSlider({ specials }: { specials: Special[] }) {
 
 function MarqueeImagesSlider({ images }: { images: string[] }) {
   const trackRef = React.useRef<HTMLDivElement>(null);
+  const pausedRef = React.useRef(false);
   const [canPrev, setCanPrev] = React.useState(false);
   const [canNext, setCanNext] = React.useState(true);
 
@@ -329,11 +330,27 @@ function MarqueeImagesSlider({ images }: { images: string[] }) {
     if (!el) return;
     const card = el.querySelector<HTMLElement>("[data-slide]");
     const step = card ? card.offsetWidth : 400;
+    const atEnd = el.scrollLeft >= el.scrollWidth - el.clientWidth - 8;
+    if (dir === 1 && atEnd) {
+      el.scrollTo({ left: 0, behavior: "smooth" });
+      return;
+    }
     el.scrollBy({ left: dir * step * 2, behavior: "smooth" });
   };
 
+  React.useEffect(() => {
+    const id = window.setInterval(() => {
+      if (!pausedRef.current) scrollByImage(1);
+    }, 4000);
+    return () => window.clearInterval(id);
+  }, [images.length]);
+
   return (
-    <div className="w-full relative border-y border-accent/20 bg-black">
+    <div
+      className="w-full relative border-y border-accent/20 bg-black"
+      onMouseEnter={() => { pausedRef.current = true; }}
+      onMouseLeave={() => { pausedRef.current = false; }}
+    >
       <div
         ref={trackRef}
         onScroll={update}
