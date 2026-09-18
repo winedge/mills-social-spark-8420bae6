@@ -344,7 +344,7 @@ function MarqueeImagesSlider({ images }: { images: string[] }) {
             <img
               src={url}
               alt="Mill's Social Atmosphere"
-              className="h-[300px] md:h-[400px] lg:h-[500px] w-auto object-cover"
+              className="h-[180px] md:h-[240px] lg:h-[300px] w-auto object-cover"
             />
           </div>
         ))}
