@@ -115,8 +115,7 @@ export function SiteFooter() {
           </div>
           <div className="flex gap-6">
             <a href={contact?.instagram_url || "#"} target="_blank" rel="noreferrer" className="text-xs font-bold uppercase tracking-widest transition-colors" style={{ color: "#E4405F" }}>Instagram</a>
-            <a href={contact?.facebook_url || "#"} target="_blank" rel="noreferrer" className="text-xs font-bold uppercase tracking-widest transition-colors" style={{ color: "#1877F2" }}>Facebook</a>
-            <a href={contact?.x_url || "#"} target="_blank" rel="noreferrer" className="text-xs font-bold uppercase tracking-widest transition-colors" style={{ color: "#FFFFFF" }}>X / Twitter</a>
+            <a href="https://www.facebook.com/MillsModernSocial" target="_blank" rel="noreferrer" className="text-xs font-bold uppercase tracking-widest transition-colors" style={{ color: "#1877F2" }}>Facebook</a>
             <a href={contact?.tiktok_url || "#"} target="_blank" rel="noreferrer" className="text-xs font-bold uppercase tracking-widest transition-colors" style={{ color: "#FFFFFF" }}>TikTok</a>
           </div>
         </div>

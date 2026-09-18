@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Menu, X, Instagram, Facebook, Twitter, Music2 } from "lucide-react";
+import { Menu, X, Instagram, Facebook, Music2 } from "lucide-react";
 import millsLogo from "@/assets/mills-logo.png.asset.json";
 import { openReservation } from "@/components/reservation-modal";
 import { useContactInfo } from "@/lib/content";
@@ -31,8 +31,7 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
 
   const socialLinks = [
     { icon: Instagram, href: contact?.instagram_url || "#", label: "Instagram", color: "#FFFFFF" },
-    { icon: Facebook, href: contact?.facebook_url || "#", label: "Facebook", color: "#FFFFFF" },
-    { icon: Twitter, href: contact?.x_url || "#", label: "X", color: "#FFFFFF" },
+    { icon: Facebook, href: "https://www.facebook.com/MillsModernSocial", label: "Facebook", color: "#FFFFFF" },
     { icon: Music2, href: contact?.tiktok_url || "#", label: "TikTok", color: "#FFFFFF" },
   ];
 
