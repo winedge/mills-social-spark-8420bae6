@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -9,23 +9,24 @@ import { SiteFooter } from "@/components/site-footer";
 import { Toaster } from "@/components/ui/sonner";
 import LightRays from "@/components/LightRays";
 import concertImg from "@/assets/party-concert.jpg";
-import celebrationImg from "@/assets/party-celebration.jpg";
-import djImg from "@/assets/party-dj.jpg";
-import { usePartySpaces, usePartyShows } from "@/lib/content";
+import { usePartySpaces } from "@/lib/content";
+import { MediaMasonry } from "@/components/media-masonry";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/party")({
   head: () => ({
     meta: [
-      { title: "Party & Live Events - Mills Modern Social Tempe" },
-      { name: "description", content: "Live concerts, DJ nights, and private parties at Mills Modern Social in Tempe. Reserve a space or catch the next show." },
+      { title: "Private Parties & Spaces | Mill's Modern Social, Tempe" },
+      { name: "description", content: "Celebrate at Mill's Modern Social in Tempe. Explore five private event spaces and request your next party." },
       { property: "og:title", content: "Live Events & Private Parties - Mills Modern Social" },
       { property: "og:description", content: "Stage lights, live music, and unforgettable nights in Tempe, AZ." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: PartyPage,
 });
 
-const showImageFallbacks = [concertImg, djImg, celebrationImg];
 
 function iconFor(name: string) {
   const C = (Icons as any)[name];
@@ -52,21 +53,12 @@ const formSchema = z.object({
 function PartyPage() {
   const [submitting, setSubmitting] = useState(false);
   const dbSpaces = usePartySpaces();
-  const dbShows = usePartyShows();
   const spaces = dbSpaces.map((s) => ({
     icon: iconFor(s.icon),
     name: s.name,
     capacity: s.capacity,
     price: s.price,
     desc: s.description,
-  }));
-  const upcomingShows = dbShows.map((s, i) => ({
-    date: s.date_label,
-    time: s.time_label,
-    act: s.act,
-    type: s.event_type,
-    genre: s.genre,
-    img: s.image_url || showImageFallbacks[i % showImageFallbacks.length],
   }));
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -123,7 +115,7 @@ function PartyPage() {
       <Toaster />
 
       {/* Hero - concert vibe with LightRays */}
-      <section className="relative min-h-[85vh] flex items-center border-b border-border overflow-hidden bg-black">
+      <section className="relative min-h-[85vh] flex items-center border-b border-border overflow-hidden bg-background">
         {/* Concert photo backdrop */}
         <div className="absolute inset-0">
           <img
@@ -131,7 +123,7 @@ function PartyPage() {
             alt="Live concert at Mills Modern Social"
             className="w-full h-full object-cover opacity-60"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-background" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/40 to-background" />
         </div>
 
         {/* Animated light rays */}
@@ -151,7 +143,7 @@ function PartyPage() {
         </div>
 
         <div className="relative max-w-7xl mx-auto px-6 py-24 w-full">
-          <div className="inline-flex items-center gap-2 border border-accent/50 bg-black/40 backdrop-blur px-3 py-1.5 mb-6">
+          <div className="inline-flex items-center gap-2 border border-accent/50 bg-background/40 backdrop-blur px-3 py-1.5 mb-6">
             <span className="size-2 rounded-full bg-accent animate-pulse" />
             <span className="font-mono text-accent text-[10px] tracking-[0.3em]">STAGE · LIGHTS · PARTY</span>
           </div>
@@ -159,7 +151,7 @@ function PartyPage() {
             The night is<br />
             <span className="text-accent italic">yours.</span>
           </h1>
-          <p className="text-white/80 max-w-2xl text-pretty text-lg md:text-xl mb-8">
+          <p className="text-foreground/80 max-w-2xl text-pretty text-lg md:text-xl mb-8">
             Live bands. DJ sets. Sold-out birthdays. Whether you're catching a show or
             throwing one - Mills is where Tempe turns it up.
           </p>
@@ -167,9 +159,7 @@ function PartyPage() {
             <a href="#reserve" className="px-8 h-12 inline-flex items-center bg-accent text-primary-foreground font-bold uppercase tracking-widest text-sm hover:scale-105 transition-transform">
               Reserve a space →
             </a>
-            <a href="#shows" className="px-8 h-12 inline-flex items-center border border-white/40 text-white font-bold uppercase tracking-widest text-sm hover:bg-white hover:text-black transition-colors">
-              See upcoming shows
-            </a>
+            <Button asChild variant="outline" className="h-12 px-8 uppercase font-bold bg-background/30 text-foreground border-foreground/40"><Link to="/events">Upcoming events</Link></Button>
           </div>
         </div>
       </section>
@@ -190,38 +180,7 @@ function PartyPage() {
         </div>
       </div>
 
-      {/* Upcoming shows */}
-      <section id="shows" className="relative py-20 md:py-28 px-6 border-b border-border overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,rgba(56,189,248,0.10),transparent_60%),radial-gradient(circle_at_90%_80%,rgba(168,85,247,0.10),transparent_60%)]" />
-        <div className="max-w-7xl mx-auto relative">
-          <div className="flex items-end justify-between flex-wrap gap-4 mb-10">
-            <div>
-              <span className="font-mono text-accent text-xs tracking-[0.3em] block mb-3">ON STAGE NEXT</span>
-              <h2 className="font-display text-5xl md:text-6xl uppercase leading-none">Upcoming <span className="text-accent italic">shows</span></h2>
-            </div>
-            <p className="text-muted-foreground max-w-md">Free entry with dinner. Doors open 30 min before showtime.</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {upcomingShows.map((s) => (
-              <article key={s.act + s.date} className="group relative overflow-hidden border border-border bg-surface/60 hover:border-accent transition-colors">
-                <div className="relative aspect-[4/5] overflow-hidden">
-                  <img src={s.img} alt={s.act} loading="lazy" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                  <div className="absolute top-3 left-3 bg-accent text-primary-foreground px-2 py-1 font-mono text-[10px] tracking-widest">
-                    {s.type}
-                  </div>
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <div className="font-mono text-accent text-[10px] tracking-widest mb-1">{s.date} · {s.time}</div>
-                    <div className="font-display text-2xl uppercase text-white leading-tight">{s.act}</div>
-                    <div className="text-white/60 text-xs mt-1">{s.genre}</div>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      <MediaMasonry variant="party" />
 
       {/* What we host */}
       <section className="py-20 px-6 border-b border-border">
