@@ -17,8 +17,16 @@ export function ScrollReveals() {
     const register = () => {
       document.querySelectorAll("section > div, main > div > section, [data-media-reveal]").forEach((element) => {
         if (marked.has(element) || element.closest("header, footer, [role=dialog]")) return;
+        // Reveal gallery tiles independently, not behind a second parent animation.
+        if (!element.matches("[data-media-reveal]") && element.querySelector(".media-masonry")) return;
         marked.add(element);
-        if (element.getBoundingClientRect().top < window.innerHeight - 24) return;
+        if (element.getBoundingClientRect().top < window.innerHeight - 24) {
+          if (element.matches(".media-tile")) {
+            element.setAttribute("data-scroll-reveal", "true");
+            element.setAttribute("data-revealed", "true");
+          }
+          return;
+        }
         element.setAttribute("data-scroll-reveal", "true");
         observer.observe(element);
       });
