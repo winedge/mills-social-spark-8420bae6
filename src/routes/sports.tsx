@@ -14,6 +14,8 @@ export const Route = createFileRoute("/sports")({
       { name: "description", content: "Live NFL scoreboard, every UFC and boxing PPV, every MLB game, and full NFL 2026 season coverage - live at Mills Modern Social in Tempe." },
       { property: "og:title", content: "Every game, every night - Mills Modern Social" },
       { property: "og:description", content: "NFL, UFC, boxing, MLB, and NFL 2026 on 40+ screens in Tempe." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   loader: ({ context }) =>

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import { StorageImage } from "@/components/storage-image";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -24,6 +25,10 @@ export const Route = createFileRoute("/admin")({
       { title: "Admin - Mill's Modern Social" },
       { name: "description", content: "Admin panel." },
       { name: "robots", content: "noindex, nofollow" },
+      { property: "og:title", content: "Admin | Mill's Modern Social" },
+      { property: "og:description", content: "Manage Mill's Modern Social content and bookings." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AdminPage,
@@ -32,7 +37,7 @@ export const Route = createFileRoute("/admin")({
 type Section =
   | "overview" | "reservations" | "spaces" | "menu" | "categories"
   | "party" | "sports" | "ufc" | "nfl" | "specials" | "pulse" | "marquee"
-  | "messages" | "subscribers" | "contactinfo" | "settings" | "careers" | "applications";
+  | "hero" | "messages" | "subscribers" | "contactinfo" | "settings" | "careers" | "applications";
 
 type NavItem = { id: Section; label: string; icon: any };
 type NavGroup = { label: string; icon: any; children: NavItem[] };
@@ -56,12 +61,13 @@ const NAV: NavEntry[] = [
   },
   {
     label: "Homepage", icon: Sparkles, children: [
+      { id: "hero", label: "Hero Video", icon: Upload },
       { id: "specials", label: "Daily Specials", icon: UtensilsCrossed },
       { id: "pulse", label: "Weekly Pulse", icon: CalendarClock },
       { id: "marquee", label: "Marquee Slider", icon: Tv },
     ],
   },
-  { id: "party", label: "Party & Shows", icon: PartyPopper },
+  { id: "party", label: "Party & Events", icon: PartyPopper },
   {
     label: "Sports", icon: Trophy, children: [
       { id: "sports", label: "Big Screen Schedule", icon: Trophy },
@@ -247,6 +253,7 @@ function Dashboard({ email }: { email: string }) {
           {section === "messages" && <MessagesSection />}
           {section === "subscribers" && <SubscribersSection />}
           {section === "contactinfo" && <ContactInfoSection />}
+          {section === "hero" && <HeroVideoUploader />}
           {section === "specials" && <SpecialsSection />}
           {section === "pulse" && <PulseSection />}
           {section === "marquee" && <MarqueeSection />}
@@ -987,7 +994,7 @@ function PartySection() {
     <div className="space-y-6">
       <div className="flex gap-2 border-b border-border">
         <SubTab active={tab === "spaces"} onClick={() => setTab("spaces")} label="Spaces" />
-        <SubTab active={tab === "shows"} onClick={() => setTab("shows")} label="Shows" />
+        <SubTab active={tab === "shows"} onClick={() => setTab("shows")} label="Upcoming Events" />
       </div>
       {tab === "spaces" ? <SpacesCrud /> : <ShowsCrud />}
     </div>
@@ -1078,9 +1085,9 @@ function ShowsCrud() {
     <div className="space-y-4">
       <button onClick={() => setEditing({ id: "", date_label: "", time_label: "", act: "", event_type: "Live Band", genre: "", image_url: "", sort_order: 0, active: true })}
         className="inline-flex items-center gap-2 px-4 h-10 bg-accent text-primary-foreground text-xs font-bold uppercase tracking-widest">
-        <Plus className="size-3.5" /> Add show
+        <Plus className="size-3.5" /> Add event
       </button>
-      {loading ? <LoaderBlock /> : rows.length === 0 ? <Empty label="No shows." /> : (
+      {loading ? <LoaderBlock /> : rows.length === 0 ? <Empty label="No events." /> : (
         <div className="border border-border overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-muted/30 text-[10px] uppercase tracking-widest font-mono text-muted-foreground">
@@ -1107,7 +1114,7 @@ function ShowsCrud() {
         </div>
       )}
       {editing && (
-        <Modal title={editing.id ? "Edit Show" : "New Show"} onClose={() => setEditing(null)}>
+        <Modal title={editing.id ? "Edit Event" : "New Event"} onClose={() => setEditing(null)}>
           <form onSubmit={async (e) => {
             e.preventDefault();
             const fd = new FormData(e.currentTarget);
@@ -1129,7 +1136,7 @@ function ShowsCrud() {
               <Input name="event_type" label="Type (Live Band / DJ Set…)" defaultValue={editing.event_type} required />
               <Input name="genre" label="Genre" defaultValue={editing.genre} />
             </div>
-            <Input name="image_url" label="Image URL (optional)" defaultValue={editing.image_url ?? ""} />
+            <ImageUploadField name="image_url" label="Event image" folder="events" defaultValue={editing.image_url ?? ""} />
             <div className="grid grid-cols-2 gap-3">
               <Input name="sort_order" label="Sort" type="number" defaultValue={editing.sort_order} />
               <label className="flex items-center gap-2 h-10"><input type="checkbox" name="active" defaultChecked={editing.active} /> Active</label>
@@ -1223,6 +1230,7 @@ function SportsSection() {
 /* ================= SETTINGS ================= */
 
 function HeroVideoUploader() {
+  const fileInput = useRef<HTMLInputElement>(null);
   const [current, setCurrent] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -1271,11 +1279,11 @@ function HeroVideoUploader() {
         <p className="text-xs text-muted-foreground">Using the default built-in hero video.</p>
       )}
       <div className="flex flex-wrap items-center gap-3">
-        <label className="inline-flex items-center gap-2 px-6 h-11 bg-accent text-primary-foreground font-bold uppercase tracking-widest text-xs cursor-pointer">
-          <input type="file" accept="video/*" className="hidden" disabled={busy}
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
-          {busy ? "Uploading…" : "Upload video"}
-        </label>
+        <input ref={fileInput} type="file" accept="video/mp4,video/webm" aria-label="Homepage hero video file" className="hidden" disabled={busy}
+          onChange={(e) => { const file = e.target.files?.[0]; if (file) void upload(file); e.target.value = ""; }} />
+        <Button type="button" disabled={busy} onClick={() => fileInput.current?.click()} className="h-11 bg-accent text-primary-foreground font-bold uppercase">
+          {busy ? <Loader2 className="animate-spin" /> : <Upload />} {busy ? "Uploading…" : "Upload from computer"}
+        </Button>
         {current && (
           <button type="button" onClick={clear} disabled={busy}
             className="px-5 h-11 border border-border text-xs font-bold uppercase tracking-widest hover:border-accent">
