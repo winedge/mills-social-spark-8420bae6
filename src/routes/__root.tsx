@@ -16,6 +16,7 @@ import { RoutePreloader } from "../components/route-preloader";
 import { ReservationModal } from "../components/reservation-modal";
 import { AnalyticsTracker } from "../components/analytics-tracker";
 import { VoiceWidget } from "../components/voice-widget";
+import { ScrollReveals } from "../components/scroll-reveals";
 
 
 function NotFoundComponent() {
@@ -83,17 +84,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
+      { title: "Mill's Modern Social | Tempe" },
       { name: "description", content: "Mills Social Hub is a modern, user-friendly website for a sports bar in Tempe, Arizona." },
       { name: "author", content: "Mills Modern Social" },
-      { property: "og:title", content: "Lovable App" },
+      { property: "og:title", content: "Mill's Modern Social | Tempe" },
       { property: "og:description", content: "Mills Social Hub is a modern, user-friendly website for a sports bar in Tempe, Arizona." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Lovable App" },
+      { name: "twitter:title", content: "Mill's Modern Social | Tempe" },
       { name: "twitter:description", content: "Mills Social Hub is a modern, user-friendly website for a sports bar in Tempe, Arizona." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ee3eeb0c-1353-4ee5-828e-52bfa5964605/id-preview-762366e2--c049f725-faea-4ed5-bdf4-c6e1363e8ccb.lovable.app-1785335182148.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ee3eeb0c-1353-4ee5-828e-52bfa5964605/id-preview-762366e2--c049f725-faea-4ed5-bdf4-c6e1363e8ccb.lovable.app-1785335182148.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -102,7 +101,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap",
       },
     ],
   }),
@@ -133,6 +132,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <ScrollReveals />
       <MobileBottomNav />
       <RoutePreloader />
       <ReservationModal />
