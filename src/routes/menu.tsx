@@ -52,6 +52,8 @@ export const Route = createFileRoute("/menu")({
       { name: "description", content: "The full Mills Modern Social menu - starters, wings, burgers, shareables, craft cocktails and Arizona drafts in Tempe, AZ." },
       { property: "og:title", content: "Menu - Mills Modern Social" },
       { property: "og:description", content: "Elevated bar food, craft cocktails, and local Arizona drafts." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: MenuPage,

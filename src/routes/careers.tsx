@@ -17,7 +17,11 @@ export const Route = createFileRoute("/careers")({
   head: () => ({
     meta: [
       { title: "Careers - Mill's Modern Social" },
+      { property: "og:title", content: "Careers | Mill's Modern Social" },
+      { property: "og:description", content: "Explore open positions and join the team at Mill's Modern Social in Tempe." },
       { name: "description", content: "Join the team at Mill's Modern Social. View open positions and apply to become part of Tempe's favorite sports bar and kitchen." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CareersPage,

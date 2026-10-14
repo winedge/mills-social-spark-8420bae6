@@ -1,11 +1,17 @@
-import React from "react";
+
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { openReservation } from "@/components/reservation-modal";
 import { InquiryForm } from "@/components/inquiry-form";
-import { Calendar, Music, Trophy, Star, Clock } from "lucide-react";
-import { useWeeklyPulseState } from "@/lib/content";
+import { Calendar, Music, Trophy, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MediaMasonry } from "@/components/media-masonry";
+import { StorageImage } from "@/components/storage-image";
+import concertImg from "@/assets/party-concert.jpg";
+import djImg from "@/assets/party-dj.jpg";
+import celebrationImg from "@/assets/party-celebration.jpg";
+import { useWeeklyPulseState, usePartyShows } from "@/lib/content";
 
 export const Route = createFileRoute("/events")({
   head: () => ({
@@ -20,6 +26,8 @@ export const Route = createFileRoute("/events")({
         property: "og:description",
         content: "Stay updated with the latest events at Mill's Modern Social.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: EventsPage,
@@ -27,6 +35,8 @@ export const Route = createFileRoute("/events")({
 
 function EventsPage() {
   const { items: events, loading } = useWeeklyPulseState();
+  const upcomingEvents = usePartyShows();
+  const fallbacks = [concertImg, djImg, celebrationImg];
 
   return (
     <div className="bg-background text-foreground font-body min-h-screen flex flex-col">
@@ -47,6 +57,32 @@ function EventsPage() {
             </p>
           </div>
 
+          <section id="upcoming-events" className="mb-20" aria-label="Upcoming events">
+            <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+              <div>
+                <p className="font-mono text-xs text-accent uppercase mb-3">On the calendar</p>
+                <h2 className="font-display text-4xl md:text-6xl uppercase">Upcoming <span className="text-accent">Events</span></h2>
+              </div>
+              <Calendar className="size-7 text-accent" />
+            </div>
+            {upcomingEvents.length === 0 ? <p className="text-muted-foreground py-6 border-y border-border">New events will be announced soon.</p> : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                {upcomingEvents.map((event, index) => (
+                  <article key={event.id} className="group border-b border-border pb-5" data-media-reveal>
+                    <div className="relative aspect-[4/5] overflow-hidden mb-4 rounded-sm">
+                      <StorageImage src={event.image_url || fallbacks[index % fallbacks.length]} alt={event.act} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                      <span className="absolute top-3 left-3 bg-accent text-primary-foreground px-3 py-1.5 font-mono text-xs">{event.event_type}</span>
+                    </div>
+                    <p className="text-accent font-mono text-xs mb-2">{event.date_label} · {event.time_label}</p>
+                    <h3 className="font-display text-2xl uppercase mb-1">{event.act}</h3>
+                    <p className="text-sm text-muted-foreground">{event.genre}</p>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+          <h2 className="font-display text-4xl md:text-5xl uppercase mb-8">The Weekly Pulse</h2>
+
           {/* Grid Layout for Events */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-24">
             {loading ? (
@@ -60,8 +96,8 @@ function EventsPage() {
                   className="group relative overflow-hidden border border-border bg-surface hover:border-accent/50 transition-all duration-500"
                 >
                   <div className="aspect-[16/9] overflow-hidden relative">
-                    <img
-                      src={event.image_url || "/placeholder.svg"}
+                    <StorageImage
+                      src={event.image_url || fallbacks[i % fallbacks.length]}
                       alt={event.title}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
@@ -89,12 +125,12 @@ function EventsPage() {
                         <Clock className="size-3" />
                         Check Socials for Times
                       </div>
-                      <button 
+                      <Button variant="link"
                         onClick={() => openReservation()}
                         className="text-xs font-bold uppercase tracking-widest border-b border-accent pb-1 hover:text-accent transition-colors"
                       >
                         Book Now
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -103,7 +139,7 @@ function EventsPage() {
           </div>
 
           {/* CTA Section */}
-          <div className="relative overflow-hidden border-2 border-accent/20 bg-surface p-12 text-center">
+          <div className="relative overflow-hidden border-y border-accent/20 py-12 text-center">
             <div className="absolute top-0 left-0 w-full h-1 bg-accent" />
             <h3 className="font-display text-4xl md:text-5xl uppercase mb-6">
               Planning a Private Event?
@@ -118,16 +154,18 @@ function EventsPage() {
               >
                 Learn More
               </Link>
-              <button 
+              <Button variant="outline"
                 onClick={() => openReservation()}
                 className="px-10 py-4 border border-border hover:bg-muted font-bold uppercase tracking-widest text-sm transition-colors"
               >
                 Inquire Now
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       </main>
+
+      <MediaMasonry variant="events" />
 
       <InquiryForm
         kind="events"
