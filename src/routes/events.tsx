@@ -81,10 +81,11 @@ function EventsPage() {
               </div>
             )}
           </section>
+          <MediaMasonry variant="events" embedded />
           <h2 className="font-display text-4xl md:text-5xl uppercase mb-8">The Weekly Pulse</h2>
 
           {/* Grid Layout for Events */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-24">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-16">
             {loading ? (
               Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="aspect-[16/9] bg-surface animate-pulse border border-border" />
@@ -107,21 +108,21 @@ function EventsPage() {
                     </div>
                   </div>
                   
-                  <div className="p-8">
-                    <div className="flex items-center gap-2 mb-4">
+                  <div className="p-5">
+                    <div className="flex items-center gap-2 mb-3">
                       {i % 2 === 0 ? <Music className="size-4 text-accent" /> : <Trophy className="size-4 text-accent" />}
                       <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                         {event.accent ? "Special Event" : "Weekly Series"}
                       </span>
                     </div>
-                    <h2 className="font-display text-3xl uppercase mb-3 group-hover:text-accent transition-colors">
+                    <h3 className="font-display text-2xl uppercase mb-2 group-hover:text-accent transition-colors">
                       {event.title}
-                    </h2>
-                    <p className="text-muted-foreground mb-8 line-clamp-2">
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                       {event.copy}
                     </p>
-                    <div className="flex items-center justify-between pt-6 border-t border-border/50">
-                      <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-muted-foreground">
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-border/50">
+                      <div className="flex items-center gap-2 text-[10px] font-mono uppercase text-muted-foreground">
                         <Clock className="size-3" />
                         Check Socials for Times
                       </div>
@@ -164,8 +165,6 @@ function EventsPage() {
           </div>
         </div>
       </main>
-
-      <MediaMasonry variant="events" />
 
       <InquiryForm
         kind="events"

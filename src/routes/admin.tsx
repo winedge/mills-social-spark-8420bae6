@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } fro
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { StorageImage } from "@/components/storage-image";
+import { AdminGalleryManager } from "@/components/admin-gallery-manager";
 import { useServerFn } from "@tanstack/react-start";
 import {
   LogOut, Shield, Loader2, Mail, Phone, Calendar, Users, MapPin,
@@ -989,14 +990,16 @@ type PartySpace = { id: string; name: string; capacity: string; price: string; d
 type PartyShow = { id: string; date_label: string; time_label: string; act: string; event_type: string; genre: string; image_url: string | null; sort_order: number; active: boolean; };
 
 function PartySection() {
-  const [tab, setTab] = useState<"spaces" | "shows">("spaces");
+  const [tab, setTab] = useState<"spaces" | "shows" | "events-gallery" | "party-gallery">("spaces");
   return (
     <div className="space-y-6">
-      <div className="flex gap-2 border-b border-border">
+      <div className="flex flex-wrap gap-2 border-b border-border">
         <SubTab active={tab === "spaces"} onClick={() => setTab("spaces")} label="Spaces" />
         <SubTab active={tab === "shows"} onClick={() => setTab("shows")} label="Upcoming Events" />
+        <SubTab active={tab === "events-gallery"} onClick={() => setTab("events-gallery")} label="Events Gallery" />
+        <SubTab active={tab === "party-gallery"} onClick={() => setTab("party-gallery")} label="Party Gallery" />
       </div>
-      {tab === "spaces" ? <SpacesCrud /> : <ShowsCrud />}
+      {tab === "spaces" ? <SpacesCrud /> : tab === "shows" ? <ShowsCrud /> : <AdminGalleryManager key={tab} variant={tab === "events-gallery" ? "events" : "party"} />}
     </div>
   );
 }
@@ -1629,7 +1632,7 @@ function PulseSection() {
               <Input name="title" label="Title" defaultValue={editing.title} required />
             </div>
             <Textarea name="copy" label="Copy" defaultValue={editing.copy} />
-            <Input name="image_url" label="Image URL (optional)" defaultValue={editing.image_url ?? ""} placeholder="https://…" />
+            <ImageUploadField name="image_url" label="Image (upload or URL)" folder="pulse" defaultValue={editing.image_url ?? ""} />
             <div className="grid grid-cols-2 gap-3">
               <Input name="sort_order" label="Sort" type="number" defaultValue={editing.sort_order} />
               <label className="flex items-center gap-2 h-10"><input type="checkbox" name="accent" defaultChecked={editing.accent} /> Highlight</label>

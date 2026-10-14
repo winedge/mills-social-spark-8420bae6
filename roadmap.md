@@ -1,4 +1,8 @@
 # Page and media updates
+- [x] Make Events Weekly Pulse cards smaller and place its gallery after Upcoming Events.
+- [x] Play muted inline previews in both masonry galleries.
+- [x] Add file uploads and saved gallery management for Events and Party in admin.
+- [x] Verify layout, playback, uploads, and the reported mobile-hook error.
 - [x] Move Upcoming Shows from Party to Events and rename Upcoming Events.
 - [x] Add mobile-friendly photo/video masonry galleries to Events and Party.
 - [x] Add accessible scroll reveals across content pages.
