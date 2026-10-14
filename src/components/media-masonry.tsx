@@ -9,7 +9,7 @@ import dj from "@/assets/party-dj.jpg";
 import happyHour from "@/assets/pulse-happy-hour.jpg";
 import brunch from "@/assets/pulse-brunch.jpg";
 import venue from "@/assets/hero-bar.jpg";
-import venueVideo from "@/assets/hero-loop.mp4";
+import venueVideo from "@/assets/venue-gallery.webm";
 
 export type GalleryMedia = { src: string; title: string; type: "image" | "video"; poster?: string };
 const eventsMedia: GalleryMedia[] = [
