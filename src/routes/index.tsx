@@ -423,7 +423,7 @@ function Home() {
       <SiteHeader overlay />
 
       {/* Hero */}
-      <section className="relative h-[75vh] min-h-[560px] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[75vh] min-h-[560px] flex items-center justify-center overflow-hidden pt-32 pb-8 md:pt-44 md:pb-12">
         <video
           src={heroSrc}
           key={heroSrc}
