@@ -9,9 +9,7 @@ const tickerItems = [
   "LIVE: SUNS @ BUCKS · Q3 84-79",
   "UPCOMING: ASU vs ARIZONA · SAT 7PM",
   "HAPPY HOUR · MON–WED · 4–7PM",
-  "TRIVIA NIGHT · THU 8PM · $50 BAR TAB",
   "UFC FIGHT NIGHT · EVERY SATURDAY · NO COVER",
-  "GAME DAY BRUNCH · SAT–SUN · 10AM",
 ];
 
 const navLinks = [
