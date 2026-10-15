@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Menu, X, Instagram, Facebook, Music2 } from "lucide-react";
 import millsLogo from "@/assets/mills-logo.png.asset.json";
 import { openReservation } from "@/components/reservation-modal";
@@ -23,9 +23,24 @@ const navLinks = [
   { to: "/careers", label: "Join Our Team" },
 ] as const;
 
-export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
+export function SiteHeader({
+  showTicker = true,
+  overlay = false,
+}: {
+  showTicker?: boolean;
+  overlay?: boolean;
+}) {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const contact = useContactInfo();
+
+  useEffect(() => {
+    if (!overlay) return;
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [overlay]);
 
   const socialLinks = [
     { icon: Instagram, href: contact?.instagram_url || "#", label: "Instagram", color: "#FFFFFF" },
@@ -36,7 +51,15 @@ export function SiteHeader({ showTicker = true }: { showTicker?: boolean }) {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
+      <nav
+        className={`${
+          overlay ? "fixed inset-x-0 top-0" : "sticky top-0"
+        } z-50 transition-colors duration-300 ${
+          overlay && !scrolled
+            ? "bg-transparent border-b border-transparent"
+            : "bg-background/90 backdrop-blur-md border-b border-border"
+        }`}
+      >
         {showTicker && (
           <div className="overflow-hidden whitespace-nowrap py-2 bg-accent text-primary-foreground font-mono text-[10px] font-bold uppercase tracking-widest">
             <div className="inline-block animate-marquee">
