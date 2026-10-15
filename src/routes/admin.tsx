@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { StorageImage } from "@/components/storage-image";
+import { StorageImage, useStorageUrl } from "@/components/storage-image";
 import { heroVideoSource } from "@/lib/hero-video";
 import { AdminGalleryManager } from "@/components/admin-gallery-manager";
 import { useServerFn } from "@tanstack/react-start";
