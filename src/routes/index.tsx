@@ -1,6 +1,8 @@
 import React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { StorageImage } from "@/components/storage-image";
+import { StorageImage, useStorageUrl } from "@/components/storage-image";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { heroVideoSource, selectHeroVideo, type HeroVideos } from "@/lib/hero-video";
 
 import heroBar from "@/assets/hero-bar.jpg.asset.json";
 import heroVideo from "@/assets/hero-loop.mp4.asset.json";
@@ -178,20 +180,17 @@ function OpenStatus() {
 }
 
 function useHeroVideo() {
-  const [url, setUrl] = React.useState<string>(DEFAULT_HERO_VIDEO);
+  const mobile = useIsMobile();
+  const [videos, setVideos] = React.useState<HeroVideos>({});
   React.useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data } = await supabase.from("site_media").select("hero_video_url").eq("id", 1).maybeSingle();
-      const path = data?.hero_video_url;
-      if (!path || cancelled) return;
-      if (path.startsWith("http")) { setUrl(path); return; }
-      const { data: signed } = await supabase.storage.from("site-media").createSignedUrl(path, 60 * 60 * 24 * 7);
-      if (!cancelled && signed?.signedUrl) setUrl(signed.signedUrl);
+      const { data } = await supabase.from("site_media").select("hero_video_url, mobile_hero_video_url").eq("id", 1).maybeSingle();
+      if (!cancelled && data) setVideos(data);
     })();
     return () => { cancelled = true; };
   }, []);
-  return url;
+  return useStorageUrl(heroVideoSource(selectHeroVideo(videos, mobile, DEFAULT_HERO_VIDEO))) ?? DEFAULT_HERO_VIDEO;
 }
 
 function useMarqueeImages() {

@@ -1,4 +1,6 @@
 # Page and media updates
+- [x] Add separate desktop/mobile homepage videos and admin uploads.
+- [x] Verify independent uploads, device selection, and the reported mobile-hook error.
 - [x] Make Events Weekly Pulse cards smaller and place its gallery after Upcoming Events.
 - [x] Play muted inline previews in both masonry galleries.
 - [x] Add file uploads and saved gallery management for Events and Party in admin.
