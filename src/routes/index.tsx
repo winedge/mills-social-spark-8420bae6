@@ -420,7 +420,7 @@ function Home() {
 
   return (
     <div className="bg-background text-foreground font-body">
-      <SiteHeader />
+      <SiteHeader overlay />
 
       {/* Hero */}
       <section className="relative h-[75vh] min-h-[560px] flex items-center justify-center overflow-hidden">

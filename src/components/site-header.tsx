@@ -51,7 +51,15 @@ export function SiteHeader({
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
+      <nav
+        className={`${
+          overlay ? "fixed inset-x-0 top-0" : "sticky top-0"
+        } z-50 transition-colors duration-300 ${
+          overlay && !scrolled
+            ? "bg-transparent border-b border-transparent"
+            : "bg-background/90 backdrop-blur-md border-b border-border"
+        }`}
+      >
         {showTicker && (
           <div className="overflow-hidden whitespace-nowrap py-2 bg-accent text-primary-foreground font-mono text-[10px] font-bold uppercase tracking-widest">
             <div className="inline-block animate-marquee">
