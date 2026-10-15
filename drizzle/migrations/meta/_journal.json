@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1792075589569,
+      "tag": "0000_add_mobile_homepage_hero_video",
+      "breakpoints": true
+    }
+  ]
+}

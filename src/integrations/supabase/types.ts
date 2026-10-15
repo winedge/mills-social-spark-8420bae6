@@ -585,16 +585,19 @@ export type Database = {
         Row: {
           hero_video_url: string | null
           id: number
+          mobile_hero_video_url: string | null
           updated_at: string
         }
         Insert: {
           hero_video_url?: string | null
           id?: number
+          mobile_hero_video_url?: string | null
           updated_at?: string
         }
         Update: {
           hero_video_url?: string | null
           id?: number
+          mobile_hero_video_url?: string | null
           updated_at?: string
         }
         Relationships: []
