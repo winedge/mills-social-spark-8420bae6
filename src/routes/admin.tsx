@@ -1264,7 +1264,8 @@ function HeroVideoUpload({ variant }: { variant: "desktop" | "mobile" }) {
         cacheControl: "31536000", upsert: false, contentType: file.type,
       });
       if (upErr) throw upErr;
-      const { error } = await supabase.from("site_media").upsert({ id: 1, [column]: path, updated_at: new Date().toISOString() });
+      const video = variant === "desktop" ? { hero_video_url: path } : { mobile_hero_video_url: path };
+      const { error } = await supabase.from("site_media").upsert({ id: 1, ...video, updated_at: new Date().toISOString() });
       if (error) { await supabase.storage.from("site-media").remove([path]); throw error; }
       setMsg(`${variant === "desktop" ? "Desktop" : "Mobile"} video updated.`);
       await load();
@@ -1275,7 +1276,8 @@ function HeroVideoUpload({ variant }: { variant: "desktop" | "mobile" }) {
   const clear = async () => {
     setBusy(true);
     try {
-      const { error } = await supabase.from("site_media").upsert({ id: 1, [column]: null, updated_at: new Date().toISOString() });
+      const video = variant === "desktop" ? { hero_video_url: null } : { mobile_hero_video_url: null };
+      const { error } = await supabase.from("site_media").upsert({ id: 1, ...video, updated_at: new Date().toISOString() });
       if (error) throw error;
       setMsg(variant === "mobile" ? "Using the desktop video on mobile." : "Using the built-in desktop video.");
       await load();
