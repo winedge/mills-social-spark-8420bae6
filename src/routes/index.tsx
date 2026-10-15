@@ -423,7 +423,7 @@ function Home() {
       <SiteHeader overlay />
 
       {/* Hero */}
-      <section className="relative h-[75vh] min-h-[560px] flex items-center justify-center overflow-hidden pt-32 pb-8 md:pt-44 md:pb-12">
+      <section className="relative h-[80vh] min-h-[620px] flex items-center justify-center overflow-hidden pt-32 pb-20 md:pt-44 md:pb-24">
         <video
           src={heroSrc}
           key={heroSrc}
@@ -472,7 +472,7 @@ function Home() {
       </section>
 
       {/* Location & Hours */}
-      <section id="hours" className="px-6 -mt-12 relative z-20">
+      <section id="hours" className="px-6 relative z-20">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-stretch border-2 border-border bg-surface shadow-[20px_20px_0px_0px_rgba(56,189,248,0.08)] overflow-hidden">
             {/* Location */}
