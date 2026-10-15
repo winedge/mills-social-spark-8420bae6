@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } fro
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { StorageImage } from "@/components/storage-image";
+import { heroVideoSource } from "@/lib/hero-video";
 import { AdminGalleryManager } from "@/components/admin-gallery-manager";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -1233,71 +1234,86 @@ function SportsSection() {
 /* ================= SETTINGS ================= */
 
 function HeroVideoUploader() {
+  return <div className="grid gap-6 lg:grid-cols-2">
+    <HeroVideoUpload variant="desktop" />
+    <HeroVideoUpload variant="mobile" />
+  </div>;
+}
+
+function HeroVideoUpload({ variant }: { variant: "desktop" | "mobile" }) {
+  const column = variant === "desktop" ? "hero_video_url" : "mobile_hero_video_url";
+  const label = variant === "desktop" ? "Desktop · Horizontal" : "Mobile · Vertical";
   const fileInput = useRef<HTMLInputElement>(null);
   const [current, setCurrent] = useState<string | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
   const load = async () => {
-    const { data } = await supabase.from("site_media").select("hero_video_url").eq("id", 1).maybeSingle();
-    const path = data?.hero_video_url ?? null;
-    setCurrent(path);
-    if (path && !path.startsWith("http")) {
-      const { data: signed } = await supabase.storage.from("site-media").createSignedUrl(path, 60 * 60);
-      setPreview(signed?.signedUrl ?? null);
-    } else setPreview(path);
+    const { data, error } = await supabase.from("site_media").select("hero_video_url, mobile_hero_video_url").eq("id", 1).maybeSingle();
+    if (error) { setMsg(error.message); return; }
+    setCurrent(data?.[column] ?? null);
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => { void load(); }, [column]);
 
   const upload = async (file: File) => {
     if (!file.type.startsWith("video/")) return setMsg("Please choose a video file.");
     setBusy(true); setMsg(null);
-    const path = `hero/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-    const { error: upErr } = await supabase.storage.from("site-media").upload(path, file, {
-      cacheControl: "31536000", upsert: false, contentType: file.type,
-    });
-    if (upErr) { setBusy(false); return setMsg(upErr.message); }
-    const { error } = await supabase.from("site_media").upsert({ id: 1, hero_video_url: path, updated_at: new Date().toISOString() });
-    setBusy(false);
-    if (error) return setMsg(error.message);
-    setMsg("Hero video updated.");
-    load();
+    const path = `hero/${variant}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+    try {
+      const { error: upErr } = await supabase.storage.from("site-media").upload(path, file, {
+        cacheControl: "31536000", upsert: false, contentType: file.type,
+      });
+      if (upErr) throw upErr;
+      const { error } = await supabase.from("site_media").upsert({ id: 1, [column]: path, updated_at: new Date().toISOString() });
+      if (error) { await supabase.storage.from("site-media").remove([path]); throw error; }
+      setMsg(`${variant === "desktop" ? "Desktop" : "Mobile"} video updated.`);
+      await load();
+    } catch (error) { setMsg(error instanceof Error ? error.message : "Upload failed. Please try again."); }
+    finally { setBusy(false); }
   };
 
   const clear = async () => {
     setBusy(true);
-    await supabase.from("site_media").upsert({ id: 1, hero_video_url: null, updated_at: new Date().toISOString() });
-    setBusy(false); setMsg("Reverted to the default hero video."); load();
+    try {
+      const { error } = await supabase.from("site_media").upsert({ id: 1, [column]: null, updated_at: new Date().toISOString() });
+      if (error) throw error;
+      setMsg(variant === "mobile" ? "Using the desktop video on mobile." : "Using the built-in desktop video.");
+      await load();
+    } catch (error) { setMsg(error instanceof Error ? error.message : "Couldn't reset the video."); }
+    finally { setBusy(false); }
   };
 
   return (
-    <div className="border border-border bg-surface/40 p-6 space-y-4">
+    <section aria-label={`${variant} homepage video`} className="space-y-4">
       <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-        Hero Background Video
+        {label}
       </span>
-      {preview ? (
-        <video src={preview} muted loop autoPlay playsInline className="w-full max-h-56 object-cover border border-border" />
+      {current ? (
+        <HeroVideoPreview path={current} variant={variant} />
       ) : (
-        <p className="text-xs text-muted-foreground">Using the default built-in hero video.</p>
+        <p className="text-xs text-muted-foreground">{variant === "mobile" ? "Using the desktop video until a mobile video is uploaded." : "Using the default built-in hero video."}</p>
       )}
       <div className="flex flex-wrap items-center gap-3">
-        <input ref={fileInput} type="file" accept="video/mp4,video/webm" aria-label="Homepage hero video file" className="hidden" disabled={busy}
+        <input ref={fileInput} type="file" accept="video/mp4,video/webm" aria-label={`${variant} homepage video file`} className="hidden" disabled={busy}
           onChange={(e) => { const file = e.target.files?.[0]; if (file) void upload(file); e.target.value = ""; }} />
         <Button type="button" disabled={busy} onClick={() => fileInput.current?.click()} className="h-11 bg-accent text-primary-foreground font-bold uppercase">
           {busy ? <Loader2 className="animate-spin" /> : <Upload />} {busy ? "Uploading…" : "Upload from computer"}
         </Button>
         {current && (
-          <button type="button" onClick={clear} disabled={busy}
-            className="px-5 h-11 border border-border text-xs font-bold uppercase tracking-widest hover:border-accent">
-            Use default
-          </button>
+          <Button type="button" variant="outline" onClick={clear} disabled={busy}>
+            {variant === "mobile" ? "Use desktop video" : "Use default"}
+          </Button>
         )}
       </div>
       <p className="text-xs text-muted-foreground">MP4 or WebM, muted loop recommended. Keep it under ~30 MB for fast loading.</p>
       {msg && <p className="text-xs font-mono uppercase tracking-widest text-accent">{msg}</p>}
-    </div>
+    </section>
   );
+}
+
+function HeroVideoPreview({ path, variant }: { path: string; variant: "desktop" | "mobile" }) {
+  const src = useStorageUrl(heroVideoSource(path));
+  return <video src={src ?? undefined} muted loop autoPlay controls playsInline className={variant === "mobile" ? "aspect-[9/16] w-full max-w-56 object-cover border border-border" : "aspect-video w-full object-cover border border-border"} />;
 }
 
 const FEATURES: { key: string; label: string; hint: string }[] = [
