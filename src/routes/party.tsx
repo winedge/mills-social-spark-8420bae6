@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Users, PartyPopper, Building2, Mic2, Disc3, Calendar, MapPin } from "lucide-react";
+import { Users, Calendar, MapPin, Cake, Briefcase, Sparkles, GraduationCap, Handshake, Beer } from "lucide-react";
 import * as Icons from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -148,12 +148,12 @@ function PartyPage() {
             <span className="font-mono text-accent text-[10px] tracking-[0.3em]">STAGE · LIGHTS · PARTY</span>
           </div>
           <h1 className="font-display text-6xl md:text-8xl lg:text-9xl uppercase leading-[0.85] mb-6 text-balance drop-shadow-2xl">
-            The night is<br />
-            <span className="text-accent italic">yours.</span>
+            Day or night,<br />
+            <span className="text-accent italic">it's yours.</span>
           </h1>
           <p className="text-foreground/80 max-w-2xl text-pretty text-lg md:text-xl mb-8">
-            Live bands. DJ sets. Sold-out birthdays. Whether you're catching a show or
-            throwing one - Mills is where Tempe turns it up.
+            Brunch birthdays at 11, quinceañeras after dinner, buyouts at midnight.
+            Whatever the occasion and whatever the hour - Mills is where Tempe celebrates.
           </p>
           <div className="flex flex-wrap gap-3">
             <a href="#reserve" className="px-8 h-12 inline-flex items-center bg-accent text-primary-foreground font-bold uppercase tracking-widest text-sm hover:scale-105 transition-transform">
@@ -187,13 +187,16 @@ function PartyPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-14">
             <span className="font-mono text-accent text-xs tracking-[0.3em] block mb-3">WHAT WE HOST</span>
-            <h2 className="font-display text-5xl md:text-6xl uppercase">Every kind of <span className="text-accent italic">night</span></h2>
+            <h2 className="font-display text-5xl md:text-6xl uppercase">Every kind of <span className="text-accent italic">celebration</span></h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { icon: Mic2, title: "Live Concerts", desc: "Local and touring acts on our full stage with pro lights and sound." },
-              { icon: Disc3, title: "DJ Nights", desc: "Resident and guest DJs - house, hip-hop, Top 40, throwbacks." },
-              { icon: PartyPopper, title: "Private Parties", desc: "Birthdays, bachelor(ette), corporate, watch parties - booked your way." },
+              { icon: Cake, title: "Birthday", desc: "Candles, cake, and a room full of your people - we handle the rest." },
+              { icon: Briefcase, title: "Corporate", desc: "Team offsites, launches, and holiday parties with food, drinks, and AV ready." },
+              { icon: Sparkles, title: "Quinceañera", desc: "Dinner, dancing, and a grand entrance - choreographed down to the last detail." },
+              { icon: GraduationCap, title: "Graduation", desc: "Caps off, drinks up - celebrate the degree with the whole crew." },
+              { icon: Handshake, title: "Frat & Sorority", desc: "Formals, bid nights, and philanthropy events with room for the whole chapter." },
+              { icon: Beer, title: "Bachelor Party", desc: "Last ride before the ring - tables, stages, and late nights sorted." },
             ].map((c) => {
               const Icon = c.icon;
               return (
