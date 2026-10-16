@@ -4,14 +4,14 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { openReservation } from "@/components/reservation-modal";
 import { InquiryForm } from "@/components/inquiry-form";
-import { Calendar, Music, Trophy, Clock } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MediaMasonry } from "@/components/media-masonry";
 import { StorageImage } from "@/components/storage-image";
 import concertImg from "@/assets/party-concert.jpg";
 import djImg from "@/assets/party-dj.jpg";
 import celebrationImg from "@/assets/party-celebration.jpg";
-import { useWeeklyPulseState, usePartyShows } from "@/lib/content";
+import { usePartyShows } from "@/lib/content";
 
 export const Route = createFileRoute("/events")({
   head: () => ({
@@ -34,7 +34,6 @@ export const Route = createFileRoute("/events")({
 });
 
 function EventsPage() {
-  const { items: events, loading } = useWeeklyPulseState();
   const upcomingEvents = usePartyShows();
   const fallbacks = [concertImg, djImg, celebrationImg];
 
@@ -82,62 +81,6 @@ function EventsPage() {
             )}
           </section>
           <MediaMasonry variant="events" embedded />
-          <h2 className="font-display text-4xl md:text-5xl uppercase mb-8">The Weekly Pulse</h2>
-
-          {/* Grid Layout for Events */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-16">
-            {loading ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="aspect-[16/9] bg-surface animate-pulse border border-border" />
-              ))
-            ) : (
-              events.map((event, i) => (
-                <div 
-                  key={event.id || i}
-                  className="group relative overflow-hidden border border-border bg-surface hover:border-accent/50 transition-all duration-500"
-                >
-                  <div className="aspect-[16/9] overflow-hidden relative">
-                    <StorageImage
-                      src={event.image_url || fallbacks[i % fallbacks.length]}
-                      alt={event.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
-                    <div className="absolute top-4 left-4 bg-accent text-primary-foreground font-mono text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 shadow-lg">
-                      {event.days_label}
-                    </div>
-                  </div>
-                  
-                  <div className="p-5">
-                    <div className="flex items-center gap-2 mb-3">
-                      {i % 2 === 0 ? <Music className="size-4 text-accent" /> : <Trophy className="size-4 text-accent" />}
-                      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                        {event.accent ? "Special Event" : "Weekly Series"}
-                      </span>
-                    </div>
-                    <h3 className="font-display text-2xl uppercase mb-2 group-hover:text-accent transition-colors">
-                      {event.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                      {event.copy}
-                    </p>
-                    <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-border/50">
-                      <div className="flex items-center gap-2 text-[10px] font-mono uppercase text-muted-foreground">
-                        <Clock className="size-3" />
-                        Check Socials for Times
-                      </div>
-                      <Button variant="link"
-                        onClick={() => openReservation()}
-                        className="text-xs font-bold uppercase tracking-widest border-b border-accent pb-1 hover:text-accent transition-colors"
-                      >
-                        Book Now
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
 
           {/* CTA Section */}
           <div className="relative overflow-hidden border-y border-accent/20 py-12 text-center">
