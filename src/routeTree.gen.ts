@@ -18,6 +18,8 @@ import { Route as MenuRouteImport } from './routes/menu'
 import { Route as PartyRouteImport } from './routes/party'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as SportsRouteImport } from './routes/sports'
+import { Route as EventsGalleryRouteImport } from './routes/events_.gallery'
+import { Route as PartyGalleryRouteImport } from './routes/party_.gallery'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +66,16 @@ const SportsRoute = SportsRouteImport.update({
   path: '/sports',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EventsGalleryRoute = EventsGalleryRouteImport.update({
+  id: '/events_/gallery',
+  path: '/events/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PartyGalleryRoute = PartyGalleryRouteImport.update({
+  id: '/party_/gallery',
+  path: '/party/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +87,8 @@ export interface FileRoutesByFullPath {
   '/party': typeof PartyRoute
   '/play': typeof PlayRoute
   '/sports': typeof SportsRoute
+  '/events/gallery': typeof EventsGalleryRoute
+  '/party/gallery': typeof PartyGalleryRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +100,8 @@ export interface FileRoutesByTo {
   '/party': typeof PartyRoute
   '/play': typeof PlayRoute
   '/sports': typeof SportsRoute
+  '/events/gallery': typeof EventsGalleryRoute
+  '/party/gallery': typeof PartyGalleryRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +114,8 @@ export interface FileRoutesById {
   '/party': typeof PartyRoute
   '/play': typeof PlayRoute
   '/sports': typeof SportsRoute
+  '/events_/gallery': typeof EventsGalleryRoute
+  '/party_/gallery': typeof PartyGalleryRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +129,8 @@ export interface FileRouteTypes {
     | '/party'
     | '/play'
     | '/sports'
+    | '/events/gallery'
+    | '/party/gallery'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +142,8 @@ export interface FileRouteTypes {
     | '/party'
     | '/play'
     | '/sports'
+    | '/events/gallery'
+    | '/party/gallery'
   id:
     | '__root__'
     | '/'
@@ -133,6 +155,8 @@ export interface FileRouteTypes {
     | '/party'
     | '/play'
     | '/sports'
+    | '/events_/gallery'
+    | '/party_/gallery'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,6 +169,8 @@ export interface RootRouteChildren {
   PartyRoute: typeof PartyRoute
   PlayRoute: typeof PlayRoute
   SportsRoute: typeof SportsRoute
+  EventsGalleryRoute: typeof EventsGalleryRoute
+  PartyGalleryRoute: typeof PartyGalleryRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -212,6 +238,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SportsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/events_/gallery': {
+      id: '/events_/gallery'
+      path: '/events/gallery'
+      fullPath: '/events/gallery'
+      preLoaderRoute: typeof EventsGalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/party_/gallery': {
+      id: '/party_/gallery'
+      path: '/party/gallery'
+      fullPath: '/party/gallery'
+      preLoaderRoute: typeof PartyGalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -225,6 +265,8 @@ const rootRouteChildren: RootRouteChildren = {
   PartyRoute: PartyRoute,
   PlayRoute: PlayRoute,
   SportsRoute: SportsRoute,
+  EventsGalleryRoute: EventsGalleryRoute,
+  PartyGalleryRoute: PartyGalleryRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
