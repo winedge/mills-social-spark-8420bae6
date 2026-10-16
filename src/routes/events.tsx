@@ -80,7 +80,9 @@ function EventsPage() {
               </div>
             )}
           </section>
-          <MediaMasonry variant="events" embedded />
+          <div className="mb-16">
+            <MediaMasonry variant="events" embedded />
+          </div>
 
           {/* CTA Section */}
           <div className="relative overflow-hidden border-y border-accent/20 py-12 text-center">
