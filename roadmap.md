@@ -1,6 +1,6 @@
 # Page and media updates
-- [ ] Add View more links below Events and Party galleries and dedicated full photo/video pages.
-- [ ] Verify both gallery links and archive lightboxes.
+- [x] Add View more links below Events and Party galleries and dedicated full photo/video pages.
+- [x] Verify both gallery links and archive lightboxes.
 - [x] Add separate desktop/mobile homepage videos and admin uploads.
 - [x] Verify independent uploads, device selection, and the reported mobile-hook error.
 - [x] Make Events Weekly Pulse cards smaller and place its gallery after Upcoming Events.
