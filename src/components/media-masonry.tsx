@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, Play, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -36,7 +37,7 @@ function GalleryVideo({ item }: { item: GalleryMedia }) {
   return <video src={src ?? undefined} poster={item.poster} controls autoPlay playsInline preload="metadata" className="gallery-expanded-media" />;
 }
 
-export function MediaMasonry({ variant, extra = [], embedded = false }: { variant: "events" | "party"; extra?: GalleryMedia[]; embedded?: boolean }) {
+export function MediaMasonry({ variant, extra = [], embedded = false, archive = false }: { variant: "events" | "party"; extra?: GalleryMedia[]; embedded?: boolean; archive?: boolean }) {
   const uploaded = useGalleryMedia(variant);
   const items = [...uploaded, ...extra, ...(variant === "events" ? eventsMedia : partyMedia)];
   const [selected, setSelected] = useState<number | null>(null);
@@ -47,7 +48,11 @@ export function MediaMasonry({ variant, extra = [], embedded = false }: { varian
         <div className="flex flex-wrap items-end justify-between gap-4 mb-10">
           <div>
             <p className="font-mono text-xs text-accent uppercase mb-3">The social edit / {variant === "events" ? "01" : "02"}</p>
-            <h2 className="font-display text-4xl md:text-6xl uppercase leading-tight">{variant === "events" ? "Moments at Mill's" : "Made for your moments"}</h2>
+            {archive ? (
+              <h1 className="font-display text-4xl md:text-6xl uppercase leading-tight">{variant === "events" ? "Moments at Mill's" : "Made for your moments"}</h1>
+            ) : (
+              <h2 className="font-display text-4xl md:text-6xl uppercase leading-tight">{variant === "events" ? "Moments at Mill's" : "Made for your moments"}</h2>
+            )}
           </div>
           <span className="text-sm text-muted-foreground">{variant === "events" ? "Music. People. A little after dark." : "Big nights. Small details. Good company."}</span>
         </div>
@@ -66,6 +71,13 @@ export function MediaMasonry({ variant, extra = [], embedded = false }: { varian
             </figure>
           ))}
         </div>
+        {!archive && (
+          <div className="mt-10 flex justify-center">
+            <Button asChild variant="outline" size="lg" className="uppercase font-bold">
+              <Link to={variant === "events" ? "/events/gallery" : "/party/gallery"}>View more <ArrowUpRight aria-hidden="true" /></Link>
+            </Button>
+          </div>
+        )}
       </div>
       <Dialog open={selected !== null} onOpenChange={(open) => { if (!open) setSelected(null); }}>
         <DialogContent className="gallery-dialog max-w-5xl w-[calc(100%-2rem)] p-4 md:p-6">
