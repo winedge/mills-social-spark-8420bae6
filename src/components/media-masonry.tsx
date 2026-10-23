@@ -16,7 +16,7 @@ function GalleryVideo({ item }: { item: GalleryMedia }) {
 
 export function MediaMasonry({ variant, extra = [], embedded = false, archive = false }: { variant: "events" | "party"; extra?: GalleryMedia[]; embedded?: boolean; archive?: boolean }) {
   const uploaded = useGalleryMedia(variant);
-  const items = [...uploaded, ...extra, ...(variant === "events" ? eventsMedia : partyMedia)];
+  const items = [...uploaded, ...extra];
   const [selected, setSelected] = useState<number | null>(null);
   const item = selected === null ? undefined : items[selected];
   return (
