@@ -6,7 +6,7 @@ const PROTOCOL = "storage://";
 
 /** Turns a private-bucket URL/path into a temporary signed URL. */
 export function useStorageUrl(src: string | null | undefined) {
-  const [url, setUrl] = useState<string | null>(src ?? null);
+  const [url, setUrl] = useState<string | null>(src && src.startsWith(PROTOCOL) ? null : src ?? null);
 
   useEffect(() => {
     let cancelled = false;
@@ -48,6 +48,9 @@ export function useStorageUrl(src: string | null | undefined) {
       .createSignedUrl(path, 60 * 60 * 24)
       .then(({ data }) => {
         if (!cancelled) setUrl(data?.signedUrl ?? raw);
+      })
+      .catch(() => {
+        if (!cancelled) setUrl(null);
       });
 
     return () => {

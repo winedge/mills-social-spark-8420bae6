@@ -6,31 +6,8 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { StorageImage, useStorageUrl } from "@/components/storage-image";
 import { GalleryVideoPreview } from "@/components/gallery-video-preview";
 import { useGalleryMedia, type GalleryMedia } from "@/lib/gallery-media";
-import concert from "@/assets/party-concert.jpg";
-import celebration from "@/assets/party-celebration.jpg";
-import dj from "@/assets/party-dj.jpg";
-import happyHour from "@/assets/pulse-happy-hour.jpg";
-import brunch from "@/assets/pulse-brunch.jpg";
-import venue from "@/assets/hero-bar.jpg";
-import venueVideo from "@/assets/venue-gallery.webm";
 
 export type { GalleryMedia } from "@/lib/gallery-media";
-const eventsMedia: GalleryMedia[] = [
-  { src: concert, title: "Live on stage", type: "image" },
-  { src: venueVideo, poster: venue, title: "Inside Mill's", type: "video" },
-  { src: dj, title: "After dark", type: "image" },
-  { src: happyHour, title: "Raise a glass", type: "image" },
-  { src: celebration, title: "Good company", type: "image" },
-  { src: brunch, title: "Weekend moments", type: "image" },
-];
-const partyMedia: GalleryMedia[] = [
-  { src: celebration, title: "Your people. Your night.", type: "image" },
-  { src: venue, title: "Room to celebrate", type: "image" },
-  { src: venueVideo, poster: venue, title: "A look inside", type: "video" },
-  { src: dj, title: "Set the mood", type: "image" },
-  { src: happyHour, title: "The first toast", type: "image" },
-  { src: concert, title: "Make it a night", type: "image" },
-];
 
 function GalleryVideo({ item }: { item: GalleryMedia }) {
   const src = useStorageUrl(item.src);
@@ -39,7 +16,7 @@ function GalleryVideo({ item }: { item: GalleryMedia }) {
 
 export function MediaMasonry({ variant, extra = [], embedded = false, archive = false }: { variant: "events" | "party"; extra?: GalleryMedia[]; embedded?: boolean; archive?: boolean }) {
   const uploaded = useGalleryMedia(variant);
-  const items = [...uploaded, ...extra, ...(variant === "events" ? eventsMedia : partyMedia)];
+  const items = [...uploaded, ...extra];
   const [selected, setSelected] = useState<number | null>(null);
   const item = selected === null ? undefined : items[selected];
   return (
