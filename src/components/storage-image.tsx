@@ -48,6 +48,9 @@ export function useStorageUrl(src: string | null | undefined) {
       .createSignedUrl(path, 60 * 60 * 24)
       .then(({ data }) => {
         if (!cancelled) setUrl(data?.signedUrl ?? raw);
+      })
+      .catch(() => {
+        if (!cancelled) setUrl(null);
       });
 
     return () => {
