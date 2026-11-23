@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { checkWifiAccess } from "@/lib/wifi-access.functions";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight, Check, Info, Mail, ShieldCheck, Wifi } from "lucide-react";
 import millsLogo from "@/assets/mills-logo.png.asset.json";
@@ -32,9 +33,15 @@ function GuestWifiPage() {
   const [marketingOptIn, setMarketingOptIn] = useState(wifiMarketingOptInDefault);
   const [message, setMessage] = useState("");
   const settings = useWifiSettings();
+  const [onNetwork, setOnNetwork] = useState<boolean | null>(null);
+  useEffect(() => { checkWifiAccess().then((r) => setOnNetwork(r.allowed)).catch((e) => { console.error("wifi check failed", e); setOnNetwork(false); }); }, []);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (onNetwork === false) {
+      setMessage("Please connect to the Mills guest Wi-Fi network first, then try again.");
+      return;
+    }
     setMessage(
       "Guest Wi-Fi is not connected to this sign-in page yet. Your information was not sent or saved. Please ask a Mills team member for access.",
     );
@@ -82,6 +89,12 @@ function GuestWifiPage() {
             <p>This sign-in page is awaiting connection to the venue’s Wi-Fi service. Your details are not collected here.</p>
           </div>
 
+          {onNetwork === false && (
+            <p className="mt-6 border border-destructive/50 bg-destructive/10 p-4 text-sm leading-5 text-foreground" role="alert">
+              You're not connected to the Mills Wi-Fi. Join the network “{settings.networkName}” on your device, then reopen this page.
+            </p>
+          )}
+
           <form onSubmit={handleSubmit} className="mt-6 space-y-5">
             <div className="grid grid-cols-2 gap-3">
               <label className="block space-y-2">
@@ -120,7 +133,7 @@ function GuestWifiPage() {
               <span>Send me occasional Mills news, offers, and event updates by email. I can unsubscribe anytime.</span>
             </label>)}
 
-            <Button type="submit" size="lg" className="h-12 w-full rounded-md bg-accent font-bold text-accent-foreground hover:bg-accent/90">
+            <Button type="submit" size="lg" disabled={onNetwork !== true} className="h-12 w-full rounded-md bg-accent font-bold text-accent-foreground hover:bg-accent/90">
               Connect to Wi-Fi
               <ArrowUpRight aria-hidden="true" />
             </Button>

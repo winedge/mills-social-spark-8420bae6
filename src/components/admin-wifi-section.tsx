@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getMyIp } from "@/lib/wifi-access.functions";
 import { loadWifiSettings, saveWifiSettings, type WifiSettings } from "@/lib/wifi-settings";
 
 const field = "h-11 w-full border border-border bg-background px-3 text-sm";
@@ -34,6 +35,12 @@ export function AdminWifiSection() {
       </div>
       <label className="block space-y-1 text-sm"><span>Welcome text</span>
         <textarea rows={3} className="w-full border border-border bg-background p-3 text-sm" value={s.welcomeText} onChange={(e) => setS({ ...s, welcomeText: e.target.value })} /></label>
+      <div className="space-y-2 border border-border p-4 text-sm">
+        <p className="font-semibold">Restaurant network check</p>
+        <p className="text-muted-foreground">Only guests connected through these internet addresses can sign in. Leave empty to turn the check off. Tip: while on the restaurant Wi-Fi, press the button to add its address.</p>
+        <textarea rows={2} placeholder="e.g. 203.0.113.7" className="w-full border border-border bg-background p-3 text-sm" value={s.allowedIps} onChange={(e) => setS({ ...s, allowedIps: e.target.value })} />
+        <Button type="button" variant="outline" size="sm" onClick={async () => { const { ip } = await getMyIp(); if (ip && !s.allowedIps.includes(ip)) setS({ ...s, allowedIps: [s.allowedIps.trim(), ip].filter(Boolean).join(", ") }); }}>Add the network I'm on now</Button>
+      </div>
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" checked={s.marketingEnabled} onChange={(e) => setS({ ...s, marketingEnabled: e.target.checked })} />
         Show optional marketing email checkbox (always unticked for guests)

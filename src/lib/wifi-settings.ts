@@ -8,6 +8,7 @@ export type WifiSettings = {
   privacyEmail: string;
   marketingEnabled: boolean;
   welcomeText: string;
+  allowedIps: string;
 };
 
 export const defaultWifiSettings: WifiSettings = {
@@ -17,6 +18,7 @@ export const defaultWifiSettings: WifiSettings = {
   privacyEmail: "info@millsmodernsocial.com",
   marketingEnabled: true,
   welcomeText: "Enter your email to get online. Marketing emails are optional and never required for Wi-Fi access.",
+  allowedIps: "",
 };
 
 const path = "wifi/settings.json";
@@ -32,6 +34,7 @@ export async function loadWifiSettings(): Promise<WifiSettings> {
       retentionDays: typeof raw.retentionDays === "number" && raw.retentionDays > 0 ? raw.retentionDays : defaultWifiSettings.retentionDays,
       privacyEmail: typeof raw.privacyEmail === "string" && raw.privacyEmail ? raw.privacyEmail : defaultWifiSettings.privacyEmail,
       marketingEnabled: typeof raw.marketingEnabled === "boolean" ? raw.marketingEnabled : true,
+      allowedIps: typeof raw.allowedIps === "string" ? raw.allowedIps : "",
       welcomeText: typeof raw.welcomeText === "string" && raw.welcomeText ? raw.welcomeText : defaultWifiSettings.welcomeText,
     };
   } catch {
