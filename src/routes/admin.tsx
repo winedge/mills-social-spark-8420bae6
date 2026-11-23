@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { StorageImage, useStorageUrl } from "@/components/storage-image";
 import { heroVideoSource } from "@/lib/hero-video";
+import { AdminWifiSection } from "@/components/admin-wifi-section";
 import { AdminGalleryManager } from "@/components/admin-gallery-manager";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -39,7 +40,7 @@ export const Route = createFileRoute("/admin")({
 type Section =
   | "overview" | "reservations" | "spaces" | "menu" | "categories"
   | "party" | "sports" | "ufc" | "nfl" | "specials" | "pulse" | "marquee"
-  | "hero" | "messages" | "subscribers" | "contactinfo" | "settings" | "careers" | "applications";
+  | "hero" | "messages" | "subscribers" | "contactinfo" | "settings" | "careers" | "applications" | "wifi";
 
 type NavItem = { id: Section; label: string; icon: any };
 type NavGroup = { label: string; icon: any; children: NavItem[] };
@@ -82,6 +83,7 @@ const NAV: NavEntry[] = [
       { id: "messages", label: "Contact Messages", icon: MessageCircle },
       { id: "subscribers", label: "Newsletter", icon: Mail },
       { id: "contactinfo", label: "Contact Details", icon: MapPin },
+      { id: "wifi", label: "Guest Wi-Fi", icon: MapPin },
     ],
   },
   {
@@ -255,6 +257,7 @@ function Dashboard({ email }: { email: string }) {
           {section === "messages" && <MessagesSection />}
           {section === "subscribers" && <SubscribersSection />}
           {section === "contactinfo" && <ContactInfoSection />}
+          {section === "wifi" && <AdminWifiSection />}
           {section === "hero" && <HeroVideoUploader />}
           {section === "specials" && <SpecialsSection />}
           {section === "pulse" && <PulseSection />}
