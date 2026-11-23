@@ -84,6 +84,7 @@ function cleanStr(v: string | null | undefined): string | null {
 const PRIVATE_STORAGE_PREFIX = "storage://site_assets/";
 
 function storagePathFromUrl(url: string): string | null {
+  if (typeof url !== "string") return null;
   if (url.startsWith(PRIVATE_STORAGE_PREFIX)) return url.slice(PRIVATE_STORAGE_PREFIX.length);
   const marker = "/storage/v1/object/public/site_assets/";
   const markerIndex = url.indexOf(marker);

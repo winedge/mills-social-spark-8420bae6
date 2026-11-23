@@ -15,11 +15,12 @@ export function UfcFighterImageManager() {
     const hydrated = await Promise.all((data || []).map(async (row: any) => {
       const prefix = "storage://site_assets/";
       const legacyMarker = "/storage/v1/object/public/site_assets/";
-      const legacyIndex = row.image_url.indexOf(legacyMarker);
-      const path = row.image_url.startsWith(prefix)
-        ? row.image_url.slice(prefix.length)
+      const imageUrl = typeof row.image_url === "string" ? row.image_url : "";
+      const legacyIndex = imageUrl.indexOf(legacyMarker);
+      const path = imageUrl.startsWith(prefix)
+        ? imageUrl.slice(prefix.length)
         : legacyIndex >= 0
-          ? decodeURIComponent(row.image_url.slice(legacyIndex + legacyMarker.length))
+          ? decodeURIComponent(imageUrl.slice(legacyIndex + legacyMarker.length))
           : null;
       if (!path) return { ...row, display_url: row.image_url };
       const { data: signed } = await supabase.storage.from("site_assets").createSignedUrl(path, 3600);
