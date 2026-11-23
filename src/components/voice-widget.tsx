@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "@tanstack/react-router";
 
 export function VoiceWidget() {
   const location = useLocation();
   const [isClient, setIsClient] = useState(false);
+  const widgetInitialized = useRef(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -20,7 +21,8 @@ export function VoiceWidget() {
     } else {
       document.body.classList.remove('is-menu-page');
     }
-  }, [location, isClient]);
+    document.body.classList.toggle('is-wifi-page', location.pathname === "/wifi");
+  }, [location.pathname, isClient]);
 
   useEffect(() => {
     if (!isClient) return;
@@ -32,6 +34,16 @@ export function VoiceWidget() {
       const style = document.createElement('style');
       style.id = styleId;
       style.textContent = `
+        body.is-wifi-page #vw-btn,
+        body.is-wifi-page .n2n-voice-widget-container,
+        body.is-wifi-page [id^="vw-"],
+        body.is-wifi-page [class^="n2n-voice-widget"] {
+          display: none !important;
+          opacity: 0 !important;
+          visibility: hidden !important;
+          pointer-events: none !important;
+        }
+
         @media (max-width: 768px) {
           body.is-menu-page #vw-btn,
           body.is-menu-page .n2n-voice-widget-container,
@@ -55,6 +67,14 @@ export function VoiceWidget() {
       document.head.appendChild(style);
     }
 
+    // Do not load the third-party widget on the standalone captive-portal page.
+    if (location.pathname === "/wifi") {
+      return () => {
+        const style = document.getElementById(styleId);
+        if (style) document.head.removeChild(style);
+      };
+    }
+
     // Initialize widget
     const w = window as any;
     const d = document;
@@ -62,25 +82,29 @@ export function VoiceWidget() {
     const o = 'vw';
     const f = 'https://n2nverse.ai/widget/embed.js';
 
-    if (!w[o]) {
-      w[o] = function() {
-        (w[o].q = w[o].q || []).push(arguments);
-      };
-      const js = d.createElement(s) as HTMLScriptElement;
-      js.id = o;
-      js.src = f;
-      js.async = true;
-      (d.head || d.body).appendChild(js);
-    }
+    if (!widgetInitialized.current) {
+      if (!w[o]) {
+        w[o] = function() {
+          (w[o].q = w[o].q || []).push(arguments);
+        };
+        const js = d.createElement(s) as HTMLScriptElement;
+        js.id = o;
+        js.src = f;
+        js.async = true;
+        (d.head || d.body).appendChild(js);
+      }
 
-    w[o]('init', 'wgt_5KLotoIys-h1lAeQGlM1lokn');
+      w[o]('init', 'wgt_5KLotoIys-h1lAeQGlM1lokn');
+      widgetInitialized.current = true;
+    }
 
     // Mutation observer to handle any dynamically injected elements from the widget
     const checkVisibility = () => {
       const isMenuPage = document.body.classList.contains('is-menu-page');
+      const isWifiPage = document.body.classList.contains('is-wifi-page');
       const isMobile = window.innerWidth <= 768;
       
-      if (isMenuPage && isMobile) {
+      if (isWifiPage || (isMenuPage && isMobile)) {
         const elements = [
           document.getElementById('vw-btn'),
           ...Array.from(document.querySelectorAll('.n2n-voice-widget-container')),
@@ -111,7 +135,7 @@ export function VoiceWidget() {
       observer.disconnect();
       clearInterval(interval);
     };
-  }, [isClient]);
+  }, [isClient, location.pathname]);
 
   return null;
 }

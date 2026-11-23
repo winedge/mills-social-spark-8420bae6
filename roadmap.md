@@ -1,4 +1,6 @@
 # Page and media updates
+- [x] Add a privacy-first guest Wi-Fi sign-in page and prevent site tracking/widgets on that page.
+- [ ] Connect guest sign-in to the venue's Wi-Fi provider and confirm its data-retention/privacy details.
 - [x] Add View more links below Events and Party galleries and dedicated full photo/video pages.
 - [x] Verify both gallery links and archive lightboxes.
 - [x] Add separate desktop/mobile homepage videos and admin uploads.

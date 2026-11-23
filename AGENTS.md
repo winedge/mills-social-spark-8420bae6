@@ -14,3 +14,4 @@
 - Persist Events and Party gallery manifests and uploads in separate `galleries/{variant}/` folders in existing `site-media` storage; reuse its public-read/admin-write policies rather than adding duplicate content tables.
 - Mount route-aware, reduced-motion-aware scroll reveals once in the root; exclude admin and dialogs so controls remain immediately usable.
 - Keep independent device hero uploads on existing `site-media` storage and `site_media` settings (`hero_video_url` for desktop, `mobile_hero_video_url` for mobile); share device selection through `hero-video` and expose both uploaders in Homepage navigation to preserve existing videos and avoid duplicate contracts.
+- Keep `/wifi` as a standalone, privacy-first captive-portal screen; only the selected venue Wi-Fi provider can authorize guest network access.

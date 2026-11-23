@@ -22,7 +22,7 @@ export function AnalyticsTracker() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (pathname.startsWith("/admin")) return; // don't count admin visits
+    if (pathname.startsWith("/admin") || pathname === "/wifi") return; // exclude admin and captive-portal visits
     const session_id = getSessionId();
     const payload = {
       path: pathname,

@@ -74,7 +74,7 @@ export function RoutePreloader() {
     }
   }, [isPending, mounted, visible]);
 
-  if (!mounted || !visible) return null;
+  if (!mounted || !visible || pathname === "/wifi") return null;
 
   return (
     <div

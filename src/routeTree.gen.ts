@@ -18,6 +18,7 @@ import { Route as MenuRouteImport } from './routes/menu'
 import { Route as PartyRouteImport } from './routes/party'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as SportsRouteImport } from './routes/sports'
+import { Route as WifiRouteImport } from './routes/wifi'
 import { Route as EventsGalleryRouteImport } from './routes/events_.gallery'
 import { Route as PartyGalleryRouteImport } from './routes/party_.gallery'
 
@@ -66,6 +67,11 @@ const SportsRoute = SportsRouteImport.update({
   path: '/sports',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WifiRoute = WifiRouteImport.update({
+  id: '/wifi',
+  path: '/wifi',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EventsGalleryRoute = EventsGalleryRouteImport.update({
   id: '/events_/gallery',
   path: '/events/gallery',
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/party': typeof PartyRoute
   '/play': typeof PlayRoute
   '/sports': typeof SportsRoute
+  '/wifi': typeof WifiRoute
   '/events/gallery': typeof EventsGalleryRoute
   '/party/gallery': typeof PartyGalleryRoute
 }
@@ -100,6 +107,7 @@ export interface FileRoutesByTo {
   '/party': typeof PartyRoute
   '/play': typeof PlayRoute
   '/sports': typeof SportsRoute
+  '/wifi': typeof WifiRoute
   '/events/gallery': typeof EventsGalleryRoute
   '/party/gallery': typeof PartyGalleryRoute
 }
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/party': typeof PartyRoute
   '/play': typeof PlayRoute
   '/sports': typeof SportsRoute
+  '/wifi': typeof WifiRoute
   '/events_/gallery': typeof EventsGalleryRoute
   '/party_/gallery': typeof PartyGalleryRoute
 }
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
     | '/party'
     | '/play'
     | '/sports'
+    | '/wifi'
     | '/events/gallery'
     | '/party/gallery'
   fileRoutesByTo: FileRoutesByTo
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
     | '/party'
     | '/play'
     | '/sports'
+    | '/wifi'
     | '/events/gallery'
     | '/party/gallery'
   id:
@@ -155,6 +166,7 @@ export interface FileRouteTypes {
     | '/party'
     | '/play'
     | '/sports'
+    | '/wifi'
     | '/events_/gallery'
     | '/party_/gallery'
   fileRoutesById: FileRoutesById
@@ -169,6 +181,7 @@ export interface RootRouteChildren {
   PartyRoute: typeof PartyRoute
   PlayRoute: typeof PlayRoute
   SportsRoute: typeof SportsRoute
+  WifiRoute: typeof WifiRoute
   EventsGalleryRoute: typeof EventsGalleryRoute
   PartyGalleryRoute: typeof PartyGalleryRoute
 }
@@ -238,6 +251,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SportsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/wifi': {
+      id: '/wifi'
+      path: '/wifi'
+      fullPath: '/wifi'
+      preLoaderRoute: typeof WifiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/events_/gallery': {
       id: '/events_/gallery'
       path: '/events/gallery'
@@ -265,6 +285,7 @@ const rootRouteChildren: RootRouteChildren = {
   PartyRoute: PartyRoute,
   PlayRoute: PlayRoute,
   SportsRoute: SportsRoute,
+  WifiRoute: WifiRoute,
   EventsGalleryRoute: EventsGalleryRoute,
   PartyGalleryRoute: PartyGalleryRoute,
 }

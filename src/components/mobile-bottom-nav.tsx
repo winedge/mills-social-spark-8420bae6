@@ -29,6 +29,8 @@ function isActivePath(pathname: string, to: string) {
 export function MobileBottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
+  if (pathname === "/wifi") return null;
+
   return (
     <nav
       aria-label="Primary"
