@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { checkWifiAccess } from "@/lib/wifi-access.functions";
+import { authorizeWifiGuest } from "@/lib/unifi-authorize.functions";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight, Check, Info, Mail, ShieldCheck, Wifi } from "lucide-react";
 import millsLogo from "@/assets/mills-logo.png.asset.json";
@@ -26,6 +27,10 @@ export const Route = createFileRoute("/wifi")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    id: typeof s["id"] === "string" ? s["id"] : undefined,
+    url: typeof s["url"] === "string" ? s["url"] : undefined,
+  }),
   component: GuestWifiPage,
 });
 
@@ -36,15 +41,34 @@ function GuestWifiPage() {
   const [onNetwork, setOnNetwork] = useState<boolean | null>(null);
   useEffect(() => { checkWifiAccess().then((r) => setOnNetwork(r.allowed)).catch((e) => { console.error("wifi check failed", e); setOnNetwork(false); }); }, []);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const { id: deviceMac, url: returnUrl } = Route.useSearch();
+  const [busy, setBusy] = useState(false);
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (onNetwork === false) {
       setMessage("Please connect to the Mills guest Wi-Fi network first, then try again.");
       return;
     }
-    setMessage(
-      "Guest Wi-Fi is not connected to this sign-in page yet. Your information was not sent or saved. Please ask a Mills team member for access.",
-    );
+    if (!deviceMac) {
+      setMessage("Please join the Mills guest Wi-Fi — this page opens automatically when you connect. Your information was not sent or saved.");
+      return;
+    }
+    const f = new FormData(event.currentTarget);
+    setBusy(true);
+    try {
+      const r = await authorizeWifiGuest({ data: { mac: deviceMac, email: String(f.get("email") ?? ""), firstName: String(f.get("firstName") ?? ""), lastName: String(f.get("lastName") ?? "") } });
+      if (r.ok) {
+        setMessage("You're connected! Enjoy your time at Mills.");
+        const next = returnUrl && /^https?:\/\//.test(returnUrl) ? returnUrl : "/";
+        setTimeout(() => { window.location.href = next; }, 1500);
+      } else {
+        setMessage("We couldn't connect you right now. Please ask a Mills team member for help.");
+      }
+    } catch {
+      setMessage("Please check your details and try again.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -86,7 +110,7 @@ function GuestWifiPage() {
 
           <div className="mt-6 flex gap-3 border border-border bg-surface/70 p-4 text-sm leading-5 text-muted-foreground" role="status">
             <Info className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden="true" />
-            <p>This sign-in page is awaiting connection to the venue’s Wi-Fi service. Your details are not collected here.</p>
+            <p>Fill in your details and tap Connect — you’ll be online in seconds.</p>
           </div>
 
           {onNetwork === false && (
@@ -133,7 +157,7 @@ function GuestWifiPage() {
               <span>Send me occasional Mills news, offers, and event updates by email. I can unsubscribe anytime.</span>
             </label>)}
 
-            <Button type="submit" size="lg" disabled={onNetwork !== true} className="h-12 w-full rounded-md bg-accent font-bold text-accent-foreground hover:bg-accent/90">
+            <Button type="submit" size="lg" disabled={onNetwork !== true || busy} className="h-12 w-full rounded-md bg-accent font-bold text-accent-foreground hover:bg-accent/90">
               Connect to Wi-Fi
               <ArrowUpRight aria-hidden="true" />
             </Button>
