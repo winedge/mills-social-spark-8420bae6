@@ -83,6 +83,16 @@ function GuestWifiPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block space-y-2">
+                <span className="text-sm font-semibold">First name</span>
+                <input name="firstName" autoComplete="given-name" maxLength={60} required placeholder="First name" className="h-12 w-full rounded-md border border-input bg-background px-4 text-base text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring" />
+              </label>
+              <label className="block space-y-2">
+                <span className="text-sm font-semibold">Last name</span>
+                <input name="lastName" autoComplete="family-name" maxLength={60} required placeholder="Last name" className="h-12 w-full rounded-md border border-input bg-background px-4 text-base text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring" />
+              </label>
+            </div>
             <label className="block space-y-2">
               <span className="text-sm font-semibold">Email address</span>
               <input
@@ -135,7 +145,7 @@ function GuestWifiPage() {
               <p>
                 Wi-Fi details will be used to provide and secure guest access. Promotional email is separate and only sent if you choose the optional box. You can withdraw marketing permission or ask about access, correction, deletion, or other privacy rights at any time.
               </p>
-              <p><strong className="text-foreground">What we collect:</strong> your email address, and from the Wi-Fi system your device's network (MAC) address and connection times. Nothing else is required.</p>
+              <p><strong className="text-foreground">What we collect:</strong> your first and last name and email address, and from the Wi-Fi system your device's network (MAC) address and connection times. Nothing else is required.</p>
               <p><strong className="text-foreground">Why and on what legal basis:</strong> to give you internet access and keep the network secure (performing the service you ask for and our legitimate interest in network security, GDPR Art. 6(1)(b) and (f)). Marketing emails only with your consent (Art. 6(1)(a)), which you can withdraw anytime via the unsubscribe link or by emailing us.</p>
               <p><strong className="text-foreground">Who receives it:</strong> only our Wi-Fi provider acting on our behalf under a data processing agreement. We never sell your data. If data leaves the EU/UK, it is protected by standard contractual clauses.</p>
               <p><strong className="text-foreground">How long:</strong> Wi-Fi data is deleted after {settings.retentionDays} days. Marketing data is kept until you unsubscribe.</p>
