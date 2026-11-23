@@ -5,7 +5,19 @@ const PUBLIC_MARKER = "/storage/v1/object/public/";
 const PROTOCOL = "storage://";
 
 /** Turns a private-bucket URL/path into a temporary signed URL. */
-export function useStorageUrl(src: string | null | undefined) {
+function toText(value: unknown): string | null {
+  if (value == null) return null;
+  if (typeof value === "string") return value;
+  if (typeof value === "object") {
+    const v = value as { src?: unknown; url?: unknown; default?: unknown };
+    const inner = v.src ?? v.url ?? v.default;
+    return typeof inner === "string" ? inner : null;
+  }
+  return String(value);
+}
+
+export function useStorageUrl(input: unknown) {
+  const src = toText(input);
   const [url, setUrl] = useState<string | null>(src && src.startsWith(PROTOCOL) ? null : src ?? null);
 
   useEffect(() => {
@@ -61,7 +73,7 @@ export function useStorageUrl(src: string | null | undefined) {
   return url;
 }
 
-type Props = React.ImgHTMLAttributes<HTMLImageElement> & { src?: string | null };
+type Props = React.ImgHTMLAttributes<HTMLImageElement> & { src?: unknown };
 
 export function StorageImage({ src, ...rest }: Props) {
   const resolved = useStorageUrl(src);
