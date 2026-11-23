@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight, Check, Info, Mail, ShieldCheck, Wifi } from "lucide-react";
 import millsLogo from "@/assets/mills-logo.png.asset.json";
 import venuePhoto from "@/assets/hero-bar.jpg";
@@ -49,7 +49,12 @@ function GuestWifiPage() {
           className="absolute inset-0 -z-20 h-full w-full object-cover object-center"
         />
         <div className="absolute inset-0 -z-10 bg-gradient-to-t from-background via-background/65 to-background/25 lg:bg-gradient-to-r lg:from-background/80 lg:via-background/30 lg:to-background/20" />
-        <div className="mx-auto flex w-full max-w-2xl flex-col items-center animate-slide-up">
+        <nav aria-label="Mills website" className="absolute inset-x-0 top-0 flex justify-center gap-2 p-4">
+          {([["/", "Home"], ["/menu", "Menu"], ["/events", "Events"], ["/contact", "Contact"]] as const).map(([to, label]) => (
+            <Link key={to} to={to} className="rounded-full border border-border bg-background/70 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-foreground backdrop-blur hover:border-accent hover:text-accent">{label}</Link>
+          ))}
+        </nav>
+        <div className="mx-auto mt-10 flex w-full max-w-2xl flex-col items-center animate-slide-up">
           <img src={millsLogo.url} alt="Mill's Modern Social" className="mb-8 h-auto w-52 object-contain sm:w-60 lg:mb-16" />
           <p className="mb-3 font-mono text-xs uppercase text-accent">83 E Broadway Rd · Tempe, AZ</p>
           <h1 className="mx-auto max-w-xl font-display text-5xl uppercase leading-[0.95] text-balance sm:text-6xl lg:text-7xl">
@@ -130,6 +135,11 @@ function GuestWifiPage() {
               <p>
                 Wi-Fi details will be used to provide and secure guest access. Promotional email is separate and only sent if you choose the optional box. You can withdraw marketing permission or ask about access, correction, deletion, or other privacy rights at any time.
               </p>
+              <p><strong className="text-foreground">What we collect:</strong> your email address, and from the Wi-Fi system your device's network (MAC) address and connection times. Nothing else is required.</p>
+              <p><strong className="text-foreground">Why and on what legal basis:</strong> to give you internet access and keep the network secure (performing the service you ask for and our legitimate interest in network security, GDPR Art. 6(1)(b) and (f)). Marketing emails only with your consent (Art. 6(1)(a)), which you can withdraw anytime via the unsubscribe link or by emailing us.</p>
+              <p><strong className="text-foreground">Who receives it:</strong> only our Wi-Fi provider acting on our behalf under a data processing agreement. We never sell your data. If data leaves the EU/UK, it is protected by standard contractual clauses.</p>
+              <p><strong className="text-foreground">How long:</strong> Wi-Fi data is deleted after {settings.retentionDays} days. Marketing data is kept until you unsubscribe.</p>
+              <p><strong className="text-foreground">Your rights:</strong> access, correction, deletion, restriction, objection, data portability and withdrawing consent. You may also complain to your local data protection authority. No automated decisions or profiling are made about you.</p>
               <a
                 href={`mailto:${settings.privacyEmail}?subject=Guest%20Wi-Fi%20privacy%20question`}
                 className="inline-flex min-h-8 items-center gap-1 font-semibold text-accent underline-offset-4 hover:underline"
