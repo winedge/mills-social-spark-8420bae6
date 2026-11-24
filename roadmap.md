@@ -1,6 +1,8 @@
 # Page and media updates
 - [x] Add a privacy-first guest Wi-Fi sign-in page and prevent site tracking/widgets on that page.
-- [ ] Connect guest sign-in to the venue's Wi-Fi provider and confirm its data-retention/privacy details.
+- [ ] Connect guest sign-in to UniFi equipment and confirm data-retention/privacy details (awaits live controller access).
+- [ ] Add secure UniFi configuration and connection testing in admin settings.
+- [ ] Verify admin configuration saving and public credential isolation.
 - [x] Add View more links below Events and Party galleries and dedicated full photo/video pages.
 - [x] Verify both gallery links and archive lightboxes.
 - [x] Add separate desktop/mobile homepage videos and admin uploads.
@@ -14,4 +16,4 @@
 - [x] Add accessible scroll reveals across content pages.
 - [x] Make homepage hero video file upload easy to find and verify it.
 - [x] Improve shared typography and verify the reported mobile hook error.
-- [x] Verify pages, media interactions, metadata, and package update.- [ ] Wi-Fi provider is Spectrum: confirm their Business Wi-Fi plan (splash page link) or add business equipment for automatic sign-in
+- [x] Verify pages, media interactions, metadata, and package update.
