@@ -824,6 +824,39 @@ export type Database = {
         }
         Relationships: []
       }
+      wifi_unifi_config: {
+        Row: {
+          api_key_encrypted: string
+          console_id: string
+          id: number
+          last_test_at: string | null
+          last_test_ok: boolean
+          session_minutes: number
+          site_id: string
+          updated_at: string
+        }
+        Insert: {
+          api_key_encrypted?: string
+          console_id?: string
+          id?: number
+          last_test_at?: string | null
+          last_test_ok?: boolean
+          session_minutes?: number
+          site_id?: string
+          updated_at?: string
+        }
+        Update: {
+          api_key_encrypted?: string
+          console_id?: string
+          id?: number
+          last_test_at?: string | null
+          last_test_ok?: boolean
+          session_minutes?: number
+          site_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

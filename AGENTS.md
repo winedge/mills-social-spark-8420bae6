@@ -15,3 +15,5 @@
 - Mount route-aware, reduced-motion-aware scroll reveals once in the root; exclude admin and dialogs so controls remain immediately usable.
 - Keep independent device hero uploads on existing `site-media` storage and `site_media` settings (`hero_video_url` for desktop, `mobile_hero_video_url` for mobile); share device selection through `hero-video` and expose both uploaders in Homepage navigation to preserve existing videos and avoid duplicate contracts.
 - Keep `/wifi` as a standalone, privacy-first captive-portal screen; only the selected venue Wi-Fi provider can authorize guest network access.
+- Keep UniFi controller configuration server-only behind verified admin functions; encrypt credentials with Web Crypto and never return them to browsers, because controller keys grant network access.
+- Use Ubiquiti's fixed cloud connector origin for UniFi admin connectivity checks; never send stored keys to arbitrary admin-supplied URLs, because this prevents credential exfiltration and private-network requests.

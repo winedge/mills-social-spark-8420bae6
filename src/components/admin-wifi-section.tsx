@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AdminUnifiSettings } from "@/components/admin-unifi-settings";
 import { getMyIp } from "@/lib/wifi-access.functions";
 import { loadWifiSettings, saveWifiSettings, type WifiSettings } from "@/lib/wifi-settings";
 
@@ -21,13 +22,14 @@ export function AdminWifiSection() {
   };
 
   return (
+    <div className="max-w-2xl space-y-6">
     <form onSubmit={save} className="max-w-2xl space-y-4 border border-border bg-surface/40 p-6">
       <p className="text-sm text-muted-foreground">These details appear on the guest Wi-Fi page (/wifi) and its privacy notice.</p>
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-1 text-sm"><span>Network name (SSID)</span>
           <input className={field} value={s.networkName} onChange={(e) => setS({ ...s, networkName: e.target.value })} /></label>
         <label className="space-y-1 text-sm"><span>Wi-Fi provider</span>
-          <input className={field} placeholder="e.g. Social WiFi, MyPlace" value={s.providerName} onChange={(e) => setS({ ...s, providerName: e.target.value })} /></label>
+          <input className={field} placeholder="Ubiquiti / UniFi" value={s.providerName} onChange={(e) => setS({ ...s, providerName: e.target.value })} /></label>
         <label className="space-y-1 text-sm"><span>Keep guest data for (days)</span>
           <input type="number" min={1} max={730} className={field} value={s.retentionDays} onChange={(e) => setS({ ...s, retentionDays: Math.max(1, Number(e.target.value) || 1) })} /></label>
         <label className="space-y-1 text-sm"><span>Privacy contact email</span>
@@ -48,5 +50,7 @@ export function AdminWifiSection() {
       {msg && <p className="font-mono text-[11px] uppercase tracking-widest text-accent">{msg}</p>}
       <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save Wi-Fi settings"}</Button>
     </form>
+    <AdminUnifiSettings />
+    </div>
   );
 }

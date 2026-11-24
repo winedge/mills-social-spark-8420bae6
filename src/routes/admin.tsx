@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { StorageImage, useStorageUrl } from "@/components/storage-image";
 import { heroVideoSource } from "@/lib/hero-video";
 import { AdminWifiSection } from "@/components/admin-wifi-section";
+import { AdminUnifiSettings } from "@/components/admin-unifi-settings";
 import { AdminGalleryManager } from "@/components/admin-gallery-manager";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -1405,6 +1406,7 @@ function SettingsSection() {
     <div className="max-w-2xl space-y-6">
       <FeatureToggles />
       <HeroVideoUploader />
+      <AdminUnifiSettings />
       <form onSubmit={save} className="space-y-6 border border-border bg-surface/40 p-6">
         <div>
           <label className="block">
