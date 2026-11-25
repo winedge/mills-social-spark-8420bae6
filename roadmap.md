@@ -1,6 +1,7 @@
 # Page and media updates
+- [x] Explain which UniFi credentials belong in admin settings (no ISP credentials or account password).
 - [x] Add a privacy-first guest Wi-Fi sign-in page and prevent site tracking/widgets on that page.
-- [ ] Connect guest sign-in to UniFi equipment and confirm data-retention/privacy details (awaits live controller access).
+- [ ] Connect guest sign-in to UniFi equipment with fail-closed network checks and privacy safeguards; live internet verification requires restaurant credentials and network access.
 - [ ] Add secure UniFi configuration and connection testing in admin settings.
 - [ ] Verify admin configuration saving and public credential isolation.
 - [x] Add View more links below Events and Party galleries and dedicated full photo/video pages.

@@ -12,6 +12,8 @@ test("UniFi settings keep credentials out of the admin read response", () => {
 });
 test("UniFi credentials are only sent to Ubiquiti's fixed API origin", () => {
   assert.equal(new URL(unifiSitesUrl("abc_DEF-123")).origin, "https://api.ui.com");
+  assert.equal(new URL(unifiSitesUrl("console:123")).pathname, "/v1/connector/consoles/console%3A123/proxy/network/integration/v1/sites");
+  assert.equal(unifiConfigSchema.safeParse({ consoleId: "console:123", siteId: "", sessionMinutes: 240 }).success, true);
   assert.throws(() => unifiSitesUrl("../../evil.example"));
   assert.throws(() => unifiSitesUrl("https://evil.example"));
 });

@@ -1,12 +1,12 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { checkWifiAccess } from "@/lib/wifi-access.functions";
+import { getGuestPortalStatus, signInGuestWifi } from "@/lib/unifi-guest.functions";
+import { useServerFn } from "@tanstack/react-start";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight, Check, Info, Mail, ShieldCheck, Wifi } from "lucide-react";
 import millsLogo from "@/assets/mills-logo.png.asset.json";
 import venuePhoto from "@/assets/hero-bar.jpg";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { wifiMarketingOptInDefault } from "@/lib/wifi-consent";
 import { useWifiSettings } from "@/lib/wifi-settings";
 
 export const Route = createFileRoute("/wifi")({
@@ -24,27 +24,45 @@ export const Route = createFileRoute("/wifi")({
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "referrer", content: "no-referrer" },
     ],
   }),
   component: GuestWifiPage,
 });
 
 function GuestWifiPage() {
-  const [marketingOptIn, setMarketingOptIn] = useState(wifiMarketingOptInDefault);
+  const signIn = useServerFn(signInGuestWifi);
+  const [ready, setReady] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [connected, setConnected] = useState(false);
+  const [device, setDevice] = useState({ mac: "", ap: "" });
   const [message, setMessage] = useState("");
   const settings = useWifiSettings();
   const [onNetwork, setOnNetwork] = useState<boolean | null>(null);
-  useEffect(() => { checkWifiAccess().then((r) => setOnNetwork(r.allowed)).catch((e) => { console.error("wifi check failed", e); setOnNetwork(false); }); }, []);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setDevice({ mac: params.get("id") ?? "", ap: params.get("ap") ?? "" });
+    // Device identifiers must not remain in browser history or referrer URLs.
+    window.history.replaceState(null, "", window.location.pathname);
+    checkWifiAccess().then((r) => setOnNetwork(r.active && r.allowed)).catch(() => setOnNetwork(false));
+    getGuestPortalStatus().then((s) => setReady(s.ready)).catch(() => setReady(false));
+  }, []);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (onNetwork === false) {
       setMessage("Please connect to the Mills guest Wi-Fi network first, then try again.");
       return;
     }
-    setMessage(
-      "Guest Wi-Fi is not connected to this sign-in page yet. Your information was not sent or saved. Please ask a Mills team member for access.",
-    );
+    if (!ready || !device.mac || !device.ap) { setMessage("Join the restaurant guest Wi-Fi and open the sign-in page shown by your device. Your details were not saved."); return; }
+    const form = event.currentTarget;
+    const values = new FormData(form);
+    setBusy(true); setMessage("");
+    try {
+      await signIn({ data: { firstName: String(values.get("firstName") ?? "").trim(), lastName: String(values.get("lastName") ?? "").trim(), email: String(values.get("email") ?? "").trim(), ...device } });
+      setConnected(true); form.reset(); setMessage("You’re connected. Enjoy your time at Mills!");
+    } catch (error) { setMessage(error instanceof Error ? error.message : "Could not confirm internet access. Please ask a Mills team member."); }
+    finally { setBusy(false); }
   };
 
   return (
@@ -86,7 +104,7 @@ function GuestWifiPage() {
 
           <div className="mt-6 flex gap-3 border border-border bg-surface/70 p-4 text-sm leading-5 text-muted-foreground" role="status">
             <Info className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden="true" />
-            <p>This sign-in page is awaiting connection to the venue’s Wi-Fi service. Your details are not collected here.</p>
+            <p>{ready ? "Names and email are checked for this session only, then discarded. No marketing signup or saved guest profile." : "Guest Wi-Fi setup is awaiting verification. No details are sent or saved while access is inactive."}</p>
           </div>
 
           {onNetwork === false && (
@@ -119,22 +137,12 @@ function GuestWifiPage() {
                 aria-describedby="wifi-email-help"
               />
               <span id="wifi-email-help" className="block text-xs leading-5 text-muted-foreground">
-                Used only for Wi-Fi access unless you separately opt in below.
+                Checked for this sign-in only. Not saved or used for marketing.
               </span>
             </label>
 
-            {settings.marketingEnabled && (<label className="flex cursor-pointer items-start gap-3 text-sm leading-5 text-muted-foreground">
-              <Checkbox
-                checked={marketingOptIn}
-                onCheckedChange={(checked) => setMarketingOptIn(checked === true)}
-                aria-label="Receive occasional Mills news and offers by email"
-                className="mt-0.5"
-              />
-              <span>Send me occasional Mills news, offers, and event updates by email. I can unsubscribe anytime.</span>
-            </label>)}
-
-            <Button type="submit" size="lg" disabled={onNetwork !== true} className="h-12 w-full rounded-md bg-accent font-bold text-accent-foreground hover:bg-accent/90">
-              Connect to Wi-Fi
+            <Button type="submit" size="lg" disabled={onNetwork !== true || !ready || !device.mac || !device.ap || busy || connected} className="h-12 w-full rounded-md bg-accent font-bold text-accent-foreground hover:bg-accent/90">
+              {connected ? "Connected" : busy ? "Connecting…" : "Connect to Wi-Fi"}
               <ArrowUpRight aria-hidden="true" />
             </Button>
             {message && (
@@ -153,16 +161,17 @@ function GuestWifiPage() {
             </summary>
             <div className="space-y-3 pt-4 text-xs leading-5 text-muted-foreground">
               <p>
-                Mill’s Modern Social, 83 E Broadway Rd, Tempe, AZ 85282, is responsible for this sign-in page. This page currently does not send or store information. {settings.providerName ? `Wi-Fi access is provided by ${settings.providerName}, which processes your email and device details on our behalf. Guest data is kept for up to ${settings.retentionDays} days, then deleted.` : "When a Wi-Fi provider is connected, its name, the exact information it receives, and how long it keeps it will be shown here before sign-in is activated."}
+                Mill’s Modern Social, 83 E Broadway Rd, Tempe, AZ 85282, is responsible for this sign-in page. Wi-Fi equipment is operated using Ubiquiti UniFi; Spectrum supplies internet. Names and email are processed only during sign-in and are not saved or sent to the Wi-Fi equipment.
               </p>
               <p>
-                Wi-Fi details will be used to provide and secure guest access. Promotional email is separate and only sent if you choose the optional box. You can withdraw marketing permission or ask about access, correction, deletion, or other privacy rights at any time.
+                Device details are used to provide and secure guest access. Marketing collection is disabled. You can ask about access, correction, deletion or other privacy rights at any time.
               </p>
-              <p><strong className="text-foreground">What we collect:</strong> your first and last name and email address, and from the Wi-Fi system your device's network (MAC) address and connection times. Nothing else is required.</p>
-              <p><strong className="text-foreground">Why and on what legal basis:</strong> to give you internet access and keep the network secure (performing the service you ask for and our legitimate interest in network security, GDPR Art. 6(1)(b) and (f)). Marketing emails only with your consent (Art. 6(1)(a)), which you can withdraw anytime via the unsubscribe link or by emailing us.</p>
-              <p><strong className="text-foreground">Who receives it:</strong> only our Wi-Fi provider acting on our behalf under a data processing agreement. We never sell your data. If data leaves the EU/UK, it is protected by standard contractual clauses.</p>
-              <p><strong className="text-foreground">How long:</strong> Wi-Fi data is deleted after {settings.retentionDays} days. Marketing data is kept until you unsubscribe.</p>
-              <p><strong className="text-foreground">Your rights:</strong> access, correction, deletion, restriction, objection, data portability and withdrawing consent. You may also complain to your local data protection authority. No automated decisions or profiling are made about you.</p>
+              <p><strong className="text-foreground">Information processed:</strong> first name, last name and email for a transient form check; device and access-point MAC addresses and your public internet address to verify you are on the venue network. This page does not store precise location or enable analytics or advertising trackers.</p>
+              <p><strong className="text-foreground">Purpose and legal basis:</strong> requested internet service and network security. Where GDPR applies, the venue must confirm the appropriate basis under Art. 6, including whether requiring names and email is necessary; no marketing consent is required for access.</p>
+              <p><strong className="text-foreground">Recipients:</strong> the website hosting service processes the sign-in request; Ubiquiti receives device identifiers for authorization, not your name or email. Spectrum carries network traffic. We do not sell sign-in information.</p>
+              <p><strong className="text-foreground">Retention:</strong> this website keeps no guest sign-in records. Hosting and UniFi may maintain separate security and connection logs; contact us for their actual retention periods and deletion arrangements. A day count entered in admin does not automatically delete provider logs.</p>
+              <p><strong className="text-foreground">Transfers:</strong> the venue is in the United States. Provider agreements and any required international-transfer safeguards must be verified before activation; this notice does not assert that those agreements already exist.</p>
+              <p><strong className="text-foreground">Your rights:</strong> where applicable, access, correction, deletion, restriction, objection and portability, and a complaint to your data protection authority. Device checks automatically allow or refuse network access; ask a team member for help if access is refused. No marketing profiling is performed.</p>
               <a
                 href={`mailto:${settings.privacyEmail}?subject=Guest%20Wi-Fi%20privacy%20question`}
                 className="inline-flex min-h-8 items-center gap-1 font-semibold text-accent underline-offset-4 hover:underline"

@@ -17,3 +17,5 @@
 - Keep `/wifi` as a standalone, privacy-first captive-portal screen; only the selected venue Wi-Fi provider can authorize guest network access.
 - Keep UniFi controller configuration server-only behind verified admin functions; encrypt credentials with Web Crypto and never return them to browsers, because controller keys grant network access.
 - Use Ubiquiti's fixed cloud connector origin for UniFi admin connectivity checks; never send stored keys to arbitrary admin-supplied URLs, because this prevents credential exfiltration and private-network requests.
+- Authorize Wi-Fi only through the official cloud connector after an exact trusted-edge venue IP match and live wireless GUEST/access-point verification; redirect parameters alone are forgeable.
+- Keep guest names/email transient with no marketing persistence, and gate activation on admin privacy review; provider retention and agreements cannot be guaranteed by website settings.

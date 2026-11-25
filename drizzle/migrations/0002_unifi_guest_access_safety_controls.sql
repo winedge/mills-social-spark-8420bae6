@@ -1,0 +1,1 @@
+ALTER TABLE public.wifi_unifi_config ADD COLUMN IF NOT EXISTS access_enabled boolean NOT NULL DEFAULT false, ADD COLUMN IF NOT EXISTS privacy_reviewed boolean NOT NULL DEFAULT false;

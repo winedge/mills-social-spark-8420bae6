@@ -31,9 +31,19 @@ export const saveUnifiConfig = createServerFn({ method: "POST" })
       encrypted = await encryptUnifiKey(data.apiKey, secret);
     }
     const connectionChanged = previous?.console_id !== data.consoleId || previous?.site_id !== data.siteId || !!data.apiKey || data.removeKey;
+    if (data.accessEnabled) {
+      if (connectionChanged || !previous?.last_test_ok || !data.siteId || !encrypted || !data.privacyReviewed) {
+        throw new Error("Save and test the restaurant site, then complete the privacy review before enabling guest access.");
+      }
+      const { data: settings } = await supabaseAdmin.storage.from("site-media").download("wifi/settings.json");
+      const raw: unknown = settings ? JSON.parse(await settings.text()) : null;
+      const ips = raw && typeof raw === "object" && "allowedIps" in raw && typeof raw.allowedIps === "string" ? raw.allowedIps.trim() : "";
+      if (!ips || ips.includes("*")) throw new Error("Save the restaurant's exact public internet address in Guest Wi-Fi first.");
+    }
     const { data: saved, error } = await supabaseAdmin.from("wifi_unifi_config").upsert({
       id: 1, console_id: data.consoleId, site_id: data.siteId, session_minutes: data.sessionMinutes,
       api_key_encrypted: encrypted,
+      access_enabled: data.accessEnabled, privacy_reviewed: data.privacyReviewed,
       last_test_at: connectionChanged ? null : previous?.last_test_at ?? null,
       last_test_ok: connectionChanged ? false : previous?.last_test_ok ?? false,
       updated_at: new Date().toISOString(),
@@ -70,7 +80,7 @@ export const testUnifiConnection = createServerFn({ method: "POST" })
             return [{ id: s.id, name: "name" in s && typeof s.name === "string" ? s.name : s.id }];
           });
           ok = sites.length > 0 && (!config.site_id || sites.some((s) => s.id === config.site_id));
-          message = ok ? "UniFi is reachable. Select your restaurant site and save. This checks connectivity only; guest internet access is not activated." : "No matching site found. Check the site ID and API key permissions.";
+          message = ok ? "UniFi is reachable. Select your restaurant site, save and test again before enabling guest access. This test does not authorize devices." : "No matching site found. Check the site ID and API key permissions.";
         }
       } else if (response.status === 401 || response.status === 403) {
         message = "UniFi rejected access. Check your API key and console permissions.";
@@ -84,7 +94,7 @@ export const testUnifiConnection = createServerFn({ method: "POST" })
     }
     const testedAt = new Date().toISOString();
     const { error: updateError } = await supabaseAdmin.from("wifi_unifi_config")
-      .update({ last_test_at: testedAt, last_test_ok: ok }).eq("id", 1).eq("updated_at", config.updated_at);
+      .update({ last_test_at: testedAt, last_test_ok: ok, ...(!ok ? { access_enabled: false } : {}) }).eq("id", 1).eq("updated_at", config.updated_at);
     if (updateError) throw new Error("Couldn't save the connection test result.");
     return { ok, message, sites, testedAt };
   });

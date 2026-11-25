@@ -826,31 +826,37 @@ export type Database = {
       }
       wifi_unifi_config: {
         Row: {
+          access_enabled: boolean
           api_key_encrypted: string
           console_id: string
           id: number
           last_test_at: string | null
           last_test_ok: boolean
+          privacy_reviewed: boolean
           session_minutes: number
           site_id: string
           updated_at: string
         }
         Insert: {
+          access_enabled?: boolean
           api_key_encrypted?: string
           console_id?: string
           id?: number
           last_test_at?: string | null
           last_test_ok?: boolean
+          privacy_reviewed?: boolean
           session_minutes?: number
           site_id?: string
           updated_at?: string
         }
         Update: {
+          access_enabled?: boolean
           api_key_encrypted?: string
           console_id?: string
           id?: number
           last_test_at?: string | null
           last_test_ok?: boolean
+          privacy_reviewed?: boolean
           session_minutes?: number
           site_id?: string
           updated_at?: string

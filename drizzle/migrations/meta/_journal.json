@@ -15,6 +15,13 @@
       "when": 1795519898324,
       "tag": "0001_private_unifi_admin_configuration",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795586442927,
+      "tag": "0002_unifi_guest_access_safety_controls",
+      "breakpoints": true
     }
   ]
 }
